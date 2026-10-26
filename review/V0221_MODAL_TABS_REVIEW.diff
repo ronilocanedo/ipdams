@@ -1,0 +1,53 @@
+*** REVIEW-ONLY DIFF — based on installed v0.2.220 release package ***
+--- a/public/assets/property-detail-modal.css
++++ b/public/assets/property-detail-modal.css
+@@ -end-of-file +end-of-file @@
++/* IPDAMS v0.2.221: prevent generic site nav/tab layout rules from stacking dialog tabs.
++   Desktop: four compact horizontal cells. Narrow screens: one scrollable horizontal row. */
++.ipdams-asset-dialog nav.asset-modal-tabs {
++  display:grid!important;
++  grid-template-columns:repeat(4,minmax(0,1fr))!important;
++  grid-auto-flow:column!important;
++  align-items:stretch!important;
++  justify-content:stretch!important;
++  width:100%!important;
++  min-width:0!important;
++  box-sizing:border-box!important;
++  gap:4px!important;
++  overflow-x:auto!important;
++  overflow-y:hidden!important;
++  flex-direction:initial!important;
++  flex-wrap:nowrap!important;
++}
++.ipdams-asset-dialog nav.asset-modal-tabs > button.asset-modal-tab {
++  display:inline-flex!important;
++  align-items:center!important;
++  justify-content:center!important;
++  flex:none!important;
++  width:100%!important;
++  max-width:none!important;
++  min-width:0!important;
++  min-height:42px!important;
++  margin:0!important;
++  line-height:1.3!important;
++  text-align:center!important;
++}
++@media(max-width:700px) {
++  .ipdams-asset-dialog nav.asset-modal-tabs {
++    grid-template-columns:repeat(4,max-content)!important;
++    justify-content:start!important;
++    overscroll-behavior-inline:contain;
++  }
++  .ipdams-asset-dialog nav.asset-modal-tabs > button.asset-modal-tab {
++    width:auto!important;
++    min-width:125px!important;
++    padding-inline:14px!important;
++  }
++}
+--- a/public/app.html
++++ b/public/app.html
+@@
+-property-detail-modal.css?v=0220
++property-detail-modal.css?v=0221-horizontal-tabs
+
+Note: the app.html source is a single minified HTML line, so replace only this literal query value.
