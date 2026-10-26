@@ -49,3 +49,13 @@ These local package hashes were checked against the available source archives. T
 - [Draft PR #3 — v0.2.214 schema proposals, review only](https://github.com/ronilocanedo/ipdams/pull/3): cannot be treated as release or merged before approval.
 
 No automated source/ZIP replication, Actions workflow or recurring monitor has been configured. At the next approved milestone, update this register and the linked Drive register together using release-version evidence and exact hashes.
+
+## 26 October 2026 — first real MariaDB test workflow ready (NOT RUN)
+
+- Reviewed source-method+synthetic-schema MariaDB test ZIP committed to `feature/v0.2.214-property-batch-review`, git commit `555331452888c346b5501333093b6439c959e84e`, blob SHA `4f78add8a2ad6ab4257555099783e8f7e24be9fd`.
+- Identical ZIP in Drive Testing Patches: https://drive.google.com/file/d/1y6cXMtcGT_ffFls3EpybXL-YAVooJI8Z/view
+- Archive SHA256 `bd0b3b71a52c218fe6593888ca13eee9d5d4c580f1e0f7177ab206cd1d5528bc`. PHP Domain and metadata helper files in ZIP match the staging v0.2.214 updater exactly.
+- One **manual-only** GitHub Actions workflow now added to `main`: `.github/workflows/ipdams214-manual-mariadb.yml`, commit `0e973d20831c4a1306129aaf603cc0361103ca93`. It has only `workflow_dispatch`, a **12-minute ceiling**, one Ubuntu job, disposable MariaDB 10.11 synthetic fixtures, and no deployment/production credentials. No push/PR/schedule triggers.
+- Environment here still lacks MariaDB server and PHP MySQL driver. Real GitHub Actions test **has not run** because the connected GitHub API does not expose a workflow-dispatch action. The project owner must explicitly start a run in the Actions UI after verifying their budget/settings.
+- Local 21 mock transaction assertions and archived migration SQL allowlist checks passed again on 26 October 2026. This is not real MariaDB acceptance.
+- User-confirmed installed website is v0.2.213; v0.2.214 staging only, not production-approved.
