@@ -49,6 +49,9 @@ jobs:
           echo 'bd0b3b71a52c218fe6593888ca13eee9d5d4c580f1e0f7177ab206cd1d5528bc  review/artifacts/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL.zip' | sha256sum --check --strict
           mkdir -p "$RUNNER_TEMP/ipdams214"
           unzip -q review/artifacts/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL.zip -d "$RUNNER_TEMP/ipdams214"
+          # Overlay exact corrected helper from this reviewed branch over the original test archive.
+          echo '8782f5831b10222fa017e4a71275a64a28c271be0b6dacfd0d43c5aa83fe2ceb  review/app/PropertyBatchMetadata.php' | sha256sum --check --strict
+          cp review/app/PropertyBatchMetadata.php "$RUNNER_TEMP/ipdams214/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL/qa/ipdams214/app/PropertyBatchMetadata.php"
       - name: Install PHP 8.2 MySQL test runtime
         uses: shivammathur/setup-php@v2
         with:
@@ -61,6 +64,7 @@ jobs:
           php -m | grep -qi '^pdo_mysql$'
           php -m | grep -qi '^pcntl$'
           for f in "$RUNNER_TEMP"/ipdams214/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL/qa/ipdams214/app/*.php "$RUNNER_TEMP"/ipdams214/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL/qa/ipdams214/tests/*.php; do php -l "$f"; done
+          php review/tests/property_origin_regression.php
           php "$RUNNER_TEMP/ipdams214/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL/qa/ipdams214/tests/staging_real_mariadb.php"
       - name: Explain the limited scope of a PASS
         if: success()
