@@ -16,3 +16,7 @@ Private development repository for IPDAMS, supporting DepEd school and Division 
 - No automatic hosting deployments, financial postings, inventory updates, migrations or school-record edits.
 
 See [Development Handoff](docs/DEVELOPMENT_HANDOFF.md), [Release Safety](docs/RELEASE_SAFETY.md), [Security](SECURITY.md) and [Actions & Cost Policy](docs/ACTIONS_AND_COST_POLICY.md).
+
+## Google Drive coordination
+
+[GitHub ↔ Drive Sync Register](docs/SYNC_REGISTER.md) records the canonical Drive project folder, status document, exact release SHA256 references and outstanding source-import work. This is a **manual, version-verified coordination process**, not automatic two-way syncing. No GitHub Actions workflow is enabled by repository files.
