@@ -60,8 +60,8 @@ jobs:
           set -euo pipefail
           php -m | grep -qi '^pdo_mysql$'
           php -m | grep -qi '^pcntl$'
-          for f in "$RUNNER_TEMP"/ipdams214/qa/ipdams214/app/*.php "$RUNNER_TEMP"/ipdams214/qa/ipdams214/tests/*.php; do php -l "$f"; done
-          php "$RUNNER_TEMP/ipdams214/qa/ipdams214/tests/staging_real_mariadb.php"
+          for f in "$RUNNER_TEMP"/ipdams214/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL/qa/ipdams214/app/*.php "$RUNNER_TEMP"/ipdams214/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL/qa/ipdams214/tests/*.php; do php -l "$f"; done
+          php "$RUNNER_TEMP/ipdams214/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL/qa/ipdams214/tests/staging_real_mariadb.php"
       - name: Explain the limited scope of a PASS
         if: success()
         run: |
