@@ -73,3 +73,11 @@ No automated source/ZIP replication, Actions workflow or recurring monitor has b
 - Environment here still lacks MariaDB server and PHP MySQL driver. Real GitHub Actions test **has not run** because the connected GitHub API does not expose a workflow-dispatch action. The project owner must explicitly start a run in the Actions UI after verifying their budget/settings.
 - Local 21 mock transaction assertions and archived migration SQL allowlist checks passed again on 26 October 2026. This is not real MariaDB acceptance.
 - User-confirmed installed website is v0.2.213; v0.2.214 staging only, not production-approved.
+
+
+## 26 October 2026 — Post-reset counts and local v0.2.216 review update
+
+- Owner read-only SQL results: 13 reference/access tables retained at expected counts, and all 14 selected transaction tables empty. Audit events: 254; preserved document counters: 13. No further reset.
+- A corrected v0.2.216 review ZIP was created locally from the verified original Drive ZIP. SHA256 `16b531b51a9771cb3485eac413921215d414443c3c9f4a78958b7cc3fbf5a025`, strictly v0.2.215 to v0.2.216, with 7 application files and 2 additive migrations. The existing six feature files and both migrations are unchanged; one rollback-safety PHP file was added.
+- The revised archive is a **local review artifact only; not yet on Drive or approved for installation**. See [GitHub review evidence](https://github.com/ronilocanedo/ipdams/blob/feature/v0.2.214-property-batch-review/review/V0216_POST_RESET_REV2_REVIEW_2026-10-26.md).
+- Remaining: verify current hosted property columns and migration IDs read-only, recovery plan, and authenticated property/IAR/ICS/PAR testing. No new GitHub Actions run.
