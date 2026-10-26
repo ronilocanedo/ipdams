@@ -1,7 +1,21 @@
 # IPDAMS — GitHub ↔ Google Drive synchronization register
 
+
+**CURRENT CHECKPOINT — 26 OCT 2026:** v0.2.215 owner-installed, selected disposable test-transaction Custom Reset reported successful. The next proposed v0.2.216 is **staging review only**. The chronological sections below include superseded v0.2.213/v0.2.214 events and must not be used as current installation or release advice. No live automatic sync is enabled.
+
 **Established:** 2026-10-26 (Asia/Manila)  
 **Sync status:** Manually reconciled coordination links; **not** continuous, automatic or bidirectional file mirroring.
+
+
+## Latest verified coordinator checkpoint — v0.2.215 → v0.2.216 (26 October 2026)
+
+- Hosted UI reported **Custom Reset succeeded**; Division, Schools, Users and access scopes preserved. No second reset. Actual post-reset master counts and transaction clearing have not been independently reconciled.
+- Installed hotfixes: v0.2.214 physical checkbook reset safety; v0.2.215 selective fund-ledger reset safety. Old *property* ZIPs named v0.2.214 and v0.2.215 are **obsolete**.
+- Next candidate: `IPDAMS_v0.2.216_PROPERTY_BATCH_REGISTRATION_FROM_v0.2.215_STAGING_REVIEW.zip`, [Drive file](https://drive.google.com/file/d/1A3RIuJm1uGjFkno-ve85PMTfZQcS9I6g/view), SHA256 `aecb5727cbc271e6c18861ca475756f15f2bfe0e85bce3f78f70d491e979b265`; [guide](https://drive.google.com/file/d/1XWcYV5BcjOOdebvp3dw0lX8L5hA4K4fL/view). Strict predecessor v0.2.215; 6 app files, 2 additive asset migrations; ResetService not modified.
+- [Draft PR #3](https://github.com/ronilocanedo/ipdams/pull/3) tracks this review candidate. Synthetic MariaDB 10.11 [manual Run #2](https://github.com/ronilocanedo/ipdams/actions/runs/40265443265) passed; no rerun requested. Authenticated IAR/ICS/PAR/school UAT and true deployed migration+recovery remain unverified.
+- **One needed source:** actual hosted `app/SettingsService.php` only. No verified copy found in GitHub/Drive accessible source; do not guess parser behavior from v0.2.141.
+- Full source baseline for current installation not in GitHub. Preserve owner backups, secrets and school isolation. Single-site policy; no staging-site duplication without owner request, no production install/migration until safety gates.
+- [Portable handoff](https://github.com/ronilocanedo/ipdams/blob/main/docs/HANDOFF_2026-10-26_v0.2.215_to_v0.2.216.md); [Drive master progress](https://docs.google.com/document/d/1AB5SmgnGI3j6Y02q1alVdR7p5ty-sS4HFFBobRkV2lM/edit); [Drive sync register](https://docs.google.com/document/d/13NWruT1RTeFoxcL14l9-5UY9e2ENuX2RHEveAUGHOF8/edit).
 
 ## Canonical locations
 
@@ -12,10 +26,10 @@
 | Canonical development progress | Google Docs | https://docs.google.com/document/d/1AB5SmgnGI3j6Y02q1alVdR7p5ty-sS4HFFBobRkV2lM/edit |
 | Sync register and changes | Google Docs | https://docs.google.com/document/d/13NWruT1RTeFoxcL14l9-5UY9e2ENuX2RHEveAUGHOF8/edit |
 | Role/security design | Google Docs | https://docs.google.com/document/d/19kZEhOmTeZrRtDYd4NCtXJybYP_1uoTzM1LKM6Z1ZyA/edit |
-| Authoritative installed version | Owner-confirmed hosted IPDAMS | v0.2.213 |
+| Authoritative installed version | Owner-confirmed hosted IPDAMS | **v0.2.215**; selected Custom Reset reported successful; read-only reconciliation pending |
 | Full code-only source ZIP currently in Drive working-source folder | Drive historical snapshot | v0.2.141 (outdated; do NOT deploy as v0.2.213) |
 
-## Release-candidate artifacts at this checkpoint
+## Historical release-candidate artifacts (superseded, for provenance only)
 
 | Artifact | State | SHA256 |
 | --- | --- | --- |
