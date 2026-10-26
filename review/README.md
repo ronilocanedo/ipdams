@@ -25,3 +25,9 @@ The two SQL files in `review/migrations/` are **proposals**, have not run anywhe
 - Owner review of staging results before any installable v0.2.214; no deployment via GitHub.
 
 Project sync pointers: https://docs.google.com/document/d/13NWruT1RTeFoxcL14l9-5UY9e2ENuX2RHEveAUGHOF8/edit
+
+## Exact source archive now committed to this review branch
+
+The 13-file v0.2.214 source-review ZIP is now available at [`review/artifacts/IPDAMS_v0.2.214_SOURCE_REVIEW_DO_NOT_INSTALL.zip`](artifacts/IPDAMS_v0.2.214_SOURCE_REVIEW_DO_NOT_INSTALL.zip), **Git blob SHA** `edb543a6edb4045eb9dbde4952feb114ccb95c85`, **ZIP SHA256** `2f7d9323c7799c706e5a8224548d2c5eb2c34651bd4a912f1466ea6de001d4fb`. This is the exact previously validated archive, not a deployable application or updater.
+
+A separate **staging-only** manifest ZIP (v0.2.213→v0.2.214, with two additive migrations) is now stored on [Drive](https://drive.google.com/file/d/1R1dEUkhaSt-BsERR1kFopb7IlRlRhxUk/view); its SHA256 is `f4f7e03f8573fb4c0e7b92aa9d7f7b76024e36d7bb628bd908ad5d0a6f1528bf`. [Staging guide](https://drive.google.com/file/d/1ojOtIOyvv8Mof9rHtc8B2EFBaTRBM_Xo/view). **Do not run this on production** until real staging MariaDB, school-scope, accountability and independent backup/restore acceptance has passed.
