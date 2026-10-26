@@ -41,3 +41,11 @@ These local package hashes were checked against the available source archives. T
 - Place the v0.2.214 candidate code on `feature/v0.2.214-property-batch-review` after source review; never on stable `main` before acceptance.
 - Run real isolated MariaDB and authenticated multi-school UAT before any installable v0.2.214.
 - Verify cost controls separately in GitHub Actions/Billing settings. No Actions workflow is present in this repository at this checkpoint.
+
+## GitHub development tracking (verified 26 October 2026)
+
+- [Issue #1 — restore verified v0.2.213 code-only baseline](https://github.com/ronilocanedo/ipdams/issues/1): source import blocked until exact current snapshot is verified and sanitized.
+- [Issue #2 — validate v0.2.214 on isolated MariaDB](https://github.com/ronilocanedo/ipdams/issues/2): real DB concurrency, rollback and authenticated UAT outstanding.
+- [Draft PR #3 — v0.2.214 schema proposals, review only](https://github.com/ronilocanedo/ipdams/pull/3): cannot be treated as release or merged before approval.
+
+No automated source/ZIP replication, Actions workflow or recurring monitor has been configured. At the next approved milestone, update this register and the linked Drive register together using release-version evidence and exact hashes.
