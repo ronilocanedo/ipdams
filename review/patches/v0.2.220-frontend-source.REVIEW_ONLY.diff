@@ -1,0 +1,245 @@
+--- v0.2.219/public/assets/app.js
++++ v0.2.220/public/assets/app.js
+@@ -115,7 +115,7 @@
+     propertyRegister:{rows:[],facets:{items:[],classifications:[],custodians:[],statuses:[]},has_more:false,next_before_id:null},
+     propertyRegisterFilters:{search:'',category:'ALL',classification:'ALL',item_id:'ALL',custodian:'ALL',status:'ALL',source:'ALL'},
+     propertyRegisterLoading:false,propertyRegisterError:'',
+-    propertyDetailId:'',propertyDetailOrg:'',propertyDetail:null,propertyDetailLoading:false,propertyDetailError:'',
++    propertyDetailId:'',propertyDetailOrg:'',propertyDetail:null,propertyDetailLoading:false,propertyDetailError:'',propertyDetailTab:'overview',
+     propertyBusy:false,propertyError:'',propertyReceivedId:'',propertyUnitCount:'1',propertyRegistrationNotice:'',propertyTags:'',propertyBatchItem:'',propertyBatchCount:'1',propertyBatchDate:'',propertyBatchCost:'',propertyBatchShared:{brand:'',model:'',acquisition_type:'PURCHASE',useful_life_years:'',historical_po:'',historical_iar:'',historical_dv:'',evidence_note:''},propertyBatchUnits:[{serial_number:'',location:'',condition_note:'',legacy_property_number:'',reported_custodian:''}],propertyEditAssetId:'',propertyEditPreview:null,propertyEditMode:'UNIT',propertyEditReason:'',propertyEditShared:{},propertyEditUnit:{},propertyAssetId:'',propertySearch:'',propertyCustodian:'', searchTerm: '', searchResults: [], procurementSection:'PR',workflowStage:'RFQ',workflowPR:'',workflowRfqLines:[],workflowRfqDate:'',workflowCanvasserId:'',workflowConsolidate:null,workflowConsolidateLoading:false,workflowConsolidateError:'',workflowConsolidatePrIds:[],workflowConsolidateExcluded:[],workflowRFQEditId:'',workflowRFQEditDate:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditReason:'',workflowRFQEditConfirm:false,workflowRFQEditError:'',workflowRFQEditLoading:false,workflowRFQ:'',workflowSupplier:'',workflowQuoteDate:localToday(),workflowQuoteEvidence:'',workflowQuoteLines:[],workflowAwardRFQ:'',workflowAwardDate:localToday(),workflowQuoteId:'',workflowAwardNote:'',workflowAwardNoteManual:false,workflowAwardApproved:false,workflowAward:'',workflowPoDate:localToday(),workflowPoLines:[],workflowPoDeliveryDate:localToday(),workflowPoDeliveryPlace:'',workflowPoDeliveryTerm:'Door-to-Door Delivery',workflowPoPaymentTerm:'Full Payment upon Delivery',workflowPoPaymentType:'Check',workflowPoMethod:'',workflowPoEdit:null,workflowPoEditError:'',workflowPoEditLoading:false,workflowPO:'',workflowIARLines:[],workflowDelivered:'',workflowAccepted:'',workflowIARInvoice:'',workflowIARInvoiceDate:'',workflowIARPoMeta:null,workflowIarDate:localToday(),workflowIARReviewed:false,workflowIarEdit:null,workflowIarEditLoading:false,workflowIarEditError:'',workflowMessage:'',workflowError:'', advancedRoute: 'rfq.create', advancedBody: '{}', details: null, viewType: '', pending: false, catalogRegistryLinks:{links:{}},prAccountingPreview:{},prAccountingBusy:{},prLineage:null,prLineageBusy:'',prLineageError:'',registryLinkDialog:null,registryLinkQuery:'',registryLinkOptions:[],registryLinkBusy:false,registryLinkError:'',propertyRegistry:null,propertyRegistryBusy:false,propertyRegistryError:'',propertyRegistrySearch:'',propertyRegistrySection:'',propertyUnitCost:'',propertyThresholdDialog:false,propertyThresholdValue:'5000.00',propertyThresholdDate:localToday(),propertyThresholdReason:'',propertyLifeDialog:null,propertyLifeMonths:'',propertyLifeReason:'',propertyEntryDialog:null,propertyEntrySection:'',propertyEntryDescription:'',propertyEntryMode:'HV_LV',propertyEntryHvCode:'',propertyEntryLvCode:'',propertyEntryReferenceCode:'',propertyEntryDetail:'',propertyEntryMonths:'',propertyEntryReason:'',masterSection: 'suppliers', fundSection: 'overview', fundPolicyClass:'NON_IUS',fundPolicies:null,fundPoliciesLoading:false,sourceDialog:false,policyDialog:false,sourceCode:'',sourceName:'',sourceActive:true,sourceReason:'',fundPolicySource:'',fundPolicyMode:'NOT_CONFIGURED',fundPolicyDate:localToday(),fundPolicyAuthority:'',fundPolicyReason:'',schoolClass:'',schoolClassDate:localToday(),schoolClassReason:'',schoolClassEdit:'',schoolClassEditClass:'',schoolClassEditDate:localToday(),schoolClassEditReason:'', masterEditorOpen: false, masterSearch: '', divisionClassifications: semiSubcategories.map(([code,name])=>({code,name,active:true,default_uacs_code:null})), divisionName: '', classEditCode: '', classCode: '', className: '', classUacs: '', classAppliesTo:'SEMI_EXPENDABLE', classProcurementTypes:[], classActive: true, classDialogOpen: false, uacsQuery: '', uacsStatus: 'ALL', uacsClassification: 'ALL', uacsPage: 0, uacsLoading: false, uacsData: {rows: [],total: 0,offset: 0,limit:80,summary:{total:0,enabled:0,disabled:0}}, sup_name: '', sup_proprietor: '', sup_tax_id: '', sup_address: '', sup_zip: '', sup_commercial: 'UNSPECIFIED', sup_vat_status: 'UNKNOWN', sup_atcs: [], sup_profiles: [], sup_legacy_atcs: [], sup_edit_id: '', atc_code: '', atc_description: '', atc_supply_type: 'BOTH', atc_profile_category:'', atc_edit_profile_category:'', atc_goods_applicable:true, atc_services_applicable:true, atc_rental_applicable:false, atc_contractor_applicable:false, atc_utilities_applicable:false, atc_other_applicable:false, atc_business_type: 'BOTH', atc_tax_kind: '', atc_tax_filter:'ALL', rate_atc_code: '', rate_percent: '', rate_starts: '', rate_ends: '', rate_authority: '', rate_close_id: '', rate_close_date: '', atc_initial_percent: '', atc_initial_start: '', atc_initial_end: '', atc_initial_authority: '', atc_selected_code: '', atc_action: '', atc_list_loading: false, atc_dialog: '', atc_edit_description: '', atc_edit_supply_type: 'BOTH', atc_edit_goods_applicable:true, atc_edit_services_applicable:true, atc_edit_rental_applicable:false, atc_edit_contractor_applicable:false, atc_edit_utilities_applicable:false, atc_edit_other_applicable:false, atc_edit_business_type: 'BOTH', atc_edit_tax_kind: '', dvTaxes: [], unit_code: '', unit_name: '', item_name: '', item_unit_id: '', item_category: 'SUPPLY', item_subcategory: '', item_school_class:'', item_edit_id: '', itemUacsSettings:null,itemUacsLoading:false,vatSettings:null,vatSettingsLoading:false,vatRateInput:'12.00',vatRateDate:localToday(),vatRateAuthority:'',vatRateReason:'',itemUacsId:'',itemUacsCode:'',itemUacsDate:localToday(),itemUacsReason:'',itemUacsDialog:false,uacsCorrection:null,uacsCorrectionPreview:null,bulkUacsOpen:false,bulkUacsIds:[],bulkUacsClass:'',bulkUacsDate:localToday(),bulkUacsReason:'',bulkUacsPreview:null, fund_name: '', fund_source_code: '', fund_allocation_open:false,bank_download_open:false,bank_download_mode:'NEW',bank_download_fund:'',bank_download_bank:'',bank_download_date:localToday(),bank_download_amount:'',bank_download_ref:'',bank_download_advice:'',bank_download_evidence:'',bank_download_particulars:'',bank_download_existing_id:'',bank_download_link_reason:'',fund_allocation_type:'OBLIGATION',fund_allocation_id:'',fund_allocation_amount:'',fund_allocation_reference:'',fund_allocation_reason:'',bank_name:'',bank_label:'',bank_mask:'',checkDv:'',checkBank:'',checkNo:'',checkAmount:'',checkPayeeBasis:'BUSINESS',checkStockPreview:null,checkLeafConfirmed:false,checkStockList:{rows:[],stats:[]},checkStockLoaded:false,checkStockLoading:false,checkStockError:'',cashBankSection:'prepare',checkProofOpen:false,checkProofIssued:null,cashCheckSearch:'',cashCheckStatus:'ALL',cashLeafSearch:'',cashLeafStatus:'ALL',checkbookReference:'',checkbookFirst:'',checkbookLast:'',checkbookVerified:false,checkbookBank:'',dvCheckBank:'',dvCheckStock:null,dvCheckLoading:false,dvCheckLeafConfirmed:false,dvCheckPayeeBasis:'DV_PAYEE',dvFundAvailable:null,dvFundLoading:false, fund_fiscal_year: String(new Date().getFullYear()), pr_method: 'REVIEW_REQUIRED', setup_code: '', setup_name: '', setup_kind: 'DIVISION', orgHierarchy: [], orgUsers: [], organizationSection: (() => { const q=new URLSearchParams(window.location.search).get('orgtab'); return ['division','schools','users','roles','myfunctions','account','school'].includes(q) ? q : 'division'; })(), roleCatalog:null,roleDetail:null,roleBusy:false,roleError:'',roleNotice:'',roleUserId:'',roleSchoolId:'',rolePermission:'',roleReason:'',roleEndsOn:'',roleStartsOn:localToday(),roleAuditOpen:false,roleFunctionSearch:'',roleModule:'ALL',myFunctions:null,myFuncOrg:'',myFuncType:'PR',myFuncMonth:localToday().slice(0,7),myFuncRecords:null,myFuncBusy:false,myFuncError:'', division_code: '', division_name: '', division_address: '', division_email: '', division_phone: '', school_code: '', school_name: '', school_address: '', school_email: '', school_phone: '', selected_division_id: '', legacy_school_id: '', new_division_user_name: '', new_division_user_email: '', new_division_user_password: '', new_school_user_name: '', new_school_user_email: '', new_school_user_password: '', new_user_school_id: '', organizationPendingAction: '', edit_org_id:'',edit_name:'',edit_code:'',edit_code_reason:'',edit_address:'',edit_email:'',edit_phone:'', own_current_password:'', own_new_password:'', own_confirm_password:'', reset_user_id:'',reset_admin_password:'',reset_new_password:'',reset_confirm_password:'',reset_identity_confirmed:false };
+ class App extends React.Component {
+     componentDidUpdate(prevProps,prevState) {
+@@ -158,6 +158,18 @@
+         if(prevState.atc_dialog!==this.state.atc_dialog)document.body.classList.toggle('atc-dialog-open',Boolean(this.state.atc_dialog));
+         if(prevState.prCreateOpen!==this.state.prCreateOpen)document.body.classList.toggle('ipdams-pr-create-open',Boolean(this.state.prCreateOpen));
+         if(prevState.dvComposeOpen!==this.state.dvComposeOpen)document.body.classList.toggle('ipdams-dv-compose-open',Boolean(this.state.dvComposeOpen));
++        const prevAssetDialog=!!prevState.propertyDetailId && prevState.propertyDetailOrg===String(prevState.organization_id) && prevState.tab==='Property Accountability' && prevState.propertySection==='assets';
++        const nextAssetDialog=!!this.state.propertyDetailId && this.state.propertyDetailOrg===String(this.state.organization_id) && this.state.tab==='Property Accountability' && this.state.propertySection==='assets';
++        if(prevAssetDialog!==nextAssetDialog){
++            document.body.classList.toggle('ipdams-asset-dialog-open',nextAssetDialog);
++            if(nextAssetDialog){
++                const close=document.querySelector('.ipdams-asset-dialog-close');
++                if(close)close.focus();
++            }else if(this.propertyDialogReturnFocus && document.contains(this.propertyDialogReturnFocus)){
++                this.propertyDialogReturnFocus.focus();this.propertyDialogReturnFocus=null;
++            }
++        }
++
+         if((this.state.tab==='Fund Management' && this.state.fundSection==='funds' &&
+              (prevState.tab!==this.state.tab || prevState.fundSection!==this.state.fundSection || prevState.organization_id!==this.state.organization_id)) ||
+            (this.state.tab==='Disbursements' && (prevState.tab!==this.state.tab || prevState.organization_id!==this.state.organization_id)))
+@@ -206,7 +218,7 @@
+         });
+         root.querySelectorAll('input[type="file"]').forEach(el=>{el.disabled=true;});
+     }
+-    componentWillUnmount() { document.body.classList.remove('atc-dialog-open','ipdams-pr-create-open','ipdams-dv-compose-open'); }
++    componentWillUnmount() { document.body.classList.remove('atc-dialog-open','ipdams-pr-create-open','ipdams-dv-compose-open','ipdams-asset-dialog-open'); }
+     constructor() {
+         super(...arguments);
+         this.state = { ...initial, tab: (() => { const section = new URLSearchParams(window.location.search).get('section'); return section === 'Property & Supply' ? 'Inventory Management' : nav.some(([name]) => name === section) ? section : 'Dashboard'; })() };
+@@ -798,7 +810,7 @@
+             this.consolToken=(this.consolToken||0)+1;
+             this.setState({ organization_id: orgId, tab: 'Dashboard', lists: {}, dashboard: {}, mooeIssuedDocs:null,mooeIssuedError:'',mooeIssuedBusy:false,
+                 accounts: [], eligible: [], eligibleLoading: false, eligibleError: '', eligibleLoadedFor: '', workspaceFailures: [], divisionClassifications: [], divisionName: '', allocations: {}, details: null, viewType: '', uacsData: {rows:[],total:0,offset:0,limit:80,summary:{total:0,enabled:0,disabled:0}},
+-                fund_id: '', dv_fund: '', selectedDv: '', ris_pr: '', ris_id: '', ris_line_id: '', ris_lot_id: '', divisionRisLines:[], divisionRisLots:[], consolReport:null,consolBusy:false,consolError:'',consolSchool:'',consolSchools:[],consolScopeId:'',propertyRecords:{assets:[],accountability:[],received_property:[]},propertyRegister:{rows:[],facets:{items:[],classifications:[],custodians:[],statuses:[]},has_more:false,next_before_id:null},propertyRegisterFilters:{search:'',category:'ALL',classification:'ALL',item_id:'ALL',custodian:'ALL',status:'ALL',source:'ALL'},propertyRegisterLoading:false,propertyRegisterError:'',propertyDetailId:'',propertyDetailOrg:'',propertyDetail:null,propertyDetailLoading:false,propertyDetailError:'',propertyAssetId:'',propertyReceivedId:'',propertyBatchItem:'',propertyBatchCount:'1',propertyBatchDate:'',propertyBatchCost:'',propertyRegistrationNotice:'',propertyBatchUnits:[{}],propertyBatchShared:{brand:'',model:'',acquisition_type:'PURCHASE',useful_life_years:'',historical_po:'',historical_iar:'',historical_dv:'',evidence_note:''},propertyEditAssetId:'',propertyEditPreview:null,propertyEditShared:{},propertyEditUnit:{},propertyEditReason:'',divisionModuleGrants:null,divisionModuleGrantsBusy:false,divisionModuleGrantsError:'',divisionContextRegister:null,divisionContextBusy:false,divisionContextError:'',
++                fund_id: '', dv_fund: '', selectedDv: '', ris_pr: '', ris_id: '', ris_line_id: '', ris_lot_id: '', divisionRisLines:[], divisionRisLots:[], consolReport:null,consolBusy:false,consolError:'',consolSchool:'',consolSchools:[],consolScopeId:'',propertyRecords:{assets:[],accountability:[],received_property:[]},propertyRegister:{rows:[],facets:{items:[],classifications:[],custodians:[],statuses:[]},has_more:false,next_before_id:null},propertyRegisterFilters:{search:'',category:'ALL',classification:'ALL',item_id:'ALL',custodian:'ALL',status:'ALL',source:'ALL'},propertyRegisterLoading:false,propertyRegisterError:'',propertyDetailId:'',propertyDetailOrg:'',propertyDetail:null,propertyDetailLoading:false,propertyDetailError:'',propertyDetailTab:'overview',propertyAssetId:'',propertyReceivedId:'',propertyBatchItem:'',propertyBatchCount:'1',propertyBatchDate:'',propertyBatchCost:'',propertyRegistrationNotice:'',propertyBatchUnits:[{}],propertyBatchShared:{brand:'',model:'',acquisition_type:'PURCHASE',useful_life_years:'',historical_po:'',historical_iar:'',historical_dv:'',evidence_note:''},propertyEditAssetId:'',propertyEditPreview:null,propertyEditShared:{},propertyEditUnit:{},propertyEditReason:'',divisionModuleGrants:null,divisionModuleGrantsBusy:false,divisionModuleGrantsError:'',divisionContextRegister:null,divisionContextBusy:false,divisionContextError:'',
+                 ris_item: '', stock_item: '', purpose: '', requesting_unit: '',
+                 prLines: [{ item_id: '', quantity: '1', unit_price: '0.00' }],pr_requestor:'', bank_download_open:false,bank_download_fund:'',bank_download_bank:'',bank_download_existing_id:'',staffData:null,staffLoading:false,mooeData:null,mooeViewerEmail:'',mooeViewerPassword:'',mooeViewerBusy:false,mooeLoading:false,mooeError:'',mooeSchoolId:'',mooeEmployeeId:'',mooeDate:localToday(),mooeBusy:false,mooeNotice:'',mooeHistoricalConfirmed:false,mooeAppointmentReference:'',staffSavingAction:'',staffSavedMessage:'',staffError:'',staffAddOpen:false,staffAddOrg:'',staffFullName:'',staffPosition:'',staffDesignation:'',staffEmployeeNo:'',staffTIN:'',staffAddress:'',staffProfileId:'',staffProfileOrg:'',staffProfileName:'',staffProfileEmployeeNo:'',staffProfileTIN:'',staffProfileAddress:'',staffProfileVersion:0,staffProfileBusy:false,staffEditName:'',staffEditPosition:'',staffEditDesignation:'',staffEditReason:'',staffEditOriginal:null,staffEditProfileOriginal:null,staffShowInactive:false,staffRenameId:'',staffRenameName:'',staffRenameReason:'',staffHeadId:'',staffDvPartA:'',staffDvPartC:'',staffDvPartD:'',staffHeadReason:'',staffCustodianId:'',staffCustodianDate:localToday(),staffCustodianReason:'',staffCustodianAttested:false,staffChair:'',staffCoChair:'',staffMembers:[],staffBacReason:'',staffBacDate:'',staffBacDateReason:'',staffBacAttested:false,travelStage:'REQUEST',travelRequestFormOpen:false,travelDocuments:{requests:[],authorities:[]},travelClaims:{claims:[],required_evidence:{},cost_types:{}},travelClaimsLoading:false,travelClaimError:'',travelClaimUploadKind:'',travelClaimDetail:null,travelClaimEditing:false,travelClaimDraft:emptyTravelClaim(),travelClaimChecks:emptyTravelVerification(),travelLoading:false,travelError:'',travelSignatories:null,travelSignatoriesLoading:false,travelSignatoriesError:'',travelBranding:null,travelBrandingLoading:false,travelBrandingError:'',travelBrandingPending:null,travelBrandingReason:'',travelSignatoryIds:{budget_officer:'',division_accountant:'',asds:'',sds:''},travelSignatoryRegion:'',travelSignatorySalutation:'Sir/Madam:',travelSignatoryReason:'',travelRefreshSignatoryId:'',travelRefreshSignatoryReason:'',travelRequest:emptyTravelRequest(),travelEditId:'',travelEditVersion:0,travelEditReason:'',travelAuthorityRequestId:'',travelAuthorityDate:localToday(),travelApprovalReference:'',travelPaperApproved:false,prUnits:[],prUnitsVersion:0,prUnitsLoading:false,prUnitsError:'',prUnitsDraft:'',prUnitsReason:'',prRegisterMonth:'',prRegisterYear:'',workflowRegisterMonth:localToday().slice(5,7),workflowRegisterYear:localToday().slice(0,4),workflowExpandedQuotes:[],workflowFormOpen:false,prCreateOpen:false,prCreateBaseline:'',prCreateError:'',dvComposeOpen:false,dvSearch:'',fundPolicies:null,itemUacsSettings:null,vatSettings:null,itemUacsId:'',itemUacsCode:'',itemUacsReason:'',itemUacsDialog:false,bulkUacsOpen:false,bulkUacsPreview:null,bulkUacsIds:[],bulkUacsClass:'',bulkUacsReason:'', fund_allocation_open:false, prEditOpen:false, prEdit:null, prEditError:'', dvEdit:null,dvEditOriginal:'',dvEditError:'',dvParticularsEdit:null,dvParticularsError:'',dvCancel:null,dvCancelError:'',dvFinalizePreview:null,dvFinalizeDate:'',dvCheckBank:'',dvCheckStock:null,dvCheckLoading:false,checkStockPreview:null,checkLeafConfirmed:false,checkStockList:{rows:[],stats:[]},checkStockLoaded:false,checkStockLoading:false,checkStockError:'',cashBankSection:'prepare',checkProofIssued:null,cashCheckSearch:'',cashCheckStatus:'ALL',cashLeafSearch:'',cashLeafStatus:'ALL',checkBank:'',checkDv:'',checkNo:'',checkbookBank:'',checkbookFirst:'',checkbookLast:'',checkbookReference:'',checkbookVerified:false,dvVoidPreview:null,dvActionError:'',prPickerOpen:'', prPickerResults:[], prQuickAdd:null, prQuickAddError:'',
+                 searchResults: [],procurementSection:'PROCESS',workflowStage:'RFQ',workflowExpandedQuotes:[],workflowPR:'',workflowRfqDate:'',workflowConsolidate:null,workflowConsolidateLoading:false,workflowConsolidateError:'',workflowConsolidatePrIds:[],workflowConsolidateExcluded:[],workflowRFQEditId:'',workflowRFQEditDate:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditReason:'',workflowRFQEditConfirm:false,workflowRFQEditError:'',workflowRFQEditLoading:false,workflowRFQ:'',workflowSupplier:'',workflowQuoteDate:localToday(),workflowQuoteEvidence:'',workflowQuoteLines:[],workflowAwardRFQ:'',workflowAwardDate:localToday(),workflowQuoteId:'',workflowAwardNote:'',workflowAwardNoteManual:false,workflowAwardApproved:false,workflowAward:'',workflowPoDate:localToday(),workflowPoLines:[],workflowPoDeliveryDate:localToday(),workflowPoDeliveryPlace:'',workflowPoDeliveryTerm:'Door-to-Door Delivery',workflowPoPaymentTerm:'Full Payment upon Delivery',workflowPoPaymentType:'Check',workflowPoMethod:'',workflowPoEdit:null,workflowPoEditError:'',workflowPoEditLoading:false,workflowPO:'',workflowIARLines:[],workflowDelivered:'',workflowAccepted:'',workflowIARInvoice:'',workflowIARInvoiceDate:'',workflowIARPoMeta:null,workflowIarDate:localToday(),workflowIARReviewed:false,workflowIarEdit:null,workflowIarEditLoading:false,workflowIarEditError:'',workflowMessage:'',workflowError:'', success: '', error: '', workspaceLoading: true, atc_dialog: '', atc_selected_code: '', atc_action: '' }, () => this.refresh());
+@@ -6654,17 +6666,18 @@
+             this.setState(prev=>({propertyRegisterFilters:Object.assign({},prev.propertyRegisterFilters,{[key]:value})}),
+                 ()=>this.loadPropertyRegister(true));
+         };
+-        this.openPropertyDetails = async id => {
++        this.openPropertyDetails = async (id,fromBatch=false) => {
+             const org=String(this.state.organization_id||'');
++            if(!fromBatch)this.propertyDialogReturnFocus=document.activeElement;
+             const token=this.propertyDetailToken=(this.propertyDetailToken||0)+1;
+-            this.setState({propertyDetailId:String(id),propertyDetailOrg:org,propertyDetail:null,propertyDetailLoading:true,propertyDetailError:''});
++            this.setState({propertyDetailId:String(id),propertyDetailOrg:org,propertyDetail:null,propertyDetailLoading:true,propertyDetailError:'',propertyDetailTab:fromBatch?'batch':'overview'});
+             try{
+                 const detail=await this.get('property.registration.detail',{organization_id:org,asset_id:id});
+                 if(token===this.propertyDetailToken && String(this.state.organization_id)===org)
+                     this.setState({propertyDetail:detail,propertyDetailLoading:false});
+             }catch(e){if(token===this.propertyDetailToken)this.setState({propertyDetailLoading:false,propertyDetailError:e.message||'Unable to load property details'});}
+         };
+-        this.closePropertyDetails = () => {this.propertyDetailToken=(this.propertyDetailToken||0)+1;this.setState({propertyDetailId:'',propertyDetailOrg:'',propertyDetail:null,propertyDetailError:'',propertyDetailLoading:false});};
++        this.closePropertyDetails = () => {this.propertyDetailToken=(this.propertyDetailToken||0)+1;this.setState({propertyDetailId:'',propertyDetailOrg:'',propertyDetail:null,propertyDetailError:'',propertyDetailLoading:false,propertyDetailTab:'overview'});};
+         this.loadAccountableProperty = async () => {
+             const org=String(this.state.organization_id||'');
+             if(!org)return;
+@@ -6849,53 +6862,112 @@
+             const eligible=assets.filter(r=>[r.property_tag,r.item_name,r.custodian].some(x=>String(x||'').toLowerCase().includes(this.state.propertySearch.trim().toLowerCase())));
+             const tabs=schoolScopedDivision(this.state)?[...(divisionLiveSpecial(this.state,'ASSET')?[['special_assets','Asset Register (View)']]:[]),['issue','Issue ICS / PAR'],['slips','Issued Slips']]:[['assets','Asset Register'],['register','Register from IAR'],['historical','Historical Property'],['edit','Edit Property Details'],['issue','Issue ICS / PAR'],['slips','Issued Slips']];
+             const section=tabs.some(([id])=>id===this.state.propertySection)?this.state.propertySection:(schoolScopedDivision(this.state)?'issue':'assets');
+-            const changeTab=id=>{this.clearPropertyNotice();this.setState({propertySection:id,propertyError:''},()=>{if(id==='special_assets')this.loadDivisionContextRegister('ASSET');if(id==='assets')this.loadPropertyRegister(true);});};
++            const changeTab=id=>{this.clearPropertyNotice();if(this.state.propertyDetailId)this.closePropertyDetails();this.setState({propertySection:id,propertyError:''},()=>{if(id==='special_assets')this.loadDivisionContextRegister('ASSET');if(id==='assets')this.loadPropertyRegister(true);});};
+             const renderPropertyDetails=()=>{
+                 const d=this.state.propertyDetail;
+                 if(!this.state.propertyDetailId||this.state.propertyDetailOrg!==String(this.state.organization_id))return null;
+-                const field=(label,v)=>h('div',{className:'asset-detail-field',key:label},h('span',{className:'asset-detail-label'},label),h('strong',null,v===null||v===undefined||v===''?'—':String(v)));
+-                const share=d&&d.details?d.details.shared||{}:{};
+-                const unit=d&&d.details?d.details.unit||{}:{};
+-                return h('section',{className:'asset-detail-panel',role:'region','aria-label':'Property details'},
+-                    h('div',{className:'asset-detail-heading'},h('h3',null,'Property details'+(d?' · '+d.property_number:'')),
+-                        h('button',{type:'button',className:'outline',onClick:this.closePropertyDetails},'Close details')),
+-                    this.state.propertyDetailError?h('p',{className:'error',role:'alert'},this.state.propertyDetailError):null,
+-                    this.state.propertyDetailLoading?h('p',{role:'status'},'Loading verified school property details…'):null,
+-                    d?h('div',null,
+-                        h('h4',null,'Identity and condition'),h('div',{className:'asset-detail-grid'},
+-                            ...[['Property number',d.property_number],['Item',d.item_name],['Accounting category',d.details.category],['Division classification',d.details.classification_name],
+-                                ['Status',d.details.status],['Serial number',d.details.serial_number],['Physical location',d.details.location],
+-                                ['Condition',d.details.condition_note],['Accountable custodian',d.details.custodian],
+-                                ['Historical custodian (reference only)',unit.reported_custodian],['Old property number',unit.legacy_property_number]].map(x=>field(x[0],x[1]))),
+-                        h('h4',null,'Acquisition and batch'),h('div',{className:'asset-detail-grid'},
+-                            ...[['Registration source',d.source==='HISTORICAL_OPENING'?'Historical opening':'Verified accepted IAR'],
+-                                ['Date acquired',d.details.acquired_on],['Acquisition cost',d.details.acquisition_cost],
+-                                ['Brand',share.brand],['Model',share.model],['Acquisition type',share.acquisition_type],
+-                                ['Useful life (years)',share.useful_life_years],['Evidence note',share.evidence_note],
+-                                ['Historical PO (text only)',share.historical_po],['Historical IAR (text only)',share.historical_iar],
+-                                ['Historical DV (text only)',share.historical_dv],
+-                                ['Verified IAR number',d.iar_reference&&d.iar_reference.display_number],
+-                                ['Registration batch',d.batch_key],['Batch unit count',(d.batch_details||[]).length]].map(x=>field(x[0],x[1]))),
+-                        h('h4',null,'Units in this registration batch'),
+-                        h('div',{className:'table-scroll'},h('table',{className:'master-table'},
+-                            h('thead',null,h('tr',null,...['Property number','Serial','Location','Status','View'].map(x=>h('th',{key:x},x)))),
+-                            h('tbody',null,...(d.batch_details||[]).map(x=>h('tr',{key:x.id},
+-                                h('td',null,x.property_tag),h('td',null,x.serial_number||'—'),h('td',null,x.location||'—'),
+-                                h('td',null,x.status),h('td',null,h('button',{type:'button',className:'outline',disabled:this.state.propertyDetailLoading,onClick:()=>this.openPropertyDetails(x.id)},'Open'))))))),
+-                        h('h4',null,'ICS / PAR accountability'),
+-                        !(d.accountability||[]).length?h('p',{className:'hint'},'No issued accountability document.'):
+-                            h('div',{className:'asset-detail-history'},...(d.accountability||[]).map((x,i)=>h('p',{key:i},x.doc_type+' '+x.display_number+' · '+x.status+' · '+(x.custodian||'—')+' · '+(x.created_at||'')))),
+-                        h('h4',null,'Movements and custodians'),
+-                        !(d.movements||[]).length?h('p',{className:'hint'},'No asset movements recorded.'):
+-                            h('div',{className:'asset-detail-history'},...(d.movements||[]).map((x,i)=>h('p',{key:i},(x.created_at||'')+' · '+x.event_type+' · '+(x.from_custodian||'—')+' → '+(x.to_custodian||'—')+' · '+(x.reason||'')))),
+-                        h('h4',null,'Audited history (newest first)'),
+-                        !(d.history||[]).length?h('p',{className:'hint'},'No audit events recorded for this property.'):
+-                            h('div',{className:'asset-detail-history'},...(d.history||[]).map((x,i)=>h('details',{key:i},
+-                                h('summary',null,(x.created_at||'')+' · '+x.event_type+' · '+(x.actor||'User')),
+-                                x.details&&x.details.reason?h('p',null,'Reason: '+x.details.reason):null,
+-                                x.details&&x.details.before?h('pre',null,'Before: '+JSON.stringify(x.details.before,null,2)):null,
+-                                x.details&&x.details.after?h('pre',null,'After: '+JSON.stringify(x.details.after,null,2)):null)))
+-                    ):null);
++                const record=d&&d.details||{},shared=record.shared||{},unit=record.unit||{};
++                const tab=this.state.propertyDetailTab||'overview';
++                const val=x=>x===null||x===undefined||x===''?'—':String(x);
++                const field=(label,v)=>h('div',{className:'asset-modal-field',key:label},
++                    h('span',{className:'asset-modal-field-label'},label),h('strong',null,val(v)));
++                const fields=items=>h('div',{className:'asset-modal-fields'},...items.map(item=>field(item[0],item[1])));
++                const sectionTitle=(name,note)=>h('div',{className:'asset-modal-section-title'},h('h3',null,name),note?h('p',null,note):null);
++                const empty=(title,desc)=>h('div',{className:'asset-modal-empty'},h('strong',null,title),h('span',null,desc));
++                const auditChanges=(entry)=>{
++                    const before=entry.details?.before||{},after=entry.details?.after||{};
++                    const paths=[
++                        ['Location','location'],['Serial number','serial_number'],['Condition','condition_note'],
++                        ['Brand','profile.shared.brand'],['Model','profile.shared.model'],['Acquisition type','profile.shared.acquisition_type'],
++                        ['Useful life','profile.shared.useful_life_years'],['Evidence note','profile.shared.evidence_note'],
++                        ['Historical PO','profile.shared.historical_po'],['Historical IAR','profile.shared.historical_iar'],
++                        ['Historical DV','profile.shared.historical_dv'],['Legacy property number','profile.unit.legacy_property_number'],
++                        ['Reported custodian','profile.unit.reported_custodian']
++                    ];
++                    const dig=(object,path)=>path.split('.').reduce((node,k)=>node&&node[k],object);
++                    const differences=paths.filter(([label,path])=>String(dig(before,path)??'')!==String(dig(after,path)??''));
++                    return differences.length?h('div',{className:'asset-modal-audit-diff'},...differences.map(([label,path])=>
++                        h('div',{className:'asset-modal-audit-row',key:path},
++                            h('strong',null,label),h('span',null,val(dig(before,path))),
++                            h('span',{className:'asset-modal-audit-arrow','aria-hidden':'true'},'→'),
++                            h('span',{className:'asset-modal-audit-new'},val(dig(after,path)))))):
++                        entry.details?.before||entry.details?.after?
++                        h('p',{className:'asset-modal-muted'},'Correction recorded. Full values are retained in the audit log.'):
++                        h('p',{className:'asset-modal-muted'},'Original system event recorded.');
++                };
++                const tabs=[['overview','Overview'],['acquisition','Acquisition'],['batch','Registration batch'],['history','Custody & audit']];
++                const onDialogKey=e=>{
++                    if(e.key==='Escape'){e.preventDefault();this.closePropertyDetails();return;}
++                    if(e.key!=='Tab')return;
++                    const controls=Array.from(e.currentTarget.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),[tabindex="0"]'));
++                    if(!controls.length)return;
++                    const first=controls[0],last=controls[controls.length-1];
++                    if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus();}
++                    else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
++                };
++                const dialog=h('div',{className:'ipdams-asset-dialog-backdrop',onMouseDown:e=>{if(e.target===e.currentTarget)this.closePropertyDetails();}},
++                    h('section',{className:'ipdams-asset-dialog',role:'dialog','aria-modal':'true','aria-labelledby':'asset-detail-title',onKeyDown:onDialogKey},
++                        h('header',{className:'asset-modal-header'},
++                            h('div',null,h('span',{className:'asset-modal-eyebrow'},'Property accountability · Read-only details'),
++                                h('h2',{id:'asset-detail-title'},'Property details')),
++                            h('button',{type:'button',className:'outline ipdams-asset-dialog-close',onClick:this.closePropertyDetails,'aria-label':'Close property details'},'✕ Close')),
++                        d?h('div',{className:'asset-modal-summary'},
++                            h('div',{className:'asset-modal-summary-identity'},
++                                h('span',{className:'asset-modal-tag'},d.property_number),
++                                h('strong',null,d.item_name),
++                                h('span',{className:'asset-modal-muted'},val(record.classification_name||record.category)+' · '+(d.source==='HISTORICAL_OPENING'?'Historical property':'Registered from accepted IAR'))),
++                            h('div',{className:'asset-modal-summary-facts'},
++                                h('span',null,'Status',h('strong',{className:'asset-modal-status'},val(record.status))),
++                                h('span',null,'Location',h('strong',null,val(record.location))),
++                                h('span',null,'Custodian',h('strong',null,val(record.custodian||'Unassigned'))))):
++                            h('div',{className:'asset-modal-summary'},h('span',null,'Loading property details…')),
++                        h('nav',{className:'asset-modal-tabs','aria-label':'Property details sections'},
++                            ...tabs.map(([name,label])=>h('button',{type:'button',key:name,
++                                className:'asset-modal-tab'+(tab===name?' is-active':''),
++                                'aria-pressed':tab===name,
++                                onClick:()=>this.setState({propertyDetailTab:name})},label))),
++                        h('div',{className:'asset-modal-content'},
++                            this.state.propertyDetailError?h('p',{className:'error',role:'alert'},this.state.propertyDetailError):null,
++                            this.state.propertyDetailLoading?h('p',{role:'status'},'Loading verified school property details…'):null,
++                            d&&tab==='overview'?h('div',null,
++                                sectionTitle('Identity & condition','The latest saved values for this individual physical unit.'),
++                                fields([['Property number',d.property_number],['Item',d.item_name],['Accounting category',record.category],['Division classification',record.classification_name],['Serial number',record.serial_number],['Current location',record.location],['Condition',record.condition_note],['Old property number',unit.legacy_property_number],['Status',record.status],['Current custodian',record.custodian],['Historical custodian (reference)',unit.reported_custodian]]),
++                                h('div',{className:'asset-modal-help'},'Property number is permanent. Open the Custody & audit section to verify saved corrections and prior values.')):null,
++                            d&&tab==='acquisition'?h('div',null,
++                                sectionTitle('Acquisition details','Historical references are evidence only; they do not create official procurement or financial transactions.'),
++                                fields([['Registration origin',d.source==='HISTORICAL_OPENING'?'Historical opening':'Verified accepted IAR'],['Date acquired',record.acquired_on],['Acquisition cost',record.acquisition_cost],['Brand',shared.brand],['Model',shared.model],['Acquisition type',shared.acquisition_type],['Useful life (years)',shared.useful_life_years],['Evidence note',shared.evidence_note],['Historical PO (text only)',shared.historical_po],['Historical IAR (text only)',shared.historical_iar],['Historical DV (text only)',shared.historical_dv],['Verified IAR number',d.iar_reference?.display_number]])):null,
++                            d&&tab==='batch'?h('div',null,
++                                sectionTitle('Registration batch','Select another property to view its own serial, location and history without closing this window.'),
++                                fields([['Original batch reference',d.batch_key],['Physical units in batch',(d.batch_details||[]).length]]),
++                                h('div',{className:'asset-modal-batch-list'},
++                                    ...(d.batch_details||[]).map(x=>h('div',{className:'asset-modal-batch-item'+(Number(x.id)===Number(d.asset_id)?' is-current':''),key:x.id},
++                                        h('div',null,h('strong',null,x.property_tag),h('span',null,val(x.serial_number)+' · '+val(x.location)+' · '+val(x.status))),
++                                        h('button',{type:'button',className:'outline',disabled:Number(x.id)===Number(d.asset_id),onClick:()=>this.openPropertyDetails(x.id,true)},
++                                            Number(x.id)===Number(d.asset_id)?'Current':'View unit'))),
++                                    !(d.batch_details||[]).length?empty('No linked batch','This asset may have been registered individually.'):null)):null,
++                            d&&tab==='history'?h('div',null,
++                                sectionTitle('Custody & audit','Read-only evidence of issuance, movement and changes to this property.'),
++                                h('h4',null,'ICS / PAR accountability'),
++                                !(d.accountability||[]).length?empty('Not yet issued','No finalized or recorded accountability document for this unit.'):
++                                    h('div',{className:'asset-modal-event-list'},...(d.accountability||[]).map((x,i)=>
++                                        h('div',{className:'asset-modal-event',key:i},h('strong',null,x.doc_type+' '+x.display_number),h('p',null,x.status+' · '+val(x.custodian)+' · '+val(x.created_at))))),
++                                h('h4',null,'Property movements'),
++                                !(d.movements||[]).length?empty('No movements recorded','No transfers, returns, repairs or other custody movements yet.'):
++                                    h('div',{className:'asset-modal-event-list'},...(d.movements||[]).map((x,i)=>
++                                        h('div',{className:'asset-modal-event',key:i},h('strong',null,x.event_type+' · '+val(x.created_at)),
++                                            h('p',null,val(x.from_custodian)+' → '+val(x.to_custodian)),x.reason?h('p',null,x.reason):null))),
++                                h('h4',null,'Audited history · newest first'),
++                                !(d.history||[]).length?empty('No audit entries','Corrections and initial registration events will appear here.'):
++                                    h('div',{className:'asset-modal-event-list'},...(d.history||[]).map((x,i)=>h('details',{className:'asset-modal-audit-event',key:i},
++                                        h('summary',null,h('strong',null,x.event_type==='PROPERTY_DETAILS_CORRECTED'?'Property details corrected':x.event_type==='HISTORICAL_PROPERTY_REGISTERED'?'Historical property registered':x.event_type),
++                                            h('span',null,val(x.created_at)+' · '+val(x.actor))),
++                                        h('div',{className:'asset-modal-event-body'},
++                                            x.details?.reason?h('p',null,'Reason: '+x.details.reason):null,
++                                            auditChanges(x)))))):null),
++                        h('footer',{className:'asset-modal-footer'},
++                            h('span',null,'Details are read-only · Changes require an audited correction.'),
++                            h('button',{type:'button',className:'outline',onClick:this.closePropertyDetails},'Close window'))));
++                return ReactDOM.createPortal(dialog,document.body);
+             };
+             const renderAssetRegister=()=>{
+                 const r=this.state.propertyRegister||{rows:[],facets:{}};
+@@ -6920,7 +6992,6 @@
+                     this.state.propertyRegisterError?h('p',{className:'error',role:'alert'},this.state.propertyRegisterError):null,
+                     this.state.propertyRegisterLoading?h('p',{className:'hint',role:'status'},'Loading property register…'):null,
+                     h('p',{className:'hint'},'Showing '+(r.rows||[]).length+' school property record(s)'+(r.has_more?' · more results available':'')+'. Select Details to verify the saved unit, batch, custody and audit history.'),
+-                    renderPropertyDetails(),
+                     h('div',{className:'table-scroll'},h('table',{className:'master-table'},
+                         h('thead',null,h('tr',null,...['Property number','Item','Classification','Custodian','Location','Status','Details'].map(x=>h('th',{key:x},x)))),
+                         h('tbody',null,...(r.rows||[]).map(x=>h('tr',{key:x.id},
+@@ -6928,7 +6999,8 @@
+                             h('td',null,x.custodian||'Unassigned'),h('td',null,x.location||'—'),h('td',null,x.status),
+                             h('td',null,h('button',{type:'button',className:'outline',onClick:()=>this.openPropertyDetails(x.id)},'Details')))),
+                             !(r.rows||[]).length?h('tr',null,h('td',{colSpan:7},this.state.propertyRegisterLoading?'Loading…':'No matching property records.')):null))),
+-                    r.has_more?h('button',{type:'button',className:'outline',disabled:this.state.propertyRegisterLoading,onClick:()=>this.loadPropertyRegister(false)},'Load next 25'):null);
++                    r.has_more?h('button',{type:'button',className:'outline',disabled:this.state.propertyRegisterLoading,onClick:()=>this.loadPropertyRegister(false)},'Load next 25'):null,
++                    renderPropertyDetails());
+             };
+             const panel={
+                 special_assets:()=>this.divisionContextPanel('ASSET'),
