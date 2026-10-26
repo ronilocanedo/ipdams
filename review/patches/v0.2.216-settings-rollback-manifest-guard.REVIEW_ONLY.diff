@@ -1,0 +1,16 @@
+--- a/app/SettingsService.php
++++ b/app/SettingsService.php
+@@ -457,10 +457,10 @@
+                     $issues[]='Recovery backup missing or modified: '.$path;
+             }
+         }
+-        if(in_array('app/SettingsService.php',array_keys($files),true)){
+-            $db=database();
+-            if(settingsMigrationDbLedgerExists($db) && (int)$db->query('SELECT COUNT(*) FROM ipdams_schema_migrations')->fetchColumn()>0)
+-                $issues[]='Migration-enabled installer cannot be rolled back after database migrations have been applied. Keep the installer; an independent database restoration would be required.';
++        // A release that executed migrations cannot be rolled back by restoring files alone.
++        // Check this release's manifest, not whether the updater itself was modified.
++        if(!empty($meta['manifest']['migrations'])){
++            $issues[]='This release contains database migrations. File-only rollback cannot reverse the schema; use technical review and a verified pre-migration database and site backup.';
+         }
+         if(!is_writable(settingsPrivate()))$issues[]='Protected update storage is not writable.';
