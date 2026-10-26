@@ -28,7 +28,7 @@ The v0.2.218 Chromium test wrongly pre-populated these state fields in its harne
 
 ## Ownership and distribution
 
-The verified ZIP has been generated as a **conversation download**, and full UAT notes are available in the conversation. The Google Drive Testing Patches upload is **not yet confirmed**; do not claim mirroring or present an unverified Drive URL. Do not merge this review branch until owner confirms staged ZIP installation/UAT. GitHub does not contain a full verified source baseline for the deployed app; treat this as patch evidence, not automated deployment.
+The exact ZIP is now stored in [private Drive Testing Patches](https://drive.google.com/file/d/1NIKRd6lbLUun14Hq8v6heB4LKpJucalu/view) (verified metadata: 184985 bytes, unshared) and mirrored in [private GitHub source-review artifacts](artifacts/IPDAMS_v0.2.219_PROPERTY_REGISTER_INITIAL_STATE_WHITE_SCREEN_FIX_FROM_v0.2.218_STAGING_REVIEW.zip), blob SHA `a589b853ffb5452410abc15ab45ef0f6864a75eb`. SHA256 of the original ZIP is `ee9a4e73546c7d673547e74f755d30d356225e0709ed5fbc4cfb47bc05bfb233`. [Drive acceptance guide](https://drive.google.com/file/d/1yuWUgoRpRc7LldyVaHs2HlkNJI5yxNY7/view). No hosting installation or GitHub Actions run. Keep this PR draft pending staging UAT. GitHub does not contain a full verified source baseline for the deployed app; treat this as patch evidence, not automated deployment.
 
 ## Owner UAT
 
