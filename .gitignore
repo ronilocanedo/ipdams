@@ -1,0 +1,38 @@
+# Secrets and local runtime configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+*credentials*.json
+*secret*.json
+id_rsa*
+config/local.php
+config/production.php
+
+# Backups, database exports, and sensitive uploads
+*.sql.gz
+*.sql.zip
+*.dump
+*.bak
+*.backup
+*BACKUP*.zip
+*Backup*.zip
+private/backups/
+private/uploads/
+private/storage/
+public/uploads/
+
+# Dependencies and generated/runtime files
+vendor/
+node_modules/
+.cache/
+coverage/
+.DS_Store
+Thumbs.db
+*.log
+.tmp/
+tmp/
