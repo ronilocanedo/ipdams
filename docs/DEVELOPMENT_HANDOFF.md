@@ -1,17 +1,25 @@
 # IPDAMS development checkpoint — 26 October 2026
 
-## Last owner-confirmed installed version
+**Current owner-confirmed installed release: v0.2.215.** The owner reported that the selected **Custom Reset** succeeded, preserving Division, Schools, Users, and their access scopes. This is a hosted application confirmation, **not** an independent post-reset table reconciliation. **Do not perform another reset.**
 
-**v0.2.213**: automatic property registration numbers `SCHOOLID-YYMM-00001`, with independent lifetime counters per school; counter does not restart on month/year rollover. Existing property numbers remain unchanged.
+## Immediate next steps
 
-## Current development candidate: v0.2.214 (NOT INSTALLABLE)
+1. Verify through **read-only** hosted UI checks that preserved UACS/funds/catalog/units/suppliers/tax/BAC/permissions data remain, test PR/RFQ/PO/IAR/DV/stock/RIS/checkbook records targeted by the reset are clear, and document counters/audit history remain accessible.
+2. Review the **exact deployed** `app/SettingsService.php` for updater migration parsing, allowlist, partial-apply behavior and recovery. No copy of this verified current file is available in the connected GitHub/Drive references; request that **one source file only** from the owner (no credentials, .env, database or private backup).
+3. Preserve the already prepared **v0.2.216 historical property batch registration** as **STAGING REVIEW ONLY**. Six application files + two additive `assets` migrations; predecessor `v0.2.215`; `app/ResetService.php` intentionally unchanged.
+4. Complete authenticated school-scoped IAR/ICS/PAR, editing, mutation/side-effect and backup/restore checks before considering live install. Owner prefers a **single site**; do not create a second hosted site or bypass risk controls.
 
-Historical property batch registration: shared brand/model/acquisition/optional historical PO, IAR and DV references, individual unit serial/location/condition/legacy tag, school-specific generated property numbers, and audited corrections. Historical document references are evidence only; they do not produce official PO/IAR/DV or accounting/stock entries.
+## Current release candidate
 
-Two proposed additive columns on existing asset rows: `registration_batch_key` and `property_profile`. Existing IAR protections and issued ICS/PAR locks must be preserved.
+- ZIP: [Drive v0.2.216 staging candidate](https://drive.google.com/file/d/1A3RIuJm1uGjFkno-ve85PMTfZQcS9I6g/view)
+- SHA256 (previously verified): `aecb5727cbc271e6c18861ca475756f15f2bfe0e85bce3f78f70d491e979b265`
+- [Acceptance guide](https://drive.google.com/file/d/1XWcYV5BcjOOdebvp3dw0lX8L5hA4K4fL/view)
+- [GitHub draft PR #3](https://github.com/ronilocanedo/ipdams/pull/3) (DO NOT MERGE)
+- [Successful manual MariaDB synthetic test run #2](https://github.com/ronilocanedo/ipdams/actions/runs/40265443265) — does not prove full hosted API or updater acceptance.
+- Old property ZIPs called `v0.2.214` or `v0.2.215` are obsolete and **must not be installed**.
 
-Source, browser, migration-format and synthetic transaction checks have passed. Real MariaDB multi-session concurrency, rollback, authentication and migration-recovery UAT have **not** yet been executed. Do not distribute the v0.2.214 source candidate as an installable update.
+## GitHub ↔ Drive coordination
 
-## Source of truth
+GitHub is private and holds review/issue/PR history, but **not** a complete deployable v0.2.215 application source tree. The full Drive working-source snapshot is historical v0.2.141. [GitHub sync register](SYNC_REGISTER.md) and [Drive sync register](https://docs.google.com/document/d/13NWruT1RTeFoxcL14l9-5UY9e2ENuX2RHEveAUGHOF8/edit) are checkpoint references, **not automatic mirroring**. Owner's hosted-site confirmation establishes installed version.
 
-This new GitHub repository is **not yet a complete mirror of the installed IPDAMS application**. Do not deploy from `main` or label any draft branch production-ready until the exact vetted code-only snapshot and updater chain have been restored, reviewed, tested and tagged.
+No migration, GitHub Actions run, live posting, reset, deployment or file-source baseline import was performed as part of this documentation checkpoint. [Full portable handoff](HANDOFF_2026-10-26_v0.2.215_to_v0.2.216.md).
