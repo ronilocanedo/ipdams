@@ -98,3 +98,22 @@ Owner screenshot from the single running IPDAMS site shows installed **v0.2.215*
 **Automatic pre-installation checks shown green:** file hashes, required version, runtime, write access and recovery storage. The `Changed files and checksums` panel is still collapsed in the submitted screenshot; inspect the exact changed-file list and predecessor hashes before applying. **STAGED ≠ APPLIED:** no migration, protected migration database backup, hosted restore rehearsal or authenticated property/IAR/ICS/PAR UAT is established by this screenshot.
 
 Next: expand `Changed files and checksums`; independently verify recoverable owner-held website+database backups and a controlled restore plan, then approve owner-led installation only under release-safety gates. The current GitHub PR remains DRAFT; no GitHub Actions run or automation was triggered.
+
+
+## 26 October 2026 — Hosted changed-file table independently matched to REV2 ZIP
+
+Owner's expanded System Updates screenshot shows 7/7 intended application paths and their first-12 SHA256 prefixes; each prefix was independently compared against the exact local REV2 ZIP and **matched**:
+
+| Application file | SHA256 first 12 |
+| --- | --- |
+| `app/Domain.php` | `3c170bddaeee` |
+| `app/PropertyBatchMetadata.php` | `8782f5831b10` |
+| `public/api/index.php` | `94eaed831b05` |
+| `public/app.html` | `b06a76429f94` |
+| `public/assets/app.js` | `a090fb109eb3` |
+| `public/assets/property-batch-registration.css` | `05ddaa04a9de` |
+| `app/SettingsService.php` | `03ba24fafa4b` |
+
+The packaged `SettingsService.php` was also diffed against the owner's uploaded current source SHA256 `1492f45b4c5042a88ac57a22010bf685de586cedaeece1e2e22bec46b7a3fa84`: only the reviewed migration rollback guard changes. REV2 package full SHA256 `16b531b51a9771cb3485eac413921215d414443c3c9f4a78958b7cc3fbf5a025`, as previously verified by Drive readback. These checks verify package provenance; staged state does **not** mean installed.
+
+**Remaining safety decision:** Existing owner-held independent website + database backups were reported already made; restore capability has not been independently established in this chat. MariaDB DDL auto-commits and the updater's rollback guard intentionally prevents file-only rollback for a migration release. With single-site preference, require owner verification of a recoverable matching website/database backup pair and a quiet maintenance window before authorizing Apply. After owner-approved install, perform authenticated synthetic property/IAR/ICS/PAR and tenant isolation UAT; this full hosted UAT cannot be claimed beforehand. Do not run more resets/Actions or add a second hosted site.
