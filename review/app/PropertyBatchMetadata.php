@@ -13,7 +13,13 @@ final class PropertyBatchMetadata {
     }
     public static function shared(array $data,string $origin): array {
         demand(in_array($origin,['HISTORICAL_OPENING','VERIFIED_IAR'],true),'Invalid property origin',422);
-        demand(!array_diff(array_keys($data),['brand','model','acquisition_type','useful_life_years','historical_po','historical_iar','historical_dv','evidence_note']),
+        // Edit previews include the immutable origin saved at registration.
+        // Accept it only when it matches the verified source derived server-side
+        // from the actual asset's IAR linkage; never trust client changes.
+        if(array_key_exists('origin',$data))
+            demand(is_string($data['origin']) && $data['origin']===$origin,
+                'Property registration origin cannot be changed',409);
+        demand(!array_diff(array_keys($data),['origin','brand','model','acquisition_type','useful_life_years','historical_po','historical_iar','historical_dv','evidence_note']),
             'Unknown shared property attribute',422);
         $type=self::text($data['acquisition_type']??($origin==='VERIFIED_IAR'?'PURCHASE':'UNKNOWN'),'Acquisition type',40);
         demand(in_array($type,['PURCHASE','DONATION','TRANSFER','OTHER','UNKNOWN'],true),'Unsupported acquisition type',422);
