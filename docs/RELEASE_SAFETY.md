@@ -8,3 +8,7 @@
 6. Scope API reads/writes, prints, exports and attachments by current role, active school assignment and authorized Special Functions on the server, including after revocation.
 7. Use disposable synthetic school databases for CI; never point test code to the hosted IPDAMS database.
 8. Never deploy automatically from GitHub. Real release acceptance requires owner-installed staging verification and explicit production authorization.
+
+## Delivery principle — fastest verifiable path (owner directive 2026-10-26)
+
+For every IPDAMS change, choose the shortest implementation-and-test path that preserves security, tenant isolation, audit history, financial integrity, release reversibility and quality. Reuse validated source and passed tests; avoid redundant packages, repeated paid CI, outdated source reconstructions and documentation-only cycles. Do not bypass staging, backups, authentication or actual database acceptance to increase speed. Record proof and blockers once in the GitHub–Drive sync registers.
