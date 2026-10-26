@@ -89,3 +89,12 @@ No automated source/ZIP replication, Actions workflow or recurring monitor has b
 - The corrected v0.2.216 REV2 review ZIP is now stored in the existing **private** Drive Testing Patches folder: https://drive.google.com/file/d/1V6HbJCMHe1yRIu3sIwnYWfkRVdW4l66h/view . Verified provider readback: 310861 bytes; SHA256 of retrieved ZIP `16b531b51a9771cb3485eac413921215d414443c3c9f4a78958b7cc3fbf5a025`, matching locally built revision.
 - This verified REV2 supersedes the unpatched property ZIP on Drive. It remains **STAGING REVIEW ONLY**: required v0.2.215, 7 app files (the earlier six unchanged plus rollback safety SettingsService), 2 unchanged additive migrations. Do not deploy from GitHub or install it on the hosted site until owner-approved change window and verified recovery controls; do not claim full authenticated property UAT yet.
 - No new GitHub Actions usage, no hosted modification, no reset, no migration executed.
+
+
+## 26 October 2026 — Hosted v0.2.216 REV2 stage/preflight PASS (not applied)
+
+Owner screenshot from the single running IPDAMS site shows installed **v0.2.215** and the exact corrected v0.2.216 REV2 review package accepted in System Updates as **STAGED** at 2026-10-26 15:09 Asia/Manila. Installer card specifies v0.2.215 predecessor, 7 application files, two migrations `20261026_property_batch_key` and `20261026_property_profile`; on-screen SHA256 prefix `16b53151a97...` matches previously full SHA-verified Drive REV2 package `16b531b51a9771cb3485eac413921215d414443c3c9f4a78958b7cc3fbf5a025`.
+
+**Automatic pre-installation checks shown green:** file hashes, required version, runtime, write access and recovery storage. The `Changed files and checksums` panel is still collapsed in the submitted screenshot; inspect the exact changed-file list and predecessor hashes before applying. **STAGED ≠ APPLIED:** no migration, protected migration database backup, hosted restore rehearsal or authenticated property/IAR/ICS/PAR UAT is established by this screenshot.
+
+Next: expand `Changed files and checksums`; independently verify recoverable owner-held website+database backups and a controlled restore plan, then approve owner-led installation only under release-safety gates. The current GitHub PR remains DRAFT; no GitHub Actions run or automation was triggered.
