@@ -81,3 +81,11 @@ No automated source/ZIP replication, Actions workflow or recurring monitor has b
 - A corrected v0.2.216 review ZIP was created locally from the verified original Drive ZIP. SHA256 `16b531b51a9771cb3485eac413921215d414443c3c9f4a78958b7cc3fbf5a025`, strictly v0.2.215 to v0.2.216, with 7 application files and 2 additive migrations. The existing six feature files and both migrations are unchanged; one rollback-safety PHP file was added.
 - The revised archive is a **local review artifact only; not yet on Drive or approved for installation**. See [GitHub review evidence](https://github.com/ronilocanedo/ipdams/blob/feature/v0.2.214-property-batch-review/review/V0216_POST_RESET_REV2_REVIEW_2026-10-26.md).
 - Remaining: verify current hosted property columns and migration IDs read-only, recovery plan, and authenticated property/IAR/ICS/PAR testing. No new GitHub Actions run.
+
+
+## 26 October 2026 — Property migration baseline and Drive REV2 verified
+
+- Owner's authenticated read-only database check: `assets.registration_batch_key` = NOT PRESENT; `assets.property_profile` = NOT PRESENT; count of both proposed IDs in `ipdams_schema_migrations` = 0. **3/3 baseline checks passed.** This establishes readiness of the *pre-migration schema only*; it does not prove an applied update or permissions.
+- The corrected v0.2.216 REV2 review ZIP is now stored in the existing **private** Drive Testing Patches folder: https://drive.google.com/file/d/1V6HbJCMHe1yRIu3sIwnYWfkRVdW4l66h/view . Verified provider readback: 310861 bytes; SHA256 of retrieved ZIP `16b531b51a9771cb3485eac413921215d414443c3c9f4a78958b7cc3fbf5a025`, matching locally built revision.
+- This verified REV2 supersedes the unpatched property ZIP on Drive. It remains **STAGING REVIEW ONLY**: required v0.2.215, 7 app files (the earlier six unchanged plus rollback safety SettingsService), 2 unchanged additive migrations. Do not deploy from GitHub or install it on the hosted site until owner-approved change window and verified recovery controls; do not claim full authenticated property UAT yet.
+- No new GitHub Actions usage, no hosted modification, no reset, no migration executed.
