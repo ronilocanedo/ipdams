@@ -1,0 +1,69 @@
+name: IPDAMS 0.2.214 manual MariaDB acceptance
+
+# Manual only; no push, PR, scheduled or deploy events.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ipdams214-mariadb-acceptance
+  cancel-in-progress: true
+
+jobs:
+  disposable-mariadb:
+    name: Synthetic-only MariaDB 10.11 property gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: ipdams214_uat_ci987
+          MARIADB_USER: ipdams214_test
+          MARIADB_PASSWORD: synthetic_ci_only_214
+          MARIADB_ROOT_PASSWORD: synthetic_ci_root_only_214
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      IPDAMS214_DSN: 'mysql:host=127.0.0.1;port=3306;dbname=ipdams214_uat_ci987;charset=utf8mb4'
+      IPDAMS214_DB_USER: ipdams214_test
+      IPDAMS214_DB_PASSWORD: synthetic_ci_only_214
+      IPDAMS214_EXPECT_DB: ipdams214_uat_ci987
+      IPDAMS214_ALLOW_SYNTHETIC_SCHEMA: YES_CREATE_NEW_EMPTY_DB
+    steps:
+      - name: Checkout reviewed source only
+        uses: actions/checkout@v4
+        with:
+          ref: feature/v0.2.214-property-batch-review
+          persist-credentials: false
+      - name: Verify the reviewed test archive
+        run: |
+          set -euo pipefail
+          echo 'bd0b3b71a52c218fe6593888ca13eee9d5d4c580f1e0f7177ab206cd1d5528bc  review/artifacts/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL.zip' | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/ipdams214"
+          unzip -q review/artifacts/IPDAMS_v0.2.214_DISPOSABLE_MARIADB_CI_GATE_DO_NOT_INSTALL.zip -d "$RUNNER_TEMP/ipdams214"
+      - name: Install PHP 8.2 MySQL test runtime
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, pcntl, mbstring
+          coverage: none
+      - name: Run isolated schema and real transaction tests
+        run: |
+          set -euo pipefail
+          php -m | grep -qi '^pdo_mysql$'
+          php -m | grep -qi '^pcntl$'
+          for f in "$RUNNER_TEMP"/ipdams214/qa/ipdams214/app/*.php "$RUNNER_TEMP"/ipdams214/qa/ipdams214/tests/*.php; do php -l "$f"; done
+          php "$RUNNER_TEMP/ipdams214/qa/ipdams214/tests/staging_real_mariadb.php"
+      - name: Explain the limited scope of a PASS
+        if: success()
+        run: |
+          echo 'PASS: isolated MariaDB reduced-schema candidate-method test only.'
+          echo 'NOT production approval: full authenticated HTTP, current updater, IAR, signed ICS/PAR, backup-restore testing still required.'
