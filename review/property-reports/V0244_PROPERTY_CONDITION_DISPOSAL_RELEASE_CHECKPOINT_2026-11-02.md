@@ -33,7 +33,7 @@ Patched:
 - PHP syntax on new endpoint/service and patched Domain/PropertyTransferWorkflow: PASS.
 - Node syntax on patched app.js: PASS.
 - ZIP CRC/manifest hashes, version gates and zero migrations: PASS.
-- Mock-PDO transactional lifecycle integration: **31 PASS assertions** (low/high role boundaries, two separate high-value approvals, unchanged asset before disposal, recorded physical movement, duplicate/foreign-school denial, absent return reference, late audit-failure rollback and historical event retention). This is synthetic PDO, **not live MySQL**.
+- Mock-PDO transactional lifecycle integration: **32 PASS assertions** (low/high role boundaries, two separate high-value approvals, unchanged asset before disposal, recorded physical movement, duplicate/foreign-school denial, absent return reference, late audit-failure rollback and historical event retention). This is synthetic PDO, **not live MySQL**.
 - Real MariaDB and owner-hosted authenticated browser tests: **NOT yet performed**.
 
 ## Recommended focused owner validation
