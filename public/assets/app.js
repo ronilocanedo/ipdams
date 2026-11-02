@@ -620,7 +620,7 @@ class App extends React.Component {
                     ['STOCK','Stock on Hand'],['STOCK_TOTALS','Division Supply Totals'],['STOCK_EVENT','Stock Movements'],
                     ['STOCK_EXCEPTION','Stock Exceptions'],['RIS','RIS']]},
                 {id:'property',title:'Property & Accountability',description:'Accountable assets, movements, receipts and custody slips',items:[
-                    ['ASSET','Current Asset Register'],['ASSET_EVENT','Asset Movements'],['ICS_PAR','Current ICS / PAR'],['ICS_PAR_HISTORY','ICS / PAR History'],['RECEIPTS','Property Receipts']]},
+                    ['ASSET','Current Asset Register'],['ASSET_EVENT','Asset Movements'],['ICS_PAR','Current ICS / PAR'],['ICS_PAR_HISTORY','ICS / PAR History'],['RECEIPTS','IAR Property Receipts']]},
                 {id:'textbooks',title:'Textbooks',description:'Current textbook batches, title totals and movements',items:[
                     ['TEXTBOOK','Textbook Stocks'],['TEXTBOOK_TOTALS','Division Textbook Totals'],['TEXTBOOK_EVENT','Textbook Movements']]}
             ];
@@ -709,8 +709,17 @@ class App extends React.Component {
                 } else {
                     const cols=data.columns||[];
                     const rows=data.rows||[];
+                    // Asset names and property tags belong together. Preserve the backend
+                    // fields and original tag; combine them visually to reduce scroll.
+                    const hasItemTag=['ASSET','ASSET_EVENT','ICS_PAR','ICS_PAR_HISTORY'].includes(view);
+                    const displayedCols=hasItemTag?cols.filter(c=>c!=='item'):cols;
+                    const cell=(row,c)=>hasItemTag&&c==='property_tag'?
+                        h('span',{style:{display:'flex',flexDirection:'column',gap:'3px',minWidth:'160px'}},
+                            h('strong',{style:{fontSize:'13px',lineHeight:'1.25',fontWeight:700,overflowWrap:'anywhere'}},fmt(row.item)),
+                            h('small',{style:{fontSize:'12px',lineHeight:'1.35',color:'#51687b',overflowWrap:'anywhere'}},'Tag: '+fmt(row.property_tag))):
+                        fmt(row[c]);
                     const label=c=>({on_hand:'On hand',iar_number:'IAR number',accepted_qty:'Accepted qty',
-                        registered_units:'Registered units',property_tag:'Property tag',school:'Holding office',origin:'Registration origin',
+                        registered_units:'Registered units',property_tag:'Item / property tag',school:'Holding office',origin:'Registration origin',
                         condition:'Condition',accountability:'Accountability',school_count:'Offices',
                         lot_count:'Lots',batch_count:'Batches',source:'Source',date:'Date'}[c]||c.replaceAll('_',' '));
                     const numeric=c=>['on_hand','change','cost','accepted_qty','registered_units','school_count','lot_count','batch_count'].includes(c);
@@ -720,9 +729,9 @@ class App extends React.Component {
                         rows.length?h('div',{className:'divcon-table-scroll',tabIndex:0,role:'region',
                             'aria-label':currentTitle+' records (horizontal scrolling if needed)'},
                             h('table',{className:'divcon-table'},
-                                h('thead',null,h('tr',null,...cols.map(c=>h('th',{key:c,scope:'col',className:numeric(c)?'is-numeric':''},label(c))))),
+                                h('thead',null,h('tr',null,...displayedCols.map(c=>h('th',{key:c,scope:'col',className:numeric(c)?'is-numeric':''},label(c))))),
                                 h('tbody',null,...rows.map((row,index)=>h('tr',{key:String(row.id)+':'+index},
-                                    ...cols.map(c=>h('td',{key:c,className:numeric(c)?'is-numeric':''},fmt(row[c])))))))):h('div',{className:'divcon-empty'},
+                                    ...displayedCols.map(c=>h('td',{key:c,className:numeric(c)?'is-numeric':''},cell(row,c)))))))):h('div',{className:'divcon-empty'},
                             h('strong',null,'No records to display'),h('p',null,'There are no records for the selected office, category and applicable month.')),
                         data.has_more?h('div',{className:'divcon-load-more'},h('button',{type:'button',className:'outline',
                             disabled:this.state.consolBusy,onClick:()=>this.loadDivisionConsolidation(true)},
