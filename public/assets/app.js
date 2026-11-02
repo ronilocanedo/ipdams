@@ -7248,17 +7248,17 @@ class App extends React.Component {
                                 h('div',{className:'form-grid'},
                                     ...[['brand','Brand',120],['model','Model',120],['evidence_note','Acquisition evidence / supporting remarks',500]].map(([key,label,maxLength])=>
                                         h('label',{className:'field',key},h('span',null,label),h('input',{maxLength,value:this.state.propertyDetailEditShared[key]??'',disabled:this.state.propertyDetailBusy,
-                                            onChange:e=>this.setState(p=>({propertyDetailEditShared:{...p.propertyDetailEditShared,[key]:e.target.value}}))}))),
+                                            onChange:e=>{const value=e.target.value;this.setState(p=>({propertyDetailEditShared:{...p.propertyDetailEditShared,[key]:value}}));}}))),
                                     h('label',{className:'field'},h('span',null,'Acquisition type'+(d.issued?' · Locked':'')),h('select',{
                                         value:this.state.propertyDetailEditShared.acquisition_type||'UNKNOWN',disabled:d.issued||this.state.propertyDetailBusy,
-                                        onChange:e=>this.setState(p=>({propertyDetailEditShared:{...p.propertyDetailEditShared,acquisition_type:e.target.value}}))},
+                                        onChange:e=>{const value=e.target.value;this.setState(p=>({propertyDetailEditShared:{...p.propertyDetailEditShared,acquisition_type:value}}));}},
                                         ...['PURCHASE','DONATION','TRANSFER','OTHER','UNKNOWN'].map(x=>h('option',{value:x,key:x},x)))),
                                     h('label',{className:'field'},h('span',null,'Estimated useful life (years)'+(d.issued?' · Locked':'')),h('input',{type:'number',min:1,max:99,
                                         value:this.state.propertyDetailEditShared.useful_life_years??'',disabled:d.issued||this.state.propertyDetailBusy,
-                                        onChange:e=>this.setState(p=>({propertyDetailEditShared:{...p.propertyDetailEditShared,useful_life_years:e.target.value}}))})),
+                                        onChange:e=>{const value=e.target.value;this.setState(p=>({propertyDetailEditShared:{...p.propertyDetailEditShared,useful_life_years:value}}));}})),
                                     ...(!d.issued&&d.source==='HISTORICAL_OPENING'?[['historical_po','Historical PO reference'],['historical_iar','Historical IAR reference'],['historical_dv','Historical DV reference']].map(([key,label])=>
                                         h('label',{className:'field',key},h('span',null,label+' · Evidence only'),h('input',{maxLength:100,value:this.state.propertyDetailEditShared[key]??'',disabled:this.state.propertyDetailBusy,
-                                            onChange:e=>this.setState(p=>({propertyDetailEditShared:{...p.propertyDetailEditShared,[key]:e.target.value}}))}))):[])),
+                                            onChange:e=>{const value=e.target.value;this.setState(p=>({propertyDetailEditShared:{...p.propertyDetailEditShared,[key]:value}}));}}))):[])),
                                 this.state.propertyDetailEditMode==='UNIT'?h('div',null,
                                     sectionTitle('Individual unit','These fields apply only to this physical unit, never to the whole batch.'),
                                     h('div',{className:'form-grid'},
@@ -7268,14 +7268,14 @@ class App extends React.Component {
                                                 key==='condition_note'?h('select',{
                                                     'aria-label':'Current property condition',value:this.state.propertyDetailEditUnit.condition_note??'',
                                                     disabled:this.state.propertyDetailBusy,
-                                                    onChange:e=>this.setState(p=>({propertyDetailEditUnit:{...p.propertyDetailEditUnit,condition_note:e.target.value}}))},
+                                                    onChange:e=>{const value=e.target.value;this.setState(p=>({propertyDetailEditUnit:{...p.propertyDetailEditUnit,condition_note:value}}));}},
                                                         h('option',{value:''},'Not yet recorded — select a condition'),
                                                         ...conditionChoices.map(value=>h('option',{key:value,value},value)),
                                                         ...(this.state.propertyDetailEditUnit.condition_note && !conditionChoices.includes(this.state.propertyDetailEditUnit.condition_note)
                                                             ?[h('option',{key:'prior-condition',value:this.state.propertyDetailEditUnit.condition_note},
                                                                 'Existing observation (unchanged): '+this.state.propertyDetailEditUnit.condition_note)]:[])):
                                                 h('input',{maxLength,value:this.state.propertyDetailEditUnit[key]??'',disabled:this.state.propertyDetailBusy,
-                                                    onChange:e=>this.setState(p=>({propertyDetailEditUnit:{...p.propertyDetailEditUnit,[key]:e.target.value}}))})))),
+                                                    onChange:e=>{const value=e.target.value;this.setState(p=>({propertyDetailEditUnit:{...p.propertyDetailEditUnit,[key]:value}}));}})))),
                                     h('p',{className:'hint'},'To declare an item Unserviceable, use the separate Condition & Disposal tab. The condition choices here describe inspection or repair needs; they do not grant approval or change formal disposal status.')):
                                     h('p',{className:'hint'},'Batch edit changes shared metadata only. Existing per-unit serial numbers, locations and custodian records remain untouched.'),
                                 h('p',{className:'hint'},'Accountable employees are assigned using ICS/PAR or Property Transfers, never by editing property details. For formal unserviceable declarations, use Condition & Disposal.'),
