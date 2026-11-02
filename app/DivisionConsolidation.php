@@ -104,7 +104,7 @@ final class DivisionConsolidation {
              a.serial_number AS serial,a.acquisition_cost AS cost,a.custodian,a.location,
              a.condition_note AS `condition`,a.status",
             "a.status='ACTIVE'",'a',''],
-          'ASSET_EVENT'=>["FROM asset_movements m JOIN assets a ON a.id=m.asset_id AND a.organization_id=m.organization_id JOIN organizations o ON o.id=a.organization_id",
+          'ASSET_EVENT'=>["FROM asset_movements m JOIN assets a ON a.id=m.asset_id JOIN organizations o ON o.id=a.organization_id",
             "m.id AS id,o.name AS school,a.property_tag,m.event_type AS event,m.from_custodian AS `from`,m.to_custodian AS `to`,m.created_at AS date",'1=1','m','m.created_at','a'],
           'ICS_PAR'=>["FROM accountability_documents d JOIN assets a ON a.id=d.asset_id AND a.organization_id=d.organization_id JOIN organizations o ON o.id=d.organization_id",
             "d.id AS id,o.name AS school,d.doc_type AS type,d.display_number AS document,a.property_tag,d.custodian,d.status,d.created_at AS date", "d.doc_type IN ('ICS','PAR')",'d','d.created_at'],
@@ -211,7 +211,7 @@ final class DivisionConsolidation {
                     // ACTIVE destination row: count ONLY the current owner.
                     $row=one($db,"SELECT COUNT(*) AS n FROM assets WHERE organization_id IN ($marks) AND status='ACTIVE'",$schoolIds);
                 }elseif($t==='ASSET_EVENT'){
-                    $row=one($db,"SELECT COUNT(*) AS n FROM asset_movements m JOIN assets a ON a.id=m.asset_id AND a.organization_id=m.organization_id WHERE a.organization_id IN ($marks)",$schoolIds);
+                    $row=one($db,"SELECT COUNT(*) AS n FROM asset_movements m JOIN assets a ON a.id=m.asset_id WHERE a.organization_id IN ($marks)",$schoolIds);
                 }elseif($t==='RECEIPTS'){
                     $row=one($db,"SELECT COUNT(*) AS n FROM iar_lines il JOIN iars ir ON ir.id=il.iar_id JOIN purchase_orders po ON po.id=ir.po_id AND po.organization_id=ir.organization_id JOIN po_lines pl ON pl.id=il.po_line_id AND pl.po_id=po.id JOIN item_catalog i ON i.id=pl.item_id WHERE ir.organization_id IN ($marks) AND ir.status='FINALIZED' AND po.status='FINALIZED' AND i.category IN ('PPE','SEMI_EXPENDABLE')",$schoolIds);
                 }elseif($t==='ICS_PAR'){
