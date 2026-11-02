@@ -1,0 +1,9 @@
+# IPDAMS v0.2.264 — Transfer condition and transferred-out historical register
+
+Owner reports completed ITR 2026-11-0002, transferred-in asset blocked from ICS by a returned-property-only Serviceable rule; recipient deliberately recorded a different condition, the receiving Property Custodian lacks the generic edit tab, and sending school still sees transferred-out items under active Asset Register.
+
+Release package: `IPDAMS_v0.2.264_TRANSFER_CONDITION_AND_TRANSFERRED_OUT_FROM_v0.2.263.zip`. SHA256: `d4a324046f42548166f19b9c69800db72a126936a11a9bc6be1c2ccffe7a1185`. Code-only **0.2.263 → 0.2.264**, five application files and no migrations.
+
+Changes: distinguish accepted transfers from employee RRSP/PRR returns. For an accepted transfer, ICS/PAR keeps the observed intake condition rather than forcing Serviceable; non-Serviceable condition requires explicit informed-accountability attestation and is preserved in the numbered document snapshot. Formal unserviceability and disposal remain restrictive; assignment is not certification of serviceability or permission to use. A limited auditable `Review / Update` condition action in Received Asset Register requires the exact logged-in receiving Property Custodian and proof of a linked completed transfer. The sender's active Asset Register is filtered to active assets only; a separate read-only `Transferred Out` sub-tab preserves old IAR, ICS/PAR and movement history. The old property details classification query is corrected.
+
+Tests: 13 simulated PHP receiving-condition authorization / provenance / transaction tests, 26 Node interface/eligibility/source assertions, PHP and JS syntax, ZIP integrity and version gate passed. Hosted authenticated browser, real MariaDB, signed form print and concurrency UAT are pending. No live site/database changes and no GitHub Actions were initiated. This checkpoint does not claim that full private site source is synced to GitHub. PR #16 remains draft.
