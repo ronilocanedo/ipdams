@@ -1,20 +1,20 @@
 # Receiving interface integration change set (REVIEW ONLY)
 
-**Target:** \`public/api/property-transfer-intake.php\` (hosting document root \`api/property-transfer-intake.php\`) from the read-only checked installation.
+**Target:** `public/api/property-transfer-intake.php` (hosting document root `api/property-transfer-intake.php`) from the read-only checked installation.
 
 ## 1. Additional view state
 
-After the declaration ending \`$loggedInReceiver=false;\`, append:
+After the declaration ending `$loggedInReceiver=false;`, append:
 
-\`\`\`php
+```php
 $assessment=null;$mayAssess=false;
-\`\`\`
+```
 
 ## 2. POST route
 
-In the existing POST \`if($action==='bind_receiver') ... elseif($action==='accept_transfer')\` chain, insert this clause **before** the final unknown-action rejection:
+In the existing POST `if($action==='bind_receiver') ... elseif($action==='accept_transfer')` chain, insert this clause **before** the final unknown-action rejection:
 
-\`\`\`php
+```php
 }elseif($action==='assess_condition'){
     $result=$acceptance->assessReceivedCondition([
         'organization_id'=>$org,
@@ -29,40 +29,40 @@ In the existing POST \`if($action==='bind_receiver') ... elseif($action==='accep
     $_SESSION['pt_intake_notice']='Physical condition assessment saved for '.
         $result['property_tag'].' as '.$result['condition'].
         '. ICS/PAR remains a separate authorized action.';
-\`\`\`
+```
 
-Preserve the original bound \`_csrf\` validation. For the POST-completion redirect, return to \`view=received\` for \`assess_condition\`; leave all existing actions redirecting to \`view=incoming\`.
+Preserve the original bound `_csrf` validation. For the POST-completion redirect, return to `view=received` for `assess_condition`; leave all existing actions redirecting to `view=incoming`.
 
 ## 3. GET view
 
-Insert before the existing \`elseif($view==='received')\`:
+Insert before the existing `elseif($view==='received')`:
 
-\`\`\`php
+```php
 }elseif(isset($_GET['assess_asset_id'])){
     $view='assess';
     $assessment=$acceptance->receivedConditionPreview($org,(int)$_GET['assess_asset_id']);
-\`\`\`
+```
 
-In the existing \`view=received\` branch, after the register read, append:
+In the existing `view=received` branch, after the register read, append:
 
-\`\`\`php
+```php
 $mayAssess=$acceptance->mayAssessReceivedCondition($org);
-\`\`\`
+```
 
-On each row in Received Asset Register next to its existing \`Property History\` link, display the following link only for current bound officer and ACTIVE row:
+On each row in Received Asset Register next to its existing `Property History` link, display the following link only for current bound officer and ACTIVE row:
 
-\`\`\`php
+```php
 <?php if($mayAssess&&($item['status']??'')==='ACTIVE'):?>
  · <a class="link" href="<?=ptiE($base.'&assess_asset_id='.(int)$item['id'])?>">
 Assess condition</a>
 <?php endif;?>
-\`\`\`
+```
 
 ## 4. Assessment view
 
-Insert a dedicated \`elseif\` HTML view **before** the existing \`elseif($view==='history'&&$history)\`:
+Insert a dedicated `elseif` HTML view **before** the existing `elseif($view==='history'&&$history)`:
 
-\`\`\`php
+```php
 <?php elseif($view==='assess'&&$assessment):?>
 <section>
 <h2>Physical Condition Assessment</h2>
@@ -104,7 +104,7 @@ An ICS/PAR must still be issued separately after a genuine Serviceable assessmen
 <button type="submit">Save audited assessment</button>
 <a class="link" href="<?=ptiE($base.'&view=received')?>">Cancel</a>
 </form></section>
-\`\`\`
+```
 
 ## 5. Do not touch
 Original receiving transfer acceptance and history, source asset, catalog cost, property numbering, original signed ITR/PTR/ICS/PAR snapshots, stock/fund ledgers or financial approvals.
