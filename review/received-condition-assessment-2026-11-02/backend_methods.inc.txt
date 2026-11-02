@@ -1,0 +1,115 @@
+    /** Only the currently appointed and bound receiving login can record an assessment. */
+    public function mayAssessReceivedCondition(int $org):bool {
+        try {$this->receiver($org,true);return true;}
+        catch(DomainError $e){return false;}
+    }
+    /** Check the receiving asset against the immutable source-to-destination receipt. */
+    private function assessableReceivedAsset(int $org,int $assetId,bool $lock):array {
+        self::must($assetId>0,'Select a received asset',422);
+        $sql="SELECT a.id,a.organization_id,a.property_tag,a.status,a.custodian,a.condition_note,a.location,
+                     a.property_profile,i.name AS item_name,i.category
+              FROM assets a JOIN item_catalog i ON i.id=a.item_id
+              WHERE a.id=? AND a.organization_id=?".($lock?' FOR UPDATE':'');
+        $asset=one($this->db,$sql,[$assetId,$org]);
+        self::must($asset!==null,'Received asset does not belong to this office',404);
+        self::must($asset['status']==='ACTIVE','Only active received property can be assessed',409);
+        $meta=PropertyBatchMetadata::decode($asset['property_profile']??null);
+        $origin=$meta['transfer_origin']??null;
+        self::must(is_array($origin) && (int)($origin['transfer_document_id']??0)>0
+            && (int)($origin['source_asset_id']??0)>0
+            && (int)($origin['source_organization_id']??0)>0,
+            'Asset is not a verified transfer receipt',409);
+        $head=$this->transfer((int)$origin['transfer_document_id']);
+        self::must($head['source']===(int)$origin['source_organization_id']
+            && ($head['snapshot']['status']??null)==='RECEIVED'
+            && (int)($head['snapshot']['destination_organization_id']??0)===$org,
+            'Saved transfer does not verify this receiving office',409);
+        $matched=false;
+        foreach(($head['snapshot']['received_items']??[]) as $r){
+            if((int)($r['receiving_asset_id']??0)===$assetId
+                && (int)($r['source_asset_id']??0)===(int)$origin['source_asset_id']){
+                $matched=true;break;
+            }
+        }
+        self::must($matched,'Received asset is not present in transfer evidence',409);
+        self::must(trim((string)($asset['custodian']??''))==='',
+            'Return property from the accountable employee before assessment',409);
+        self::must(PropertyReturnWorkflow::openAccountability($this->db,$org,$assetId)===null,
+            'An open ICS/PAR must be returned first',409);
+        $life=one($this->db,"SELECT snapshot_json FROM document_versions WHERE organization_id=?
+            AND doc_type='ASSET_LIFECYCLE' AND entity_id=? ORDER BY version_no DESC LIMIT 1",[$org,$assetId]);
+        if($life!==null){
+            $state=json_decode((string)$life['snapshot_json'],true,32,JSON_THROW_ON_ERROR);
+            self::must(is_array($state)&&($state['state']??null)==='SERVICEABLE',
+                'Use the formal Property Condition & Disposal workflow for this lifecycle state',409);
+        }
+        $asset['received_on']=(string)($origin['received_on']??'');
+        $asset['transfer_ref']=(string)$head['type'].' '.(string)$head['number'];
+        return $asset;
+    }
+    public function receivedConditionPreview(int $org,int $assetId):array {
+        $this->receiver($org,true);
+        $asset=$this->assessableReceivedAsset($org,$assetId,false);
+        unset($asset['property_profile']);
+        return $asset;
+    }
+    /** Physical inspection attestation: only condition_note and a linked audit event change. */
+    public function assessReceivedCondition(array $p):array {
+        $org=(int)($p['organization_id']??0);
+        $actor=$this->receiver($org,true);
+        $assetId=(int)($p['asset_id']??0);
+        $condition=trim((string)($p['condition']??''));
+        self::must(in_array($condition,
+            ['Serviceable','Needs Maintenance','For Inspection','For Repair','Under Repair'],true),
+            'Choose a recognized physical condition; disposal uses a separate process',422);
+        $reason=trim((string)($p['remarks']??''));
+        $reference=trim((string)($p['inspection_reference']??''));
+        self::must(mbSafeLen($reason)>=12&&mbSafeLen($reason)<=500,
+            'Explain the physical findings and correction (12–500 characters)',422);
+        self::must(mbSafeLen($reference)>=8&&mbSafeLen($reference)<=160,
+            'Provide the inspection or repair evidence reference (8–160 characters)',422);
+        self::must(($p['physically_inspected']??false)===true,'Confirm the physical inspection',422);
+        $on=(string)($p['inspected_on']??'');
+        $date=DateTimeImmutable::createFromFormat('!Y-m-d',$on,new DateTimeZone('Asia/Manila'));
+        self::must($date!==false&&$date->format('Y-m-d')===$on&&$on<=self::today(),
+            'Inspection date is invalid or in the future',422);
+        $expected=$p['expected_condition']??null;
+        self::must(is_string($expected)&&mbSafeLen($expected)<=255,
+            'Reload the property record before reassessment',422);
+        self::must(!$this->db->inTransaction(),'Nested condition assessment unsupported',409);
+        $this->db->beginTransaction();
+        try{
+            $office=one($this->db,'SELECT id,active FROM organizations WHERE id=? FOR UPDATE',[$org]);
+            self::must($office!==null&&(int)$office['active']===1,'Receiving office inactive',403);
+            $fresh=$this->receiver($org,true);
+            self::must($fresh['actor_user_id']===$actor['actor_user_id']
+                && $fresh['appointment_version']===$actor['appointment_version']
+                && $fresh['binding_version']===$actor['binding_version'],
+                'Custodian authorization changed; reload',409);
+            $asset=$this->assessableReceivedAsset($org,$assetId,true);
+            $previous=(string)($asset['condition_note']??'');
+            self::must(hash_equals($previous,$expected),'Condition changed; reload',409);
+            self::must($condition!==$previous,'Record a changed condition',422);
+            self::must($asset['received_on']!==''&&$on>=$asset['received_on'],
+                'Inspection cannot predate receipt at this office',422);
+            $updated=q($this->db,"UPDATE assets SET condition_note=?
+                WHERE id=? AND organization_id=? AND status='ACTIVE'",
+                [$condition,$assetId,$org])->rowCount();
+            self::must($updated===1,'Asset changed before save',409);
+            q($this->db,'INSERT INTO audit_events (organization_id,actor_id,event_type,entity_type,entity_id,details)
+                VALUES (?,?,?,?,?,?)',[$org,(int)$this->user['id'],
+                'RECEIVED_PROPERTY_CONDITION_ASSESSED','ASSET',$assetId,
+                json_encode(['reason'=>$reason,'inspection_reference'=>$reference,
+                    'inspected_on'=>$on,'physically_inspected'=>true,
+                    'transfer_number'=>$asset['transfer_ref'],
+                    'appointment_version_id'=>$actor['appointment_version'],
+                    'binding_version_id'=>$actor['binding_version'],
+                    'before'=>['condition_note'=>$previous],
+                    'after'=>['condition_note'=>$condition]],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);
+            $this->db->commit();
+            return ['asset_id'=>$assetId,'property_tag'=>$asset['property_tag'],'condition'=>$condition];
+        }catch(Throwable $e){
+            if($this->db->inTransaction())$this->db->rollBack();
+            throw $e;
+        }
+    }
