@@ -601,7 +601,7 @@ class App extends React.Component {
                 if(token!==this.consolToken||org!==String(this.state.organization_id)||this.state.tab!=='Division Consolidation')return;
                 this.setState({consolBusy:false,consolReport:more&&previous?{
                     ...result,rows:[...(previous.rows||[]),...(result.rows||[])]}:result,
-                    ...(school===''?{consolSchools:result.schools||[],consolScopeId:org}:{})});
+                    ...(school===''?{consolSchools:result.offices||result.schools||[],consolScopeId:org}:{})});
             }catch(error){
                 if(token===this.consolToken&&org===String(this.state.organization_id))
                     this.setState({consolBusy:false,consolReport:null,consolError:error.message});
@@ -620,7 +620,7 @@ class App extends React.Component {
                     ['STOCK','Stock on Hand'],['STOCK_TOTALS','Division Supply Totals'],['STOCK_EVENT','Stock Movements'],
                     ['STOCK_EXCEPTION','Stock Exceptions'],['RIS','RIS']]},
                 {id:'property',title:'Property & Accountability',description:'Accountable assets, movements, receipts and custody slips',items:[
-                    ['ASSET','Asset Register'],['ASSET_EVENT','Asset Movements'],['ICS_PAR','ICS / PAR'],['RECEIPTS','Property Receipts']]},
+                    ['ASSET','Current Asset Register'],['ASSET_EVENT','Asset Movements'],['ICS_PAR','ICS / PAR'],['RECEIPTS','Property Receipts']]},
                 {id:'textbooks',title:'Textbooks',description:'Current textbook batches, title totals and movements',items:[
                     ['TEXTBOOK','Textbook Stocks'],['TEXTBOOK_TOTALS','Division Textbook Totals'],['TEXTBOOK_EVENT','Textbook Movements']]}
             ];
@@ -640,18 +640,18 @@ class App extends React.Component {
                 'aria-selected':view===code,'aria-controls':'divcon-report-panel',
                 className:'divcon-tab'+(view===code?' is-active':''),onClick:()=>chooseType(code)},label);
             const children=[this.header('Division · Consolidated Stocks and Property',
-                'Live school records for supplies, property accountability and textbooks — in one Division view.')];
+                'Live Division Office and authorized school records — with transferred assets assigned to their current owning office.')];
             children.push(h('section',{key:'filter',className:'surface divcon-filter'},
                 h('div',{className:'divcon-intro'},
                     h('div',null,h('strong',{className:'divcon-intro-title'},'Consolidated records'),
-                        h('p',null,'Review source-school records without changing inventory, custody or posting.')),
+                        h('p',null,'Review current office holdings and original school/Division records without changing inventory, custody or posting.')),
                     h('span',{className:'divcon-status'},'Read-only · Live data')),
                 h('div',{className:'divcon-controls'},
-                    h('label',{className:'divcon-control'},h('span',null,'School'),
+                    h('label',{className:'divcon-control'},h('span',null,'Office'),
                         h('select',{value:this.state.consolSchool,
                             onChange:e=>this.setState({consolSchool:e.target.value,consolReport:null},()=>this.loadDivisionConsolidation())},
-                            h('option',{value:''},'All authorized schools'),
-                            ...options.map(o=>h('option',{key:o.id,value:String(o.id)},o.name)))),
+                            h('option',{value:''},'Division Office + authorized schools'),
+                            ...options.map(o=>h('option',{key:o.id,value:String(o.id)},o.label||(o.kind==='DIVISION'?'Division Office · ':'School · ')+o.name)))),
                     h('label',{className:'divcon-control'},h('span',null,'Month · dated records only'),
                         h('input',{type:'month',value:this.state.consolMonth,disabled:!isDated,
                             title:!isDated?'Only dated document or movement reports use this filter':'Filter dates for this document or movement view',
@@ -672,18 +672,22 @@ class App extends React.Component {
             if(this.state.consolError)children.push(h('section',{key:'error',className:'surface divcon-error',role:'alert'},this.state.consolError));
             if(this.state.consolBusy)children.push(h('p',{key:'busy',className:'divcon-loading',role:'status'},'Loading authorized records…'));
             if(data){
-                const scope=(data.schools||[]).length;
+                const offices=data.offices||data.schools||[];
+                const scope=offices.length;
+                const divisionOffices=offices.filter(o=>o.kind==='DIVISION').length;
+                const schoolOffices=offices.filter(o=>o.kind==='SCHOOL').length;
+                const scopeLabel=schoolOffices+' '+(schoolOffices===1?'school':'schools')+' + '+divisionOffices+' Division Office';
                 const info=[h('div',{key:'report-title',className:'divcon-report-head'},
                     h('div',null,h('span',{className:'divcon-eyebrow'},view==='OVERVIEW'?'Division at a glance':'Consolidated register'),
                         h('h2',null,currentTitle),
                         h('p',{className:'divcon-report-note'},view==='OVERVIEW'?data.count_definition||data.note:data.note)),
                     h('div',{className:'divcon-report-meta'},
-                        h('span',null,scope+' authorized '+(scope===1?'school':'schools')),
+                        h('span',null,scopeLabel),
                         h('span',null,view==='OVERVIEW'?'Source record counts':isDated?'Dated record view':'Current register')))];
                 if(view==='OVERVIEW'){
                     const visible=groups.filter(([code])=>code!=='OVERVIEW'&&data.counts?.[code]!==null&&data.counts?.[code]!==undefined).length;
                     info.push(h('div',{key:'overview-stat',className:'divcon-overview-strip'},
-                        h('div',null,h('strong',null,String(scope)),h('span',null,'authorized '+(scope===1?'school':'schools'))),
+                        h('div',null,h('strong',null,String(scope)),h('span',null,'authorized offices')),
                         h('div',null,h('strong',null,String(visible)),h('span',null,'accessible registers')),
                         h('div',null,h('strong',null,'Source ledgers'),h('span',null,'no duplicate inventory'))));
                     sections.forEach(section=>{
@@ -706,7 +710,8 @@ class App extends React.Component {
                     const cols=data.columns||[];
                     const rows=data.rows||[];
                     const label=c=>({on_hand:'On hand',iar_number:'IAR number',accepted_qty:'Accepted qty',
-                        registered_units:'Registered units',property_tag:'Property tag',school_count:'Schools',
+                        registered_units:'Registered units',property_tag:'Property tag',school:'Holding office',origin:'Registration origin',
+                        condition:'Condition',school_count:'Offices',
                         lot_count:'Lots',batch_count:'Batches',source:'Source',date:'Date'}[c]||c.replaceAll('_',' '));
                     const numeric=c=>['on_hand','change','cost','accepted_qty','registered_units','school_count','lot_count','batch_count'].includes(c);
                     info.push(h('div',{key:'table-area',className:'divcon-table-region'},
@@ -718,13 +723,13 @@ class App extends React.Component {
                                 h('thead',null,h('tr',null,...cols.map(c=>h('th',{key:c,scope:'col',className:numeric(c)?'is-numeric':''},label(c))))),
                                 h('tbody',null,...rows.map((row,index)=>h('tr',{key:String(row.id)+':'+index},
                                     ...cols.map(c=>h('td',{key:c,className:numeric(c)?'is-numeric':''},fmt(row[c])))))))):h('div',{className:'divcon-empty'},
-                            h('strong',null,'No records to display'),h('p',null,'There are no records for this school, category and applicable month.')),
+                            h('strong',null,'No records to display'),h('p',null,'There are no records for the selected office, category and applicable month.')),
                         data.has_more?h('div',{className:'divcon-load-more'},h('button',{type:'button',className:'outline',
                             disabled:this.state.consolBusy,onClick:()=>this.loadDivisionConsolidation(true)},
                             this.state.consolBusy?'Loading more…':'Load 50 more')):null));
                 }
                 info.push(h('p',{key:'disclaimer',className:'divcon-disclaimer'},
-                    'Only authorized school records are included. Restricted categories never contribute to disclosed totals. RSMI is not implemented.'));
+                    'Division Office records and only authorized school records are included. Transferred-out historical source assets do not count as current holdings. Restricted school categories never contribute to disclosed totals. RSMI is not implemented.'));
                 children.push(h('section',{key:'report',id:'divcon-report-panel',role:'tabpanel',className:'surface divcon-report',
                     'aria-label':currentTitle},...info));
             }
