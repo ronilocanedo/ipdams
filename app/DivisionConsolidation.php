@@ -7,8 +7,17 @@ require_once __DIR__.'/bootstrap.php';
  * Never expands school grants or mutates source property or accountability.
  */
 final class DivisionConsolidation {
+    // One current ICS/PAR is the newest finalized custody document for one
+    // ACTIVE office-owned asset, and has no audited return/ITR/PTR closure link.
+    // A prior finalized document remains immutable evidence, never current.
+    private const OPEN_CUSTODY = "d.status='FINALIZED' AND a.status='ACTIVE'
+        AND d.id=(SELECT MAX(z.id) FROM accountability_documents z
+            WHERE z.organization_id=d.organization_id AND z.asset_id=d.asset_id AND z.status='FINALIZED')
+        AND NOT EXISTS(SELECT 1 FROM document_links l WHERE l.organization_id=d.organization_id
+            AND l.source_type=d.doc_type AND l.source_id=d.id
+            AND l.target_type IN ('RRSP','PRR','ITR','PTR'))";
     private const TYPES = ['OVERVIEW','STOCK','STOCK_EVENT','STOCK_EXCEPTION','RIS',
-        'ASSET','ASSET_EVENT','ICS_PAR','RECEIPTS','TEXTBOOK','TEXTBOOK_EVENT','STOCK_TOTALS','TEXTBOOK_TOTALS'];
+        'ASSET','ASSET_EVENT','ICS_PAR','ICS_PAR_HISTORY','RECEIPTS','TEXTBOOK','TEXTBOOK_EVENT','STOCK_TOTALS','TEXTBOOK_TOTALS'];
     private const CATEGORIES = [
         'STOCK'=>'inventory.stocks.view','STOCK_EVENT'=>'inventory.stocks.view','STOCK_TOTALS'=>'inventory.stocks.view',
         'STOCK_EXCEPTION'=>'property.assets.view',
@@ -24,7 +33,8 @@ final class DivisionConsolidation {
         'RIS'=>['id','school','document','status','requestor','date'],
         'ASSET'=>['id','school','property_tag','item','category','origin','serial','cost','custodian','location','condition','status'],
         'ASSET_EVENT'=>['id','school','property_tag','event','from','to','date'],
-        'ICS_PAR'=>['id','school','type','document','property_tag','custodian','status','date'],
+        'ICS_PAR'=>['id','school','type','document','property_tag','custodian','status','accountability','date'],
+        'ICS_PAR_HISTORY'=>['id','school','type','document','property_tag','custodian','status','accountability','date'],
         'RECEIPTS'=>['id','school','iar_number','item','accepted_qty','registered_units','date'],
         'TEXTBOOK'=>['id','school','title','grade','subject','batch','on_hand'],
         'TEXTBOOK_TOTALS'=>['id','title','grade','subject','school_count','batch_count','on_hand'],
@@ -57,7 +67,7 @@ final class DivisionConsolidation {
         $perms=[];$schools=[];
         foreach($offices as $office){
             $id=(int)$office['id'];
-            $perms[$id]=['RIS'=>true,'ICS_PAR'=>true];
+            $perms[$id]=['RIS'=>true,'ICS_PAR'=>true,'ICS_PAR_HISTORY'=>true];
             // The Division Office's own records are covered by its workspace
             // authority. Schools continue requiring per-user, per-school grants.
             if(($office['kind']??'')==='DIVISION'||$user['role']==='SUPER_ADMIN'){
@@ -107,7 +117,16 @@ final class DivisionConsolidation {
           'ASSET_EVENT'=>["FROM asset_movements m JOIN assets a ON a.id=m.asset_id JOIN organizations o ON o.id=a.organization_id",
             "m.id AS id,o.name AS school,a.property_tag,m.event_type AS event,m.from_custodian AS `from`,m.to_custodian AS `to`,m.created_at AS date",'1=1','m','m.created_at','a'],
           'ICS_PAR'=>["FROM accountability_documents d JOIN assets a ON a.id=d.asset_id AND a.organization_id=d.organization_id JOIN organizations o ON o.id=d.organization_id",
-            "d.id AS id,o.name AS school,d.doc_type AS type,d.display_number AS document,a.property_tag,d.custodian,d.status,d.created_at AS date", "d.doc_type IN ('ICS','PAR')",'d','d.created_at'],
+            "d.id AS id,o.name AS school,d.doc_type AS type,d.display_number AS document,a.property_tag,d.custodian,d.status,'CURRENT' AS accountability,d.created_at AS date",
+            "d.doc_type IN ('ICS','PAR') AND ".self::OPEN_CUSTODY,'d',''],
+          'ICS_PAR_HISTORY'=>["FROM accountability_documents d JOIN assets a ON a.id=d.asset_id AND a.organization_id=d.organization_id JOIN organizations o ON o.id=d.organization_id",
+            "d.id AS id,o.name AS school,d.doc_type AS type,d.display_number AS document,a.property_tag,d.custodian,d.status,
+              CASE WHEN EXISTS(SELECT 1 FROM document_links l WHERE l.organization_id=d.organization_id AND l.source_type=d.doc_type AND l.source_id=d.id AND l.target_type IN ('ITR','PTR')) THEN 'CLOSED BY TRANSFER'
+                   WHEN EXISTS(SELECT 1 FROM document_links l WHERE l.organization_id=d.organization_id AND l.source_type=d.doc_type AND l.source_id=d.id AND l.target_type IN ('RRSP','PRR')) THEN 'CLOSED BY RETURN'
+                   WHEN d.status<>'FINALIZED' THEN 'NOT FINALIZED'
+                   WHEN a.status<>'ACTIVE' THEN 'ASSET NOT ACTIVE'
+                   ELSE 'SUPERSEDED' END AS accountability,d.created_at AS date",
+            "d.doc_type IN ('ICS','PAR') AND NOT (".self::OPEN_CUSTODY.")",'d','d.created_at'],
           'RECEIPTS'=>["FROM iar_lines il JOIN iars ir ON ir.id=il.iar_id JOIN purchase_orders po ON po.id=ir.po_id AND po.organization_id=ir.organization_id JOIN po_lines pl ON pl.id=il.po_line_id AND pl.po_id=po.id JOIN item_catalog i ON i.id=pl.item_id JOIN organizations o ON o.id=ir.organization_id",
             "il.id AS id,o.name AS school,ir.display_number AS iar_number,i.name AS item,il.accepted_qty,(SELECT COUNT(*) FROM assets a WHERE a.organization_id=ir.organization_id AND a.iar_line_id=il.id) AS registered_units,ir.accepted_at AS date", "ir.status='FINALIZED' AND po.status='FINALIZED' AND i.category IN ('PPE','SEMI_EXPENDABLE')",'il','ir.accepted_at','ir'],
           'TEXTBOOK'=>["FROM textbook_batches b JOIN textbook_titles t ON t.id=b.title_id JOIN organizations o ON o.id=b.organization_id",
@@ -180,14 +199,14 @@ final class DivisionConsolidation {
         demand($before===''||(ctype_digit($before)&&(int)$before>0),'Invalid page cursor',400);
         $base=['division_id'=>$division,'scope'=>'DIVISION_AND_AUTHORIZED_SCHOOLS',
             'offices'=>$offices,'schools'=>$offices,'month'=>$month,'read_only'=>true,
-            'note'=>'The Current Asset Register shows ACTIVE property under its present owning office; transferred-out source copies remain historical and are not double-counted. ICS/PAR and movements remain dated historical records. Stock balances are live, not historic month-end snapshots.'];
+            'note'=>'Current registers show active property and only open ICS/PAR accountability under its present holding office. Original finalized documents closed by verified return/ITR/PTR are preserved in ICS/PAR History. Movements and historical documents retain their original dates. Stock balances are live, not historic month-end snapshots.'];
         if($type==='OVERVIEW'){
             // Summary counts are visibility-aware: never aggregate restricted asset,
             // stock or textbook categories for a user lacking per-school access.
             $counts=[];
             $tableByType=['STOCK'=>'inventory_lots','STOCK_EVENT'=>'stock_events','STOCK_EXCEPTION'=>'inventory_lots',
                 'RIS'=>'requisition_issue_slips','ASSET'=>'assets','ASSET_EVENT'=>'asset_movements',
-                'ICS_PAR'=>'accountability_documents','RECEIPTS'=>'iar_lines',
+                'ICS_PAR'=>'accountability_documents','ICS_PAR_HISTORY'=>'accountability_documents','RECEIPTS'=>'iar_lines',
                 'TEXTBOOK'=>'textbook_batches','TEXTBOOK_EVENT'=>'textbook_movements',
                 'STOCK_TOTALS'=>'inventory_lots','TEXTBOOK_TOTALS'=>'textbook_batches'];
             foreach(self::TYPES as $t){if($t==='OVERVIEW')continue;
@@ -214,8 +233,13 @@ final class DivisionConsolidation {
                     $row=one($db,"SELECT COUNT(*) AS n FROM asset_movements m JOIN assets a ON a.id=m.asset_id WHERE a.organization_id IN ($marks)",$schoolIds);
                 }elseif($t==='RECEIPTS'){
                     $row=one($db,"SELECT COUNT(*) AS n FROM iar_lines il JOIN iars ir ON ir.id=il.iar_id JOIN purchase_orders po ON po.id=ir.po_id AND po.organization_id=ir.organization_id JOIN po_lines pl ON pl.id=il.po_line_id AND pl.po_id=po.id JOIN item_catalog i ON i.id=pl.item_id WHERE ir.organization_id IN ($marks) AND ir.status='FINALIZED' AND po.status='FINALIZED' AND i.category IN ('PPE','SEMI_EXPENDABLE')",$schoolIds);
-                }elseif($t==='ICS_PAR'){
-                    $row=one($db,"SELECT COUNT(*) AS n FROM accountability_documents WHERE organization_id IN ($marks) AND doc_type IN ('ICS','PAR')",$schoolIds);
+                }elseif($t==='ICS_PAR'||$t==='ICS_PAR_HISTORY'){
+                    // The count must use the identical live-custody predicate as
+                    // detail; closed source ICS/PAR survives in History only.
+                    $predicate=$t==='ICS_PAR'?self::OPEN_CUSTODY:'NOT ('.self::OPEN_CUSTODY.')';
+                    $row=one($db,"SELECT COUNT(*) AS n FROM accountability_documents d
+                        JOIN assets a ON a.id=d.asset_id AND a.organization_id=d.organization_id
+                        WHERE d.organization_id IN ($marks) AND d.doc_type IN ('ICS','PAR') AND $predicate",$schoolIds);
                 }else{
                     $row=one($db,"SELECT COUNT(*) AS n FROM $table WHERE organization_id IN ($marks)",$schoolIds);
                 }

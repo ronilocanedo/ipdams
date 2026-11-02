@@ -620,12 +620,12 @@ class App extends React.Component {
                     ['STOCK','Stock on Hand'],['STOCK_TOTALS','Division Supply Totals'],['STOCK_EVENT','Stock Movements'],
                     ['STOCK_EXCEPTION','Stock Exceptions'],['RIS','RIS']]},
                 {id:'property',title:'Property & Accountability',description:'Accountable assets, movements, receipts and custody slips',items:[
-                    ['ASSET','Current Asset Register'],['ASSET_EVENT','Asset Movements'],['ICS_PAR','ICS / PAR'],['RECEIPTS','Property Receipts']]},
+                    ['ASSET','Current Asset Register'],['ASSET_EVENT','Asset Movements'],['ICS_PAR','Current ICS / PAR'],['ICS_PAR_HISTORY','ICS / PAR History'],['RECEIPTS','Property Receipts']]},
                 {id:'textbooks',title:'Textbooks',description:'Current textbook batches, title totals and movements',items:[
                     ['TEXTBOOK','Textbook Stocks'],['TEXTBOOK_TOTALS','Division Textbook Totals'],['TEXTBOOK_EVENT','Textbook Movements']]}
             ];
             const groups=[['OVERVIEW','Overview'],...sections.flatMap(s=>s.items)];
-            const dated=['STOCK_EVENT','RIS','ASSET_EVENT','ICS_PAR','RECEIPTS','TEXTBOOK_EVENT'];
+            const dated=['STOCK_EVENT','RIS','ASSET_EVENT','ICS_PAR_HISTORY','RECEIPTS','TEXTBOOK_EVENT'];
             const view=this.state.consolView;
             const currentTitle=groups.find(g=>g[0]===view)?.[1]||'Overview';
             const isDated=dated.includes(view);
@@ -644,7 +644,7 @@ class App extends React.Component {
             children.push(h('section',{key:'filter',className:'surface divcon-filter'},
                 h('div',{className:'divcon-intro'},
                     h('div',null,h('strong',{className:'divcon-intro-title'},'Consolidated records'),
-                        h('p',null,'Review current office holdings and original school/Division records without changing inventory, custody or posting.')),
+                        h('p',null,'View current accountability separately from closed ICS/PAR history. Original transfer and return records remain unchanged.')),
                     h('span',{className:'divcon-status'},'Read-only · Live data')),
                 h('div',{className:'divcon-controls'},
                     h('label',{className:'divcon-control'},h('span',null,'Office'),
@@ -663,7 +663,7 @@ class App extends React.Component {
                         onClick:()=>this.setState({consolSchool:'',consolMonth:'',consolReport:null},()=>this.loadDivisionConsolidation())},'Clear filters'):null),
                 h('p',{className:'divcon-caveat'},isDated?
                     'Month filters this document or movement report. Stock and textbook balances remain current.':
-                    'Balances are current, not a historical month-end snapshot. For date-specific records, choose a movement or document report.')));
+                    'Current asset and ICS/PAR registers reflect present holdings and open accountability, regardless of issuance month. History and movement views support the month filter.')));
             children.push(h('div',{key:'nav',className:'divcon-nav',role:'tablist','aria-label':'Division consolidation record categories'},
                 h('div',{className:'divcon-nav-overview'},tab('OVERVIEW','Overview')),
                 ...sections.map(section=>h('section',{key:section.id,className:'divcon-nav-group divcon-nav-'+section.id},
@@ -694,7 +694,7 @@ class App extends React.Component {
                         const cards=section.items.map(([code,label])=>{
                             const count=data.counts?.[code];
                             const allowed=count!==null && count!==undefined;
-                            const uniqueTotals=code==='STOCK_TOTALS'?'items':code==='TEXTBOOK_TOTALS'?'titles':'records';
+                            const uniqueTotals=code==='STOCK_TOTALS'?'items':code==='TEXTBOOK_TOTALS'?'titles':code==='ICS_PAR'?'open documents':code==='ICS_PAR_HISTORY'?'historical documents':'records';
                             return h('div',{key:code,className:'divcon-summary-card'+(allowed?'':' is-restricted')},
                                 h('span',{className:'divcon-summary-name'},label),
                                 allowed?h('strong',{className:'divcon-summary-value'},fmt(count)):h('strong',{className:'divcon-summary-lock'},'Restricted'),
@@ -711,7 +711,7 @@ class App extends React.Component {
                     const rows=data.rows||[];
                     const label=c=>({on_hand:'On hand',iar_number:'IAR number',accepted_qty:'Accepted qty',
                         registered_units:'Registered units',property_tag:'Property tag',school:'Holding office',origin:'Registration origin',
-                        condition:'Condition',school_count:'Offices',
+                        condition:'Condition',accountability:'Accountability',school_count:'Offices',
                         lot_count:'Lots',batch_count:'Batches',source:'Source',date:'Date'}[c]||c.replaceAll('_',' '));
                     const numeric=c=>['on_hand','change','cost','accepted_qty','registered_units','school_count','lot_count','batch_count'].includes(c);
                     info.push(h('div',{key:'table-area',className:'divcon-table-region'},
@@ -729,7 +729,7 @@ class App extends React.Component {
                             this.state.consolBusy?'Loading more…':'Load 50 more')):null));
                 }
                 info.push(h('p',{key:'disclaimer',className:'divcon-disclaimer'},
-                    'Division Office records and only authorized school records are included. Transferred-out historical source assets do not count as current holdings. Restricted school categories never contribute to disclosed totals. RSMI is not implemented.'));
+                    'Current ICS/PAR shows only open responsibility for ACTIVE property. Transferred-out or returned ICS/PAR remains in History, preserving final document numbers and original custodians. Division and authorized school scopes are enforced; RSMI is not implemented.'));
                 children.push(h('section',{key:'report',id:'divcon-report-panel',role:'tabpanel',className:'surface divcon-report',
                     'aria-label':currentTitle},...info));
             }
