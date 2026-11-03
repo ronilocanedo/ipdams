@@ -134,7 +134,7 @@ const rfqHistoricalParticipant = (staff,employeeId,rfqDate) => {
         recordedFrom,person:person||null};
 };
 
-const initial = { user: null, travelStage:'REQUEST',travelRequestFormOpen:false,travelDocuments:{requests:[],authorities:[]},travelClaims:{claims:[],required_evidence:{},cost_types:{}},travelClaimsLoading:false,travelClaimError:'',travelClaimUploadKind:'',travelClaimDetail:null,travelClaimEditing:false,travelClaimDraft:emptyTravelClaim(),travelClaimChecks:emptyTravelVerification(),travelLoading:false,travelError:'',travelSignatories:null,travelSignatoriesLoading:false,travelSignatoriesError:'',travelBranding:null,travelBrandingLoading:false,travelBrandingError:'',travelBrandingPending:null,travelBrandingReason:'',travelSignatoryIds:{budget_officer:'',division_accountant:'',asds:'',sds:''},travelSignatoryRegion:'',travelSignatorySalutation:'Sir/Madam:',travelSignatoryReason:'',travelRefreshSignatoryId:'',travelRefreshSignatoryReason:'',travelRequest:emptyTravelRequest(),travelEditId:'',travelEditVersion:0,travelEditReason:'',travelAuthorityRequestId:'',travelAuthorityDate:localToday(),travelApprovalReference:'',travelPaperApproved:false, sessionStatus: 'checking', sessionError: '', csrf: '', orgs: [], organization_id: '', tab: 'Dashboard', busy: false, workspaceLoading: false, workspaceFailures: [], error: '', success: '', lists: {}, eligible: [], eligibleLoading: false, eligibleError: '', eligibleLoadedFor: '', dashboard: {}, accounts: [], loginEmail: '', loginPassword: '', loginPasswordVisible:false, purpose: '', requesting_unit: '', pr_requestor: '', fund_id: '', pr_doc_date: localToday(), prLines: [{ item_id: '', quantity: '1', unit_price: '0.00' }], prRegisterMonth:'',prRegisterYear:'',workflowRegisterMonth:localToday().slice(5,7),workflowRegisterYear:localToday().slice(0,4),workflowExpandedQuotes:[],workflowFormOpen:false,prUnits:[],prUnitRecords:[],prUnitsShowInactive:false,prUnitsVersion:0,prUnitsLoading:false,prUnitsError:'',prUnitsDraft:'',prUnitsReason:'',prUnitEdit:'',prUnitName:'',staffData:null,staffLoading:false,mooeData:null,mooeViewerEmail:'',mooeViewerPassword:'',mooeViewerBusy:false,mooeLoading:false,mooeError:'',mooeSchoolId:'',mooeEmployeeId:'',mooeDate:localToday(),mooeBusy:false,mooeNotice:'',mooeHistoricalConfirmed:false,mooeAppointmentReference:'',staffSavingAction:'',staffSavedMessage:'',staffError:'',staffAddOpen:false,staffAddOrg:'',staffFullName:'',staffPosition:'',staffDesignation:'',staffEmployeeNo:'',staffTIN:'',staffAddress:'',staffProfileId:'',staffProfileOrg:'',staffProfileName:'',staffProfileEmployeeNo:'',staffProfileTIN:'',staffProfileAddress:'',staffProfileVersion:0,staffProfileBusy:false,staffEditName:'',staffEditPosition:'',staffEditDesignation:'',staffEditReason:'',staffEditOriginal:null,staffEditProfileOriginal:null,staffShowInactive:false,staffRenameId:'',staffRenameName:'',staffRenameReason:'',staffHeadId:'',staffDvPartA:'',staffDvPartC:'',staffDvPartD:'',staffHeadReason:'',staffCustodianId:'',staffCustodianDate:localToday(),staffCustodianReason:'',staffCustodianAttested:false,staffChair:'',staffCoChair:'',staffMembers:[],staffBacReason:'',staffBacDate:'',staffBacDateReason:'',staffBacAttested:false,prCreateOpen:false, prCreateBaseline:'', prCreateError:'', prEditOpen:false, prEdit:null, prEditError:'', prPickerOpen:'', prPickerQuery:'', prPickerResults:[],prRegistryMatches:[], prPickerLoading:false, prPickerError:'', prPickerActive:0, prQuickAdd:null, prQuickAddBusy:false, prQuickAddError:'', dvEdit:null,dvEditOriginal:'',dvEditError:'',dvParticularsEdit:null,dvParticularsError:'',dvCancel:null,dvCancelError:'',dvComposeOpen:false,dvSearch:'',dv_type: 'REGULAR', dv_po: '', dv_po_tax_profile: '', dvInvoiceVat:'', dvVatMode:'STANDARD',dvVatExceptionReason:'',dvTaxPreview:null, dvTaxBusy:false, dvTaxError:'', payee: '', bill_reference: '', allocations: {}, dv_fund: '', selectedDv: '', debitAccount: '', creditAccount: '', inventorySection:'stock', propertySection:'assets',propertyLastSection:{},propertyReportModal:null,propertyReportFrom:localToday().slice(0,7)+'-01',propertyReportThrough:localToday(),divisionModuleGrants:null,consolView:'OVERVIEW',consolSchool:'',consolSchools:[],consolMonth:'',consolReport:null,consolBusy:false,consolError:'',consolScopeId:'',divisionModuleGrantsBusy:false,divisionModuleGrantsError:'',divisionContextRegister:null,divisionContextBusy:false,divisionContextError:'',divisionRisLines:[],divisionRisLots:[],mooeIssuedMonth:localToday().slice(0,7),mooeIssuedDocs:null,mooeIssuedBusy:false,mooeIssuedError:'', ris_mode: 'DIRECT', ris_requestor: '', ris_item: '', ris_qty: '1', ris_pr: '', ris_id: '', ris_line_id: '', ris_lot_id: '', ris_issue_qty: '1', stock_item: '', stock_qty: '', tb_title:'',tb_isbn:'',tb_grade:'',tb_subject:'',tb_batch:'',tb_condition_note:'',tb_storage:'',tb_opening_qty:'1',tb_move_batch_id:'',tb_move_event_type:'RECEIPT',tb_move_quantity:'1',tb_move_direction:'IN',tb_move_reference:'',tbBatches:[],tbLoading:false,tbError:'',tbHistory:[],tbHistoryMonth:'',tbHistoryBatch:'',tbHistoryLoading:false,tbHistoryError:'',tbHistoryHasMore:false,actionCenterOrg:'',actionCenterItems:[],actionCenterCount:0,actionCenterLoading:false,actionCenterError:'',actionCenterChecked:'',propertyRecords:{assets:[],accountability:[],received_property:[]},
+const initial = { user: null, travelStage:'REQUEST',travelRequestFormOpen:false,travelDocuments:{requests:[],authorities:[]},travelClaims:{claims:[],required_evidence:{},cost_types:{}},travelClaimsLoading:false,travelClaimError:'',travelClaimUploadKind:'',travelClaimDetail:null,travelClaimEditing:false,travelClaimDraft:emptyTravelClaim(),travelClaimChecks:emptyTravelVerification(),travelLoading:false,travelError:'',travelSignatories:null,travelSignatoriesLoading:false,travelSignatoriesError:'',travelBranding:null,travelBrandingLoading:false,travelBrandingError:'',travelBrandingPending:null,travelBrandingReason:'',travelSignatoryIds:{budget_officer:'',division_accountant:'',asds:'',sds:''},travelSignatoryRegion:'',travelSignatorySalutation:'Sir/Madam:',travelSignatoryReason:'',travelRefreshSignatoryId:'',travelRefreshSignatoryReason:'',travelRequest:emptyTravelRequest(),travelEditId:'',travelEditVersion:0,travelEditReason:'',travelAuthorityRequestId:'',travelAuthorityDate:localToday(),travelApprovalReference:'',travelPaperApproved:false, sessionStatus: 'checking', sessionError: '', csrf: '', orgs: [], organization_id: '', tab: 'Dashboard', busy: false, workspaceLoading: false, workspaceFailures: [], error: '', success: '', lists: {}, eligible: [], eligibleLoading: false, eligibleError: '', eligibleLoadedFor: '', dashboard: {}, accounts: [], loginEmail: '', loginPassword: '', loginPasswordVisible:false, purpose: '', requesting_unit: '', pr_requestor: '', fund_id: '', pr_doc_date: localToday(), prLines: [{ item_id: '', quantity: '1', unit_price: '0.00' }], prRegisterMonth:'',prRegisterYear:'',workflowRegisterMonth:localToday().slice(5,7),workflowRegisterYear:localToday().slice(0,4),workflowExpandedQuotes:[],workflowFormOpen:false,prUnits:[],prUnitRecords:[],prUnitsShowInactive:false,prUnitsVersion:0,prUnitsLoading:false,prUnitsError:'',prUnitsDraft:'',prUnitsReason:'',prUnitEdit:'',prUnitName:'',staffData:null,staffLoading:false,mooeData:null,mooeViewerEmail:'',mooeViewerPassword:'',mooeViewerBusy:false,mooeLoading:false,mooeError:'',mooeSchoolId:'',mooeEmployeeId:'',mooeDate:localToday(),mooeBusy:false,mooeNotice:'',mooeHistoricalConfirmed:false,mooeAppointmentReference:'',staffSavingAction:'',staffSavedMessage:'',staffError:'',staffAddOpen:false,staffAddOrg:'',staffFullName:'',staffPosition:'',staffDesignation:'',staffEmployeeNo:'',staffTIN:'',staffAddress:'',staffProfileId:'',staffProfileOrg:'',staffProfileName:'',staffProfileEmployeeNo:'',staffProfileTIN:'',staffProfileAddress:'',staffProfileVersion:0,staffProfileBusy:false,staffEditName:'',staffEditPosition:'',staffEditDesignation:'',staffEditReason:'',staffEditOriginal:null,staffEditProfileOriginal:null,staffShowInactive:false,staffRenameId:'',staffRenameName:'',staffRenameReason:'',staffHeadId:'',staffDvPartA:'',staffDvPartC:'',staffDvPartD:'',staffHeadReason:'',staffCustodianId:'',staffCustodianDate:localToday(),staffCustodianReason:'',staffCustodianAttested:false,staffChair:'',staffCoChair:'',staffMembers:[],staffBacReason:'',staffBacDate:'',staffBacDateReason:'',staffBacAttested:false,prCreateOpen:false, prCreateBaseline:'', prCreateError:'', prEditOpen:false, prEdit:null, prEditError:'', prPickerOpen:'', prPickerQuery:'', prPickerResults:[],prRegistryMatches:[], prPickerLoading:false, prPickerError:'', prPickerActive:0, prQuickAdd:null, prQuickAddBusy:false, prQuickAddError:'', dvEdit:null,dvEditOriginal:'',dvEditError:'',dvParticularsEdit:null,dvParticularsError:'',dvCancel:null,dvCancelError:'',dvComposeOpen:false,dvSearch:'',dv_type: 'REGULAR', dv_po: '', dv_po_tax_profile: '', dvInvoiceVat:'', dvVatMode:'STANDARD',dvVatExceptionReason:'',dvTaxPreview:null, dvTaxBusy:false, dvTaxError:'', payee: '', bill_reference: '', allocations: {}, dv_fund: '', selectedDv: '', debitAccount: '', creditAccount: '', inventorySection:'stock', propertySection:'assets',propertyLastSection:{},propertyReportModal:null,propertyReportFrom:localToday().slice(0,7)+'-01',propertyReportThrough:localToday(),divisionModuleGrants:null,consolView:'OVERVIEW',consolSchool:'',consolSchools:[],consolMonth:'',consolReport:null,consolBusy:false,consolError:'',consolScopeId:'',divisionModuleGrantsBusy:false,divisionModuleGrantsError:'',divisionContextRegister:null,divisionContextBusy:false,divisionContextError:'',divisionRisLines:[],divisionRisLots:[],mooeIssuedMonth:localToday().slice(0,7),mooeIssuedDocs:null,mooeIssuedBusy:false,mooeIssuedError:'', ris_mode: 'DIRECT', ris_requestor: '', ris_item: '', ris_qty: '1', ris_pr: '', ris_id: '', ris_line_id: '', ris_lot_id: '', ris_issue_qty: '1', stock_item: '', stock_qty: '', tb_title:'',tb_isbn:'',tb_grade:'',tb_subject:'',tb_batch:'',tb_condition_note:'',tb_storage:'',tb_opening_qty:'1',tb_move_batch_id:'',tb_move_event_type:'RECEIPT',tb_move_quantity:'1',tb_move_direction:'IN',tb_move_reference:'',tbBatches:[],tbLoading:false,tbError:'',tbDirectory:null,tbDirectoryQuery:'',tbDirectoryLoading:false,tbDirectoryError:'',tbHistory:[],tbHistoryMonth:'',tbHistoryBatch:'',tbHistoryLoading:false,tbHistoryError:'',tbHistoryHasMore:false,actionCenterOrg:'',actionCenterItems:[],actionCenterCount:0,actionCenterLoading:false,actionCenterError:'',actionCenterChecked:'',propertyRecords:{assets:[],accountability:[],received_property:[]},
     // v0.2.219: register state MUST exist on initial render, not only after
     // the user switches organizations. Keep matching reset shape in session().
     propertyRegister:{rows:[],facets:{items:[],classifications:[],custodians:[],statuses:[]},has_more:false,next_before_id:null},
@@ -205,6 +205,7 @@ class App extends React.Component {
            (this.state.tab==='Disbursements' && (prevState.tab!==this.state.tab || prevState.organization_id!==this.state.organization_id)))
             this.loadFundPolicySettings();
         if(this.state.tab==='Property Accountability' && this.state.user?.role!=='VIEWER' && (prevState.tab!=='Property Accountability'||prevState.organization_id!==this.state.organization_id)){this.loadAccountableProperty();this.loadStaffDirectory();}
+        if(this.state.tab==='Textbooks' && !schoolScopedDivision(this.state) && (prevState.tab!=='Textbooks'||prevState.organization_id!==this.state.organization_id))this.loadTextbookDirectory(1,'');
         if(this.state.tab==='Textbooks' && !schoolScopedDivision(this.state) && (prevState.tab!=='Textbooks'||prevState.organization_id!==this.state.organization_id))this.loadTextbookBatches();
         if(this.state.tab==='Textbooks' && !schoolScopedDivision(this.state) && (prevState.tab!=='Textbooks'||prevState.organization_id!==this.state.organization_id))this.loadTextbookHistory();
         if((this.state.tab==='Reference Data' && this.state.masterSection==='requesting_units' && (prevState.tab!==this.state.tab||prevState.masterSection!==this.state.masterSection||prevState.organization_id!==this.state.organization_id)) || (this.state.tab==='Procurement' && (prevState.tab!==this.state.tab||prevState.organization_id!==this.state.organization_id)))this.loadPrRequestingUnits();
@@ -2567,6 +2568,21 @@ class App extends React.Component {
             data.lines = [{ item_id: Number(this.state.ris_item), requested_qty: this.state.ris_qty }]; const r = await this.task('ris.create', data); if (r)
             this.setState({ ris_id: String(r.id) }); };
         this.issueRIS = async (e) => { e.preventDefault(); await this.task('ris.issue', { ris_id: Number(this.state.ris_id), lines: [{ ris_line_id: Number(this.state.ris_line_id), lot_id: Number(this.state.ris_lot_id), issued_qty: this.state.ris_issue_qty }] }); };
+        this.loadTextbookDirectory = async (page=1,search=null) => {
+            const org=String(this.state.organization_id||'');
+            const term=String(search===null?(this.state.tbDirectoryQuery||''):search).trim();
+            const request=this.textbookDirectoryRequest=(this.textbookDirectoryRequest||0)+1;
+            if(!org)return this.setState({tbDirectory:null,tbDirectoryLoading:false,tbDirectoryError:''});
+            this.setState({tbDirectory:null,tbDirectoryLoading:true,tbDirectoryError:'',tbDirectoryQuery:term});
+            try {
+                const data=await this.get('textbook.directory',{organization_id:org,q:term,page});
+                if(request===this.textbookDirectoryRequest && String(this.state.organization_id)===org)
+                    this.setState({tbDirectory:data,tbDirectoryLoading:false});
+            }catch(error){
+                if(request===this.textbookDirectoryRequest && String(this.state.organization_id)===org)
+                    this.setState({tbDirectoryLoading:false,tbDirectoryError:error.message||'Cannot load the ISBN directory.'});
+            }
+        };
         this.loadTextbookBatches = async () => {
             const org=String(this.state.organization_id||'');
             if(!org)return this.setState({tbBatches:[],tbError:'',tbLoading:false});
@@ -7856,80 +7872,101 @@ class App extends React.Component {
                 React.createElement("div", { className: "form-grid" },
                     React.createElement("label", { className: "field" },
                         React.createElement("span", null, "Action"),
-                        React.createElement("select", { value: this.state.advancedRoute, onChange: this.set('advancedRoute') }, ['pr.finalize', 'rfq.create', 'quote.create', 'award.create', 'po.create', 'po.amend', 'iar.create', 'advance.create', 'dv.accounting', 'tax.confirm', 'ris.reverse', 'fund.event', 'check.create', 'check.status', 'check.replace', 'bank.reconcile', 'accountability.issue', 'asset.opening', 'asset.move', 'textbook.opening', 'textbook.move', 'document.cancel', 'document.signed-copy'].map(r => React.createElement("option", { key: r, value: r }, r))))),
+                        React.createElement("select", { value: this.state.advancedRoute, onChange: this.set('advancedRoute') }, ['pr.finalize', 'rfq.create', 'quote.create', 'award.create', 'po.create', 'po.amend', 'iar.create', 'advance.create', 'dv.accounting', 'tax.confirm', 'ris.reverse', 'fund.event', 'check.create', 'check.status', 'check.replace', 'bank.reconcile', 'accountability.issue', 'asset.opening', 'asset.move', 'document.cancel', 'document.signed-copy'].map(r => React.createElement("option", { key: r, value: r }, r))))),
                 React.createElement("label", { className: "field" },
                     React.createElement("span", null, "JSON request data (organization_id is added automatically)"),
                     React.createElement("textarea", { className: "json-input", rows: 5, spellCheck: false, value: this.state.advancedBody, onChange: this.set('advancedBody') })),
                 this.act('Validate & execute action', this.runAdvanced)));
         this.textbookView = () => {
             const batches=this.state.tbBatches||[];
-            const options=batches.map(b=>({id:b.id,name:b.title+' — '+b.batch+' (on hand: '+b.on_hand+')'}));
-            const canWrite=this.state.user?.role!=='VIEWER';
+            const catalog=this.state.tbDirectory||{};
+            const summary=catalog.summary||{};
+            const catalogRows=(catalog.rows||[]).map(row=>({
+                title:row.title,
+                isbn:row.canonical_isbn||row.isbn||'Official LR code required',
+                grade:row.grade,subject:row.subject,
+                review:({VALID:'Verified ISBN',DUPLICATE:'Duplicate ISBN · review',
+                    CONFLICT:'Conflicting ISBN metadata · review',
+                    NO_ISBN:'No ISBN · assign official LR code',
+                    INVALID_ISBN:'Invalid legacy ISBN · review'}[row.review]||row.review),
+                source_rows:row.source_rows,
+                legacy_ids:row.source_ids
+            }));
             return React.createElement('div',{className:'section-stack'},
-                this.header('Textbook inventory','Record opening title batches, stock movements and balances for this organization.'),
+                this.header('Textbook management','Shared book directory and your current textbook records. Learner-level SF3 records remain at school.'),
                 React.createElement('div',{className:'surface'},
                     React.createElement('div',{className:'section-head'},
-                        React.createElement('h3',null,'Textbook batches'),
+                        React.createElement('h3',null,'Book Directory · shared ISBN catalog'),
+                        React.createElement('button',{type:'button',className:'outline',
+                            disabled:this.state.tbDirectoryLoading,
+                            onClick:()=>this.loadTextbookDirectory(1)},
+                            this.state.tbDirectoryLoading?'Checking…':'Refresh directory')),
+                    React.createElement('p',{className:'body-muted'},
+                        'Search by book title, grade, subject, ISBN-10 or ISBN-13. The same validated ISBN is shown once here even if older records are duplicated. No school quantities or teacher names are shared by this directory.'),
+                    React.createElement('form',{onSubmit:e=>{e.preventDefault();this.loadTextbookDirectory(1);}},
+                        React.createElement('div',{className:'form-grid'},
+                            React.createElement('label',{className:'field'},
+                                React.createElement('span',null,'Find a book'),
+                                React.createElement('input',{type:'search',maxLength:100,
+                                    placeholder:'e.g. Mathematics Grade 7 or 978-…',
+                                    value:this.state.tbDirectoryQuery||'',
+                                    onChange:e=>this.setState({tbDirectoryQuery:e.target.value})})),
+                            React.createElement('button',{type:'submit',className:'outline',
+                                disabled:this.state.tbDirectoryLoading},'Search'))),
+                    this.state.tbDirectoryError?React.createElement('p',{role:'alert'},this.state.tbDirectoryError):null,
+                    this.state.tbDirectoryLoading?React.createElement('p',{role:'status'},'Loading the verified directory…'):null,
+                    catalog.summary?React.createElement('p',{className:'body-muted'},
+                        'Legacy title rows scanned: '+summary.scanned_title_rows+
+                        ' · Duplicate ISBN groups: '+summary.duplicate_isbn_groups+
+                        ' · Conflicting ISBN groups: '+summary.conflicting_isbn_groups+
+                        ' · Invalid ISBNs: '+summary.invalid_isbn_rows+
+                        ' · Without ISBN: '+summary.without_isbn_rows):null,
+                    catalog.summary&&!summary.coverage_complete?React.createElement('p',{role:'alert'},
+                        'Catalog review is incomplete: only the first 3,000 legacy records were scanned. Search and counts must not be treated as comprehensive.'):null,
+                    catalogRows.length?this.table('Book editions',['title','isbn','grade','subject','review','source_rows','legacy_ids'],catalogRows):
+                        (!this.state.tbDirectoryLoading&&catalog.summary?React.createElement('p',{className:'body-muted'},
+                            'No matching directory records. New title registration will be enabled after the duplicate review and official ISBN/LR-code validation.'):null),
+                    catalog.summary?React.createElement('div',{className:'row-actions'},
+                        React.createElement('span',{className:'body-muted'},
+                            'Matching entries: '+catalog.matching_groups+' · Page '+catalog.page),
+                        catalog.page>1?React.createElement('button',{type:'button',className:'outline',
+                            onClick:()=>this.loadTextbookDirectory(catalog.page-1)},'Previous'):null,
+                        catalog.next_page?React.createElement('button',{type:'button',className:'outline',
+                            onClick:()=>this.loadTextbookDirectory(catalog.next_page)},'Next'):null):null),
+                React.createElement('div',{className:'surface'},
+                    React.createElement('div',{className:'section-head'},
+                        React.createElement('h3',null,'My office · textbook stock'),
                         React.createElement('button',{type:'button',className:'outline',disabled:this.state.tbLoading,
-                            onClick:this.loadTextbookBatches},this.state.tbLoading?'Loading…':'Refresh batches')),
+                            onClick:this.loadTextbookBatches},this.state.tbLoading?'Loading…':'Refresh balances')),
                     this.state.tbError?React.createElement('p',{role:'alert'},this.state.tbError):null,
                     this.table('Current balances',['id','title','isbn','grade','subject','batch','storage','on_hand'],batches)),
-                canWrite?React.createElement('div',{className:'two-col-main'},
-                    React.createElement('div',{className:'surface'},
-                        React.createElement('h3',null,'Record opening textbook batch'),
-                        React.createElement('p',{className:'body-muted'},'Opening balance is historical stock, not a purchase or new receipt.'),
-                        React.createElement('form',{onSubmit:this.createTextbookOpening},
-                            React.createElement('div',{className:'form-grid'},
-                                this.field('tb_title','Textbook title *','e.g. Science Grade 5'),
-                                this.field('tb_isbn','ISBN','Optional ISBN'),
-                                this.field('tb_grade','Grade / level','Grade 5'),
-                                this.field('tb_subject','Subject','Science'),
-                                this.field('tb_batch','Batch identifier *','e.g. 2026-A'),
-                                this.field('tb_condition_note','Condition','Good / New'),
-                                this.field('tb_storage','Storage location','Library'),
-                                this.field('tb_opening_qty','Opening copies *','Whole number','number')),
-                            this.act('Record opening balance',this.createTextbookOpening))),
-                    React.createElement('div',{className:'surface'},
-                        React.createElement('h3',null,'Record textbook movement'),
-                        React.createElement('form',{onSubmit:this.createTextbookMove},
-                            React.createElement('div',{className:'form-grid'},
-                                this.select('tb_move_batch_id','Textbook batch *',options,'Select a registered batch'),
-                                React.createElement('label',{className:'field'},React.createElement('span',null,'Movement type'),
-                                    React.createElement('select',{value:this.state.tb_move_event_type,onChange:this.set('tb_move_event_type')},
-                                        ['RECEIPT','RETURN','DISTRIBUTION','TRANSFER','LOST','DISPOSAL','COUNT_ADJUSTMENT'].map(x=>
-                                            React.createElement('option',{key:x,value:x},x)))),
-                                this.field('tb_move_quantity','Quantity *','Whole number','number'),
-                                this.state.tb_move_event_type==='COUNT_ADJUSTMENT'?
-                                    React.createElement('label',{className:'field'},React.createElement('span',null,'Adjustment direction'),
-                                        React.createElement('select',{value:this.state.tb_move_direction,onChange:this.set('tb_move_direction')},
-                                            React.createElement('option',{value:'IN'},'Increase'),
-                                            React.createElement('option',{value:'OUT'},'Decrease'))):null,
-                                this.field('tb_move_reference','Reference / remarks *','Document, recipient or reason')),
-                            this.act('Record movement',this.createTextbookMove)))):React.createElement('p',{className:'body-muted'},'Read-only access; authorized staff can record movements.'),
+                React.createElement('div',{className:'surface'},
+                    React.createElement('h3',null,'Documented textbook transactions · next phase'),
+                    React.createElement('p',{className:'body-muted'},
+                        'Legacy direct opening, transfer, loss, disposal, and quantity-adjustment posting are paused to protect the audit trail. The next release will provide Central Office receipts with evidence, followed by interoffice dispatch/acceptance and teacher accountability. Existing balances and documents are unchanged.')),
                 React.createElement('div',{className:'surface'},
                     React.createElement('div',{className:'section-head'},
-                        React.createElement('h3',null,'Read-only textbook movement history'),
+                        React.createElement('h3',null,'Original textbook movement history'),
                         React.createElement('button',{type:'button',className:'outline',disabled:this.state.tbHistoryLoading,
                             onClick:()=>this.loadTextbookHistory()},this.state.tbHistoryLoading?'Loading…':'Refresh history')),
-                    React.createElement('p',{className:'body-muted'},'Showing up to 100 transactions per page. Filter by month or batch; use Load older records for earlier entries.'),
+                    React.createElement('p',{className:'body-muted'},'This is the unchanged historical ledger. Filter by month or batch to see earlier transactions.'),
                     React.createElement('div',{className:'form-grid'},
                         React.createElement('label',{className:'field'},React.createElement('span',null,'Month (optional)'),
                             React.createElement('input',{type:'month',value:this.state.tbHistoryMonth||'',
-                                onChange:e=>this.setState({tbHistoryMonth:e.target.value},()=>this.loadTextbookHistory())})),
+                                onChange:e=>{const value=e.target.value;this.setState({tbHistoryMonth:value},()=>this.loadTextbookHistory());}})),
                         React.createElement('label',{className:'field'},React.createElement('span',null,'Batch (optional)'),
                             React.createElement('select',{value:this.state.tbHistoryBatch||'',
-                                onChange:e=>this.setState({tbHistoryBatch:e.target.value},()=>this.loadTextbookHistory())},
+                                onChange:e=>{const value=e.target.value;this.setState({tbHistoryBatch:value},()=>this.loadTextbookHistory());}},
                                 React.createElement('option',{value:''},'All textbook batches'),
                                 batches.map(b=>React.createElement('option',{key:b.id,value:String(b.id)},
                                     b.title+' — '+b.batch))))),
                     this.state.tbHistoryError?React.createElement('p',{role:'alert'},this.state.tbHistoryError):null,
-                    this.table('Transactions',['created_at','title','batch','event_type','quantity_delta','reference','actor_id'],
-                        this.state.tbHistory||[]),
+                    this.table('Transactions',['created_at','title','batch','event_type','quantity_delta','reference','actor_id'],this.state.tbHistory||[]),
                     this.state.tbHistoryHasMore?React.createElement('button',{type:'button',className:'outline',
                         disabled:this.state.tbHistoryLoading,onClick:()=>this.loadTextbookHistory(true)},
                         this.state.tbHistoryLoading?'Loading…':'Load older records'):null));
         };
-                // Non-posting travel reimbursement documentary intake and review.
+        // Non-posting travel reimbursement documentary intake and review.
         this.loadTravelClaims = async () => {
             const org=String(this.state.organization_id||'');if(!org)return;
             this.setState({travelClaimsLoading:true,travelClaimError:''});
