@@ -7882,10 +7882,11 @@ class App extends React.Component {
             const catalog=this.state.tbDirectory||{};
             const summary=catalog.summary||{};
             const catalogRows=(catalog.rows||[]).map(row=>({
+                id:row.id,
                 title:row.title,
                 isbn:row.canonical_isbn||row.isbn||'Official LR code required',
                 grade:row.grade,subject:row.subject,
-                review:({VALID:'Verified ISBN',DUPLICATE:'Duplicate ISBN · review',
+                review:({VALID:'ISBN checksum valid',DUPLICATE:'Duplicate ISBN · review',
                     CONFLICT:'Conflicting ISBN metadata · review',
                     NO_ISBN:'No ISBN · assign official LR code',
                     INVALID_ISBN:'Invalid legacy ISBN · review'}[row.review]||row.review),
