@@ -5,6 +5,7 @@ require_once dirname(__DIR__).'/private/app/RoleFunctions.php';
 require_once dirname(__DIR__).'/private/app/DivisionSchoolAccess.php';
 require_once dirname(__DIR__).'/private/app/DivisionConsolidation.php';
 require_once dirname(__DIR__).'/private/app/TextbookDirectory.php';
+require_once dirname(__DIR__).'/private/app/TextbookCoReceiptWorkflow.php';
 require_once dirname(__DIR__).'/private/app/CatalogRegistryLinks.php';
 require_once dirname(__DIR__).'/private/app/PrClassificationPreview.php';
 require_once dirname(__DIR__).'/private/app/PropertyLineageReview.php';
@@ -102,6 +103,8 @@ try {
         if($route==='property.registration.detail')jsonOut($domain->propertyRegistrationDetail($_GET));
         if($route==='division.inventory.consolidation')jsonOut(DivisionConsolidation::read($db,$user,$_GET));
         if($route==='textbook.directory')jsonOut(TextbookDirectory::read($db,$user,$_GET));
+        if($route==='textbook.co_receipts')jsonOut((new TextbookCoReceiptWorkflow($db,$user))->list($_GET));
+        if($route==='textbook.co_receipt.detail')jsonOut((new TextbookCoReceiptWorkflow($db,$user))->detail($_GET));
         if($route==='division.ris.lines')jsonOut($domain->divisionRisLines($_GET));
         if($route==='division.ris.lots')jsonOut($domain->divisionRisLots($_GET));
         if($route==='division.accountability.eligible')jsonOut($domain->divisionEligibleAccountability($_GET));
@@ -196,6 +199,11 @@ try {
     // document-linked, idempotent, approved transactions in later releases.
     if(in_array($route,['textbook.opening','textbook.move'],true))
         demand(false,'Legacy textbook posting is paused for the documented textbook receipt, transfer and loss/disposal workflows. No quantities were changed.',409);
+    // CO receipts are stage-gated by approved schema and the exact, appointed
+    // receiving custodian binding. Legacy generic textbook writes stay blocked.
+    $coReceiptActions=['textbook.co_receipt.create'=>'create','textbook.co_receipt.submit'=>'submit',
+        'textbook.co_receipt.inspect'=>'inspect','textbook.co_receipt.accept'=>'accept',
+        'textbook.co_receipt.reject'=>'reject','textbook.co_receipt.cancel_draft'=>'cancelDraft'];
     $calls=[
         'organization.bootstrap'=>'bootstrapOrganization','organization.division.create'=>'createDivision','organization.school.create'=>'createSchool','organization.school.attach'=>'attachLegacySchool','organization.user.create'=>'createOrganizationUser','organization.mooe.viewer.create'=>'createMooeViewerAccount','organization.user.reset_password'=>'resetOrganizationUserPassword','organization.profile.update'=>'updateOrganizationProfile','organization.school.classification'=>'saveSchoolImplementationClass','auth.change_password'=>'changeOwnPassword',
         'division.vat.save'=>'saveDivisionVatRate','master.uacs.status'=>'setUacsStatus','division.item_uacs.save'=>'saveDivisionItemUacs','division.item_uacs.effectivity.preview'=>'previewItemUacsEffectivityCorrection','division.item_uacs.effectivity.apply'=>'applyItemUacsEffectivityCorrection','division.item_uacs.bulk.preview'=>'previewBulkConsumableUacs','division.item_uacs.bulk.apply'=>'applyBulkConsumableUacs','master.division_classification.save'=>'saveDivisionClassification','master.property.threshold.save'=>'savePropertyThreshold','master.property.useful_life.save'=>'savePropertyUsefulLife','master.property.registry.save'=>'savePropertyRegistryEntry','master.supplier.create'=>'addSupplier','master.supplier.update'=>'updateSupplier','master.supplier.status'=>'setSupplierStatus','master.atc.create'=>'addAtc','master.atc.update'=>'updateAtc','master.atc.status'=>'setAtcStatus','master.atc.rate.create'=>'addAtcRate','master.atc.rate.close'=>'closeAtcRate','master.unit.create'=>'addUnit','master.item.create'=>'addItem','master.item.subcategory'=>'updateItemSubcategory','master.item.status'=>'setItemStatus','master.fund.create'=>'addFund','division.fund_source.save'=>'saveDivisionFundSource','division.fund_policy.save'=>'saveFundWithholdingPolicy','bank.create'=>'addBankAccount','bank.download.record'=>'recordBankDownload','bank.download.link_existing'=>'linkHistoricalBankDownload',
@@ -207,7 +215,7 @@ try {
         'check.stock.register'=>'registerPhysicalCheckbook','check.stock.unusable'=>'markPhysicalLeafUnusable','check.stock.correct'=>'correctPhysicalLeafStatus',
         'fund.event'=>'addFundEvent','stock.opening'=>'openingStock','asset.opening'=>'recordAsset','property.registration.correct'=>'correctPropertyRegistration','asset.iar.register'=>'registerIarProperty','asset.move'=>'moveAsset','textbook.opening'=>'textbookOpening','textbook.move'=>'textbookMove','dv.draft.cancel'=>'cancelDraftDV','document.cancel'=>'cancelDocument','po.amend'=>'amendPO','accountability.issue'=>'issueAccountability','bank.reconcile'=>'reconcileBank','document.signed-copy'=>'recordManualSignature',
     ];
-    demand(isset($calls[$route]) || in_array($route,['master.item.registry.link','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.verify','role.functions.grant','role.functions.revoke'],true),'Unknown POST endpoint',404);
+    demand(isset($calls[$route]) || in_array($route,['master.item.registry.link','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.verify','role.functions.grant','role.functions.revoke'],true) || isset($coReceiptActions),'Unknown POST endpoint',404);
     $key=$_SERVER['HTTP_X_IDEMPOTENCY_KEY']??'';
     demand(is_string($key)&&preg_match('/^[a-zA-Z0-9_.:-]{12,100}$/',$key)===1,'Valid X-Idempotency-Key required',400);
     // The source-fund row serializes grants, obligations, finalizations and DV
@@ -218,7 +226,7 @@ try {
     // Division configuration after acquiring scoped write locks.
     // Inventory/property aggregates must also observe commits made while waiting
     // for their lot, IAR, RIS or asset mutex; stale counts can over-register assets.
-    if(in_array($route,['role.functions.grant','role.functions.revoke','master.item.create','master.item.registry.link','pr.finalize','pr.update','po.create','po.amend','po.terms.correct','po.document.correct','iar.create','iar.document.correct','ris.create','ris.issue','ris.reverse','stock.opening','asset.opening','property.registration.correct','asset.iar.register','asset.move','accountability.issue','textbook.opening','textbook.move','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.verify','rfq.update','quote.create','award.create','dv.create','dv.finalize','dv.tax.disposition.correct','dv.draft.cancel','fund.event','document.cancel','bank.download.record','bank.download.link_existing','check.create','check.status','check.replace','check.print.profile.save','check.stock.register','check.stock.unusable','check.stock.correct','division.mooe.assignment.save','division.fund_source.save','division.fund_policy.save','division.item_uacs.save','division.item_uacs.bulk.apply','division.vat.save','organization.school.classification','master.fund.create'],true))
+    if(in_array($route,['role.functions.grant','role.functions.revoke','master.item.create','master.item.registry.link','pr.finalize','pr.update','po.create','po.amend','po.terms.correct','po.document.correct','iar.create','iar.document.correct','ris.create','ris.issue','ris.reverse','stock.opening','asset.opening','property.registration.correct','asset.iar.register','asset.move','accountability.issue','textbook.opening','textbook.move','textbook.co_receipt.create','textbook.co_receipt.submit','textbook.co_receipt.inspect','textbook.co_receipt.accept','textbook.co_receipt.reject','textbook.co_receipt.cancel_draft','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.verify','rfq.update','quote.create','award.create','dv.create','dv.finalize','dv.tax.disposition.correct','dv.draft.cancel','fund.event','document.cancel','bank.download.record','bank.download.link_existing','check.create','check.status','check.replace','check.print.profile.save','check.stock.register','check.stock.unusable','check.stock.correct','division.mooe.assignment.save','division.fund_source.save','division.fund_policy.save','division.item_uacs.save','division.item_uacs.bulk.apply','division.vat.save','organization.school.classification','master.fund.create'],true))
         $db->exec('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
     // v0.2.79: atomically bind each idempotency key to exactly one
     // authorized route and canonical JSON body. Without this association a
@@ -273,7 +281,9 @@ try {
             $awardDocOrg=idOf($body,'organization_id');scope($db,$user,$awardDocOrg);
             $awardDoc=AwardDocuments::forIssue($db,$awardDocOrg,$body);
         }
-        if($route==='role.functions.grant'){
+        if(isset($coReceiptActions[$route])){
+            $out=(new TextbookCoReceiptWorkflow($db,$user))->{$coReceiptActions[$route]}($body);
+        }elseif($route==='role.functions.grant'){
             $out=(new RoleFunctions($db,$user))->grant($body);
         }elseif($route==='role.functions.revoke'){
             $out=(new RoleFunctions($db,$user))->revoke($body);
