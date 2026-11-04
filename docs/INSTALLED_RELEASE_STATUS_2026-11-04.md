@@ -1,5 +1,11 @@
 # IPDAMS Installed Release Checkpoint — 4 November 2026
 
+## Latest owner installation and staged patch — 2026-11-04
+
+- Owner reports **v0.2.273 installed** (Add Book initially opened to a white screen). **v0.2.274 is installed**, and owner confirmed Add Book works.
+- **v0.2.275 is staged, not yet installed.** It adds audit-retained book draft discard and closes additional creation/list safety gaps. Release ZIP and UAT are in the IPDAMS Development Drive, documented in [v0.2.275 release notes](V0.2.275_BOOK_DRAFT_DISCARD_UAT_2026-11-04.md).
+- All versions after v0.2.272 still need authenticated live receipt/stock and MariaDB acceptance checks. Do not assume installing equals verified user acceptance.
+
 ## Owner-confirmed installation
 - Installed release: **v0.2.272**, confirmed by owner in conversation on 2026-11-04.
 - Release: `IPDAMS_v0.2.272_CO_TEXTBOOK_RECEIPTS_FROM_v0.2.271.zip`.
