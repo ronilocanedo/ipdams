@@ -1,39 +1,29 @@
 # IPDAMS Installed Release Checkpoint — 4 November 2026
 
-## Latest owner installation and staged patch — 2026-11-04
+## Current confirmed baseline (owner report, 2026-11-04)
 
-- Owner reports **v0.2.273 installed** (Add Book initially opened to a white screen). **v0.2.274 is installed**, and owner confirmed Add Book works.
-- **v0.2.275 is staged, not yet installed.** It adds audit-retained book draft discard and closes additional creation/list safety gaps. Release ZIP and UAT are in the IPDAMS Development Drive, documented in [v0.2.275 release notes](V0.2.275_BOOK_DRAFT_DISCARD_UAT_2026-11-04.md).
-- All versions after v0.2.272 still need authenticated live receipt/stock and MariaDB acceptance checks. Do not assume installing equals verified user acceptance.
+**Installed IPDAMS: v0.2.281.** The owner confirms v0.2.281 is installed and that **refresh restores the current page/tab and tapping the IPDAMS logo returns to Dashboard**. The owner also confirms the preceding **v0.2.280** CO textbook paper-documentation receiving update has been tested and is working. These are owner-reported functional checks; they do **not** establish exhaustive live MariaDB, stock reconciliation, or adversarial permission UAT.
 
-## Owner-confirmed installation
-- Installed release: **v0.2.272**, confirmed by owner in conversation on 2026-11-04.
-- Release: `IPDAMS_v0.2.272_CO_TEXTBOOK_RECEIPTS_FROM_v0.2.271.zip`.
-- Documented strict predecessor: **v0.2.271**.
-- Documented package scope: **6 application files; 0 schema migrations**.
-- Hostinger IPDAMS site file listing confirms receipt workflow source present under `private/app/TextbookCoReceiptWorkflow.php`, as well as `TextbookDirectory.php`, `TextbookIsbn.php`, and `TextbookReceiptDistributionRules.php`; the authenticated runtime and installed-version database state have **not** been independently inspected here.
+**Release chain:** v0.2.272 textbook receiving → v0.2.273 full book profiles → v0.2.274 Add Book white-screen fix → v0.2.275 discard audited drafts → v0.2.276 tabbed textbook UI → v0.2.277 book editor action cleanup → v0.2.278 global book search → v0.2.279 automatic textbook IAR → v0.2.280 paper-only physical receiving and optional observations → **v0.2.281 persistent navigation/logo Dashboard**.
 
-## Current functionality, pending actual owner UAT
-1. Shared ISBN registration is catalog-only and must never credit physical inventory.
-2. Central Office -> Division direct intake credits only Division upon independently inspected and custodian-accepted receipt.
-3. Central Office -> School direct intake credits only the receiving school, never phantom Division inventory.
-4. Signed/attested `DRAFT -> SUBMITTED -> INSPECTED -> ACCEPTED` (or discrepancy) with append-only document snapshots; reject/cancel do not post inventory.
-5. Serviceable lots are separated from damaged-quarantined lots. Held and missing stock is not issuable.
+- [v0.2.280 paperwork-only CO textbook receiving and optional inspection notes](V0.2.280_PAPER_ONLY_CO_RECEIVING_OPTIONAL_NOTES_UAT_2026-11-04.md)
+- [v0.2.281 refresh-navigation and logo-home release](V0.2.281_NAVIGATION_REFRESH_AND_LOGO_HOME_UAT_2026-11-04.md)
+- [v0.2.278 shared searchable ISBN/title/author/edition CO receiving picker](V0.2.278_CO_RECEIPT_GLOBAL_BOOK_SEARCH_UAT_2026-11-04.md)
 
-**Owner's install confirmation is not a confirmation that these flows have passed live UAT.** Keep these statuses separate.
+## Owner-approved business rule — RECORDS, NOT ELECTRONIC APPROVALS
 
-## Next test sequence on the existing authorized IPDAMS site
-- **A. New ISBN:** Textbooks -> Central Office textbook receipts -> Register ISBN. Check catalog addition, no change to office stock, duplicate ISBN-10/ISBN-13 blocked.
-- **B. Division CO receipt:** Create authentic Division draft; confirm no stock change; submit; independently inspect; accepting custodian attests; confirm Division-only serviceable/quarantined lots; replay refused.
-- **C. Direct school CO receipt:** Repeat in an authorized school workspace; confirm school-only stock and cross-office access guard.
-- **D. Discrepancy and audit:** Verify counts, quarantine, reject, cancel, duplicate/source replay and immutable history before designing dispatch.
-- If a 500/incident reference occurs, stop, inspect the register for an already committed transaction and report the exact action/error before retry.
+IPDAMS **documents physical transactions and authentic supporting paper documents**; actual inspection/signing/authorizations happen outside IPDAMS. Named inspectors, issuing/receiving officials and custodians **do not need separate logins to electronically approve or sign**. An authenticated scoped encoder records their actual names and document dates/evidence; the encoder is logged in the app's audit history. The system must not imply an electronic signature. Preserve server authorization of the encoder, source evidence, per-office scopes, idempotent inventory posting and append-only audit. Do not restore the original electronic submit→inspect→accept approval dependency.
 
-## Next engineering module after intake UAT
-Division-to-school textbook dispatch with an authorized allocation, quantity reservation/in-transit reconciliation, receiving school Action Center acceptance, partial delivery and audit-safe reconciliation. Do not simulate this through generic stock adjustment or legacy transfer writes.
+**CO textbook IAR** is linked to the textbook receipt without generating a false local procurement PO. Recording a genuine physical receipt is the stock-posting boundary. Serviceable vs damaged/quarantined vs held/missing must reconcile; drafts and rejected deliveries do not credit stock.
 
-## Sources and safety
-- Release/UAT specification on private Drive: https://drive.google.com/file/d/1_edH982vQwz15BHIJi1MbRVEckplqEgh/view
-- Prior staged design handoff: https://drive.google.com/file/d/10B4tNlYnBdRUY9uudjUW1clE4zy_DdoV/view
-- The `main` branch remains documentation/review-oriented and is **not** a verified synchronized full copy of the live application. Do not deploy GitHub main over Hostinger.
-- This commit is **documentation only**: no file installation, live account change, SQL write, reset, migration, financial transaction, or GitHub Actions run.
+## Next workflow and UAT
+
+1. Verify one authentic CO textbook receipt end-to-end in Division **or** directly receiving school: registered verified book, expected and physically delivered counts, named paper inspector/receiver, document reference/date, **optional inspection observations**, linked automatic printable IAR, and exactly-once serviceable/quarantined stock posting. Confirm source and audit records.
+2. If genuine Division stock is available, develop **Division → School distribution** as a separate documented workflow: source stock/lot available check, issued allocation and dispatch evidence, in-transit/reservation tracking, destination school records the actual paper receipt in Action Center, reconciles discrepancies/partial delivery, posted once to receiving school. Users record named paper signatories; no mandatory electronic approval or signatures.
+3. After textbook workflows and stock reconciliation UAT, apply the successful compact tabs, floating dialogs and high-contrast table UI to **Property Accountability** and **Inventory Management** in separate narrowly reviewed versions.
+
+## Engineering/deployment cautions
+
+- Current installed version **v0.2.281** is **owner-confirmed**, not independently read back from the live runtime. Do not claim the current source is fully synchronized with GitHub; `main` is documentation/review-oriented, not a complete deployable mirror.
+- All future updates must be strictly predecessor-gated from confirmed installed version, use exact matching on-host or user-backup source, preserve independent website and SQL backups, and avoid live production resets, migrations, stock postings or fabricated source records during test development.
+- This checkpoint update is **documentation only**; no live website/database mutations or GitHub Actions runs.
