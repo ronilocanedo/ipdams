@@ -1,3 +1,16 @@
+# IPDAMS Release Checkpoint — Updated 2026-11-06
+
+**Latest owner-confirmed installed baseline:** v0.2.288. The owner subsequently tested the Historical Property form and reported an empty Historical Property tab after registration; source assets already existed in Asset Register. The owner did not explicitly confirm installation of v0.2.289.
+
+**New staged fix: v0.2.290 (NOT confirmed installed)** — [release notes](V0.2.290_HISTORICAL_PROPERTY_REGISTER_AND_TRANSFERRED_OUT_REPORTS_2026-11-06.md). Available as **two strict predecessors** (choose only the matching actual installed version): `v0.2.289 → v0.2.290` and `v0.2.288 → v0.2.290` rollup. Six files, zero migrations.
+
+- Adds an actual paginated Historical Property register with View Details and post-registration refresh, plus Show transferred-out history.
+- Excludes accepted transferred-out source assets (status `TRANSFERRED`) from current sending-school Asset Register, standard asset lists, special-role asset register and semi-expendable current A.1/A.8 report datasets. Receiving Division active asset remains. Past ICS/PAR and transfer/movement reports remain intact.
+- 26 source/SQLite fixture checks and two desktop/mobile Chromium tests passed; php lint, JS syntax and release manifests verified; **live production data/report reconciliation remains pending**.
+- Important: no rewriting ownership, stock or financial data; no production Hostinger/DB actions. User uses backups and strict System Updates ZIP install.
+
+## Prior development record
+
 # IPDAMS Installed / Staged Release Checkpoint — Updated 2026-11-06
 
 ## Most recent owner-confirmed installed version
