@@ -1,23 +1,30 @@
-# IPDAMS — Installed / Staged Release Checkpoint (updated 2026-11-06)
+# IPDAMS Installed and Staged Release Checkpoint — Updated 2026-11-06
 
-## Most recent owner-confirmed installed release
+## Most recent owner-confirmed installed version
 
-**v0.2.286** — owner reports installed. Owner screenshot of Property Accountability shows a UI regression: four Property navigation categories stack as large full-width cards, and Division theme differs from Textbooks. Owner has **not** yet confirmed v0.2.287 installed. The exact v0.2.286 predecessor may have arrived by either v0.2.284 roll-up or v0.2.285 direct upgrade; both use the same v0.2.286 frontend stylesheet.
+**v0.2.287 installed and working.** The owner confirmed that the v0.2.287 correction resolved the oversized stacked Property Accountability tabs and differing Division theme. v0.2.286's Super Admin/Property & Inventory UI improvements are included. Previously confirmed: textbook teacher issuance/disposal and reporting v0.2.284; book ledger v0.2.285 was included via the appropriate v0.2.286 roll-up if needed.
 
-## Corrective release awaiting owner installation
+## v0.2.288 — Staged only, owner installation pending
 
-**v0.2.287**, strict gate **v0.2.286 → v0.2.287**, **2 frontend-only changed files**, **0 DB migrations**. This corrects compact Property & Inventory navigation and unifies Division Consolidation blue/navy table contrast. Package SHA-256 `617e3d60c060e20fedae9d21bb35b85f945aa977258af150155311f74d4cd0c6`.
+The new owner-requested patch allows **creating a missing PPE or Semi-expendable catalog item from inside Historical Property registration** without navigating away. Selecting **+ Add missing catalog item** opens a compact modal. Enter item name, existing unit, active Division-approved classification/UACS, then Save; the new item is selected automatically in the preserved historical property form.
 
-- [v0.2.287 release notes and UAT](V0.2.287_PROPERTY_DIVISION_UI_THEME_CORRECTION_UAT_2026-11-06.md)
-- [v0.2.287 ZIP installer](https://drive.google.com/file/d/1KqH5Aq1SkhlFylaRhmaiObcwdsfPaT1g/view)
-- [v0.2.287 installation guide](https://drive.google.com/file/d/1gVeVEtdyXsDG2j4eZgF4jpCUA0sXdOx4/view)
+- [Version 0.2.288 release notes, controls, local browser testing and UAT](V0.2.288_HISTORICAL_PROPERTY_CATALOG_QUICK_ADD_UAT_2026-11-06.md).
+- [v0.2.288 ZIP installer](https://drive.google.com/file/d/1y0JJcOoRa5qpZ9prrk8xeIGGEDX-lJHL/view).
+- [v0.2.288 installation/UAT guide](https://drive.google.com/file/d/1gaSD963uQZvN7SUrZtIt1ArxnqAN4b-_/view).
 
-Root cause was confirmed by reproducing v0.2.286 CSS in Chromium: legacy CSS retained `flex-direction: column` and `width:100% !important` on Property nav buttons even after new flex display. The patch explicitly overrides both plus legacy teal states, and styles separate Division Consolidation sections.
+**Predecessor gate 0.2.287 → 0.2.288. 2 frontend changed files; zero database migrations. SHA256 `e04e71186adb014ab472eaa705c21fc249eeebe509d2d24c83251419448d2703`.**
 
-**36 Chromium layout assertions passed** for desktop/tablet/mobile fixture views. Authenticated live school and Division acceptance remain pending. No server PHP, APIs, React, permissions, stock, finance, document generation or database contents changed in this patch. No production website modified directly by assistant.
+Uses existing server `master.item.create`, with original school/Division scoping, UACS approval, role permissions and audit. Creating a catalog item does **not** register physical historical property, move inventory or post accounting entries. School catalog is scoped, Division catalog shared according to existing policy, Super Admin read-only Office Viewer remains non-mutating.
 
-## Confirmed functionality and forward work
+**Testing distinction:** 15 React component checks and local Chromium desktop/mobile full dialog interactions passed using mocked authorized API responses. Live production MariaDB and real role credentials remain untested and require owner UAT. Don't invent production asset transactions.
 
-Earlier owner-confirmed tests include v0.2.280 paper-only CO receiving, v0.2.281 refresh/navigation, v0.2.282 transfers, v0.2.283 custodian names and v0.2.284 Textbooks teacher issuance/disposal/reports. v0.2.285 Book Directory Ledger was included in the v0.2.286 roll-up path where required.
+## Next
 
-After v0.2.287 owner testing, verify Super Admin read-only viewing of every authorized office, Historical Property original fund source, and Division/School UI parity; then continue Property and Inventory workflows. Preserve independent website and SQL backups and use version-gated ZIP updates only. GitHub main is a documentation index, not deployable production source.
+Confirm owner install of v0.2.288 and test historical catalog quick-add with a real missing approved item. Continue Property Accountability and Inventory Management improvements based on actual user testing.
+
+## Security and deployment cautions
+
+- Keep independent website and SQL backups and use strict version-gated updater ZIPs.
+- Do not override Division classification or catalog scope rules.
+- GitHub main is documentation/review focused, not a verified live source mirror; never deploy it over Hostinger wholesale.
+- Assistant prepared ZIP/docs only; no production web/SQL writes, reset, migration, posting, or GitHub Actions run.
