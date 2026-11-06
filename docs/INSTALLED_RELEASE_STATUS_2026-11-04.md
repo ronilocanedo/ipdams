@@ -1,3 +1,19 @@
+# IPDAMS Development Checkpoint — November 6, 2026 (v0.2.294 prepared)
+
+**Owner-confirmed installed and working:** v0.2.293. Owner confirms Print RIS action works, and requests formal **Report of Semi-Expendable Property Issued** matching the provided Appendix 64 styling and smaller italic official UACS title under each code.
+
+**v0.2.294 packaged, not installed or live-tested.** Strict installer `0.2.293 → 0.2.294`, 5 changed files, 0 migrations, SHA256 `a52598e58c06a33e662db72fecdc57f718531c05570967963a78cfefe6510e18`.
+
+- [v0.2.294 installer — IPDAMS Development Drive](https://drive.google.com/file/d/1sSFUmDJgbi75320siGpQ-hjRH6PxjSqU/view)
+- [v0.2.294 detailed release, limitations, tests](V0.2.294_SEMI_EXPENDABLE_APPENDIX64_UACS_TITLE_PRINT_UAT_2026-11-06.md)
+- [v0.2.294 installation guide](https://drive.google.com/file/d/1pmF_WV6M1eOSTjQKAskd7WSBSMEZzS3s/view)
+
+The report uses **CSP-safe external print CSS**, black-bordered item/recap tables, manual-signature boxes and **official UACS account titles** obtained from effective-dated mappings to the exact authenticated catalog item. Codes/titles, RIS numbers, fund clusters, actual accounting staff signatures/dates and the report serial are **not invented** when unrecorded. Printing cannot post stock or accounting. Existing Print RIS, Print ICS and Print RIS + ICS modes preserved.
+
+Local tests: 56 report/HTML checks, 9 effective-date UACS resolver checks, 80 older RIS/ICS regressions passed; PHP lint, JS syntax, ZIP checks passed; A4 WeasyPrint verified 1/2/4 items one sheet and 8/20 items paginate. **Chromium browser navigation blocked in this environment; owner must perform real authenticated print UAT and financial reference verification**. Actual live Hostinger/SQL untouched.
+
+---
+
 # IPDAMS Installed / Staged Checkpoint — 2026-11-06
 
 **Owner confirmed installed v0.2.292** and its compact RIS + ICS print output works.
