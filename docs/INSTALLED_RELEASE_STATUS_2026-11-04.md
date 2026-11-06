@@ -1,3 +1,18 @@
+# IPDAMS Installed / Staged Checkpoint — 2026-11-06
+
+**Owner confirmed installed v0.2.292** and its compact RIS + ICS print output works.
+
+**v0.2.293 is staged for owner installation**, adding a standalone **Print RIS** action for finalized ICS. This uses the same authenticated, non-mutating RIS printer and Appendix 63 layout as the paired print. Installer strict predecessor **v0.2.292 → v0.2.293**, 3 frontend files and 0 migrations.
+
+- [v0.2.293 installer — IPDAMS Development Google Drive](https://drive.google.com/file/d/1SCsJwPm-NP_wk_SofvQNQY-YMRMj444j/view)
+- [v0.2.293 release note and UAT](V0.2.293_STANDALONE_PRINT_RIS_FROM_FINALIZED_ICS_UAT_2026-11-06.md)
+- SHA-256: `36eb640d69d10181ececc91a85c66f4741fbeec20a5501c28ccf0776f1c42735`
+- Local 80 JS assertions and Chromium one-/multi-page A4 RIS-only print checks passed. **No live production install or printer acceptance claimed.**
+
+Back up website and SQL independently. Never install GitHub main as site source. The change only prints documentary RIS; does not create a new RIS number, ICS, movement, approval, or accounting entry.
+
+---
+
 # IPDAMS Development Checkpoint — November 6, 2026
 
 ## Last explicitly owner-confirmed installed release
