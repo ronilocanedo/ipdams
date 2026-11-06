@@ -1,3 +1,21 @@
+# IPDAMS Release Checkpoint — November 6, 2026 (v0.2.296 staged)
+
+**Owner-confirmed installed version:** **v0.2.295**. It installed successfully; owner could not save a Division MOOE in-charge appointment for a school dated before the person's IPDAMS employment episode. Owner has NOT yet confirmed the v0.2.295 Appendix 64 Posted-by print acceptance because the assignment remains unconfigured.
+
+**Root cause confirmed in v0.2.295 code:** `Domain::saveDivisionMooeAssignment` omitted the posted request `$d` from the closure `use(...)` list; hence the backend read the genuine historical-confirmation checkbox and official document reference as absent. A separate bug referenced `$staff['id']` where the real field is `$staff['assignment_id']`. The UI also displayed stale errors after checking the box.
+
+**New staged v0.2.296:** fixes both backend defects, aligns the checkbox and clears stale errors with documented reference validation; still requires genuine official Division evidence and preserves active employee, dates, school scope, audit and accounting safeguards.
+
+- [v0.2.296 installer ZIP — IPDAMS Development Drive](https://drive.google.com/file/d/1vAOSovJd0qOHLsfWs_MFjpiVg3kc7uK7/view)
+- [v0.2.296 detailed release/UAT and security boundary](V0.2.296_DIVISION_MOOE_ASSIGNMENT_SAVE_HOTFIX_UAT_2026-11-06.md)
+- [v0.2.296 installation guide](https://drive.google.com/file/d/153GzeTI-DT6I8h3glL7FDv_PE5IPuOXh/view)
+- Strict updater **v0.2.295 → v0.2.296**, **3 files, zero SQL migrations**, SHA256 `d54a97ab4da98315966140afc94d9d64fb9f123f202fe1a1c4769be50d0a204a`.
+- **8 isolated PHP save/validation scenarios and 12 frontend tests passed**; PHP/Node syntax, ZIP CRC and manifest file checksums passed. Genuine authenticated live MariaDB and printed report UAT are pending. No Hostinger website/database change made while packaging.
+
+Next step: owner installs 0.2.296, refreshes, then saves a *real* Division officer assignment supported by an authentic memorandum. Check the as-of date and actual officer on the school's Appendix 64 semi-expendable report. Do not rewrite employee employment dates or claim an electronic signature.
+
+---
+
 # IPDAMS Release Checkpoint — November 6, 2026 (v0.2.295 staged)
 
 **Owner-confirmed installed and working:** **v0.2.294**. The owner reports Appendix 64 semi-expendable issued report prints successfully. Owner clarifies **Posted by = the genuine Division MOOE In-Charge assigned to that school**, while **Certified by = the school's Property Custodian**.
