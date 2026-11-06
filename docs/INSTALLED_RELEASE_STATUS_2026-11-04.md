@@ -1,3 +1,17 @@
+# IPDAMS — Current Development Checkpoint (2026-11-06)
+
+**Last owner-confirmed installed version:** **v0.2.296**, MOOE assignment saving works. **v0.2.297 is packaged, NOT yet installed or live-tested.**
+
+**v0.2.297 Travel Authority print typography:** small italic 8.7pt attachment note under Purpose of Travel, smaller 10pt italic certification paragraphs (wording unchanged), and 9.5pt italic position titles under Requester, Recommender and Approver. **One print-only PHP file, zero migrations**, strict predecessor `0.2.296 → 0.2.297`. No travel records, approvals, money or paper signatory data modified.
+
+- [v0.2.297 installer](https://drive.google.com/file/d/1bhI7nT41sBTOf_7d2SSNkigqOqf2ii3u/view)
+- [v0.2.297 detailed release/UAT](V0.2.297_TRAVEL_AUTHORITY_PRINT_TYPOGRAPHY_UAT_2026-11-06.md)
+- [v0.2.297 sample A4 PDF](https://drive.google.com/file/d/1X6fpGtAeL74rxmRMTEQzHgE1OPjO26n3/view)
+
+**Local validation:** PHP lint, original/modified A4 print fixtures and font styles, exact one-file ZIP manifest, CRC and hash passed. The real production printed form needs owner acceptance. Preserve independent website and SQL backups; never deploy GitHub main wholesale.
+
+---
+
 # IPDAMS Release Checkpoint — November 6, 2026 (v0.2.296 staged)
 
 **Owner-confirmed installed version:** **v0.2.295**. It installed successfully; owner could not save a Division MOOE in-charge appointment for a school dated before the person's IPDAMS employment episode. Owner has NOT yet confirmed the v0.2.295 Appendix 64 Posted-by print acceptance because the assignment remains unconfigured.
