@@ -1,27 +1,21 @@
 # IPDAMS Development Checkpoint — November 6, 2026
 
-## Last explicit owner-confirmed installation
+## Last explicitly owner-confirmed installed release
 
-The owner confirmed **v0.2.288** installed and that Historical Property **+ Add Missing Catalog Item** appeared after refreshing. Subsequent **v0.2.289** condition dropdown and **v0.2.290** Historical Property register / transferred-out holdings correction packages were prepared, but the owner has not explicitly stated the currently installed release. **Do not assume v0.2.290 installed.** The latest user screenshots concern the ICS/RIS printed format and do not identify the update version.
+**v0.2.291** is installed and working; the owner confirmed the updated Appendix-style formal RIS and ICS printouts render. Earlier v0.2.288 Historical Property quick-add appeared after refresh. Release v0.2.291 was delivered with a direct-from-0.2.290 installer and roll-ups from 0.2.288/0.2.289; the exact upgrade route chosen wasn't specified, but the **installed version v0.2.291** was confirmed.
 
-## NEW: v0.2.291 — STAGED, NOT YET INSTALLED
+## NEXT: v0.2.292 PACKAGED, awaiting owner installation
 
-User provided official-looking template examples for **Appendix 59 ICS** and **Appendix 63 RIS** after showing a plain unbordered browser output from "Print RIS + ICS".
+**Print RIS + ICS on the same A4 sheet for short 1–4 item finalized ICS batches**; show saved per-asset **Brand, Model and Serial No.** beneath the item name in small italic font on both Appendix 63 RIS and Appendix 59 ICS. Long batches, long names and unusual descriptions fall back to multiple separate pages. Standalone ICS printing receives the same subtext. No metadata is invented.
 
-This update corrects both the Property Accountability combined ICS/RIS and the standalone ICS and consumable supplies RIS print routes. It separates RIS and ICS into full black-bordered A4 portrait sheets, official group columns, quantity/amount and signature sections, with an external stylesheet resistant to restrictive CSP. Does not create a new RIS record or fabricate its separate number, paper signatures or fund code.
+- [v0.2.292 release, tests and owner UAT](V0.2.292_RIS_ICS_ONE_PAGE_PRINT_AND_ITEM_DETAILS_UAT_2026-11-06.md).
+- [v0.2.292 strict installer](https://drive.google.com/file/d/1zLAKyB-0Gv1SOERVoMaY321Kotz04m-d/view).
+- Gate: **v0.2.291 → v0.2.292**, **six print/frontend files, zero SQL migrations**.
+- SHA256 `fe8766598cb5ac672273ef958da3c8c939df9dd6cdc509bd6dea9775bec0b582`.
+- Local Chromium print-to-PDF fixtures confirm combined **1/2/3/4 item output = one A4 page**, larger batches use separate/continuation pages, no missing signature sections. Standalone PHP ICS/RIS and escaping tested. **Live authenticated user print acceptance pending**.
 
-- [v0.2.291 release notes, technical controls and UAT](V0.2.291_FORMAL_RIS_ICS_APPENDICES_PRINT_UAT_2026-11-06.md)
-- [v0.2.291 installation and testing guide](https://drive.google.com/file/d/1vv748moAQwSEF_76tc6x2CoWrnXoyf_c/view)
-- [Direct installer **v0.2.290 → v0.2.291**](https://drive.google.com/file/d/1wyIxcL8zQiKGRulhCSOFKotSgHhKqkAG/view) — 7 application files, SHA256 `841d33f845085272f093599836bff1f39f81db7a005ee622189dc690316785e8`
-- [Rollup **v0.2.289 → v0.2.291**](https://drive.google.com/file/d/18CbsIFqmgKWuJGIKXSn3lUuyOVah-ZKe/view) — 11 files, SHA256 `1a183dc86fcca1632c5de2e298621a73213130edab94425ed7a8d8ef2afc67c1`
-- [Rollup **v0.2.288 → v0.2.291**](https://drive.google.com/file/d/1-3txK5ShFK4DNzyBBfsBR2V0qNQzgnvT/view) — 11 files, SHA256 `4dd61829efd743221e596d4a3fda4e200c12fcd5726ad0afc773a625ae343884`
+## General product policy and work priorities
 
-**No database migrations**, financial/accountability postings or changes to existing issued documents. The exact package must match Settings → System Updates predecessor version; don't bypass gates.
+IPDAMS documents paper transactions and genuine signatory names; it does not require named inspectors, custodians, approvers or teachers to log in to electronically approve/sign. Issuing/receiving stock and property movements are guarded by existing backend permissions and immutable audit trails. RIS/ICS print-only changes never create new property, stock, accounting transactions, documents, approvals or document numbers.
 
-### Test distinction
-
-PHP and JS syntax, ZIP hashes and A4 PDF rendering passed. Combined RIS+ICS rendered as exactly **2 pages**, standalone ICS and supplies RIS as **1 page each**, with both 8-item and 20-item cases and signature sections. Chromium local navigation was blocked by administrator restrictions so **real browser print, authentic role and live MariaDB UAT are NOT confirmed**. Owner should print existing genuine finalized documents and verify physical output, scope, source amount and zero new stock records before accepting.
-
-## Business rules still in force
-
-IPDAMS documents actual paperwork; it does not electronically approve, sign or simulate approvals. Original fund sources/acquisition metadata are documentary, not financial postings. Transferred-out assets must not count as current school holdings after Division receipt but must retain sending school transfer history. Each update has independent website+SQL backups, exact version gate, scope validation and no production resets. GitHub default branch is documentation-oriented, not a verified deployable production source mirror.
+After v0.2.292 owner testing: continue Property Accountability/Inventory Management testing; ensure school current holdings exclude transferred-out property while retaining cross-office transfer history and school/Division audit visibility. Preserve exact installed code; GitHub main is a release/documentation index, not a verified deployable mirror of Hostinger. All future patches require independent website/SQL backups and exact version gate. No live production website/SQL writes, migrations or GitHub Actions were performed while preparing v0.2.292.
