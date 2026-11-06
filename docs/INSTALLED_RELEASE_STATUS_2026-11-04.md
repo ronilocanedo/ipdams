@@ -1,37 +1,23 @@
-# IPDAMS — Installed and Staged Release Checkpoint (2026-11-04)
+# IPDAMS — Installed / Staged Release Checkpoint (updated 2026-11-06)
 
-## Most recent packaged update: v0.2.286 (2026-11-06) — not yet installed
+## Most recent owner-confirmed installed release
 
-**Owner's last confirmed installed version remains v0.2.284.** The v0.2.285 installation has not been confirmed. Two mutually exclusive strict-gated v0.2.286 installers are available:
+**v0.2.286** — owner reports installed. Owner screenshot of Property Accountability shows a UI regression: four Property navigation categories stack as large full-width cards, and Division theme differs from Textbooks. Owner has **not** yet confirmed v0.2.287 installed. The exact v0.2.286 predecessor may have arrived by either v0.2.284 roll-up or v0.2.285 direct upgrade; both use the same v0.2.286 frontend stylesheet.
 
-- v0.2.284 → v0.2.286 **roll-up**, including the v0.2.285 Book Directory Details ledger: [Drive](https://drive.google.com/file/d/1Lv6ph_WbzrxUw1APr3hbC-iWApL98QYs/view), 7 files / no migrations
-- v0.2.285 → v0.2.286 **direct**: [Drive](https://drive.google.com/file/d/19KrXGdrkGvP9QuSirFuL1EIhK935Hc4n/view), 4 files / no migrations
-- [Design, package checks and owner UAT](V0.2.286_SUPERADMIN_OFFICE_VIEW_PROPERTY_INVENTORY_HISTORICAL_FUND_UAT_2026-11-06.md)
+## Corrective release awaiting owner installation
 
-Scope: Super Admin convenience read-only Office Viewer over existing all-office selector; Textbooks-like compact Property/Inventory navigation, high-contrast tables and floating historical/RIS/issue/opening forms; optional historical original_fund_source as JSON evidence displayed/audited. The viewer is a **UI convenience and frontend write guard**, not a newly enforced server role or cross-school grant. School user scopes unchanged. No live website or stock changes performed.
+**v0.2.287**, strict gate **v0.2.286 → v0.2.287**, **2 frontend-only changed files**, **0 DB migrations**. This corrects compact Property & Inventory navigation and unifies Division Consolidation blue/navy table contrast. Package SHA-256 `617e3d60c060e20fedae9d21bb35b85f945aa977258af150155311f74d4cd0c6`.
 
-Isolated validation: **12 PHP + 28 Node component/API assertions passed**, PHP/JS syntax and ZIP hash/CRC verified. Chromium graphical test blocked by administrator; **authenticated production acceptance pending**. Do not assume new update installed.
+- [v0.2.287 release notes and UAT](V0.2.287_PROPERTY_DIVISION_UI_THEME_CORRECTION_UAT_2026-11-06.md)
+- [v0.2.287 ZIP installer](https://drive.google.com/file/d/1KqH5Aq1SkhlFylaRhmaiObcwdsfPaT1g/view)
+- [v0.2.287 installation guide](https://drive.google.com/file/d/1gVeVEtdyXsDG2j4eZgF4jpCUA0sXdOx4/view)
 
-## Owner-confirmed installed baseline: v0.2.284
+Root cause was confirmed by reproducing v0.2.286 CSS in Chromium: legacy CSS retained `flex-direction: column` and `width:100% !important` on Property nav buttons even after new flex display. The patch explicitly overrides both plus legacy teal states, and styles separate Division Consolidation sections.
 
-The owner confirmed **v0.2.284 installed and working**, including the newly added Textbooks Teacher Issuance, Disposal and Reports tabs. Earlier owner-confirmed working: v0.2.280 paper-only CO receiving, v0.2.281 navigation persistence/logo home, v0.2.282 two textbook transfer options with RIS/ITR, and v0.2.283 appointed Property Custodian auto-signatory fields.
+**36 Chromium layout assertions passed** for desktop/tablet/mobile fixture views. Authenticated live school and Division acceptance remain pending. No server PHP, APIs, React, permissions, stock, finance, document generation or database contents changed in this patch. No production website modified directly by assistant.
 
-## Previous separately staged release: v0.2.285 — installation not confirmed
+## Confirmed functionality and forward work
 
-**Book Directory → Details** opens an authenticated read-only ledger showing quantities received, transferred in/out, teacher issues and returns, stock by batch/condition, pending loss/damage, disposal holds and actual disposal with dated source references.
+Earlier owner-confirmed tests include v0.2.280 paper-only CO receiving, v0.2.281 refresh/navigation, v0.2.282 transfers, v0.2.283 custodian names and v0.2.284 Textbooks teacher issuance/disposal/reports. v0.2.285 Book Directory Ledger was included in the v0.2.286 roll-up path where required.
 
-- [Release design, permission rules and local UAT for v0.2.285](V0.2.285_BOOK_DIRECTORY_DETAILS_LEDGER_UAT_2026-11-04.md).
-- Installer: `IPDAMS_v0.2.285_BOOK_DIRECTORY_DETAILS_LEDGER_FROM_v0.2.284.zip`, SHA-256 `3f22b7a18f798c56a86e6d4edea99f85065cc9fb31e8d7098c3e5af23e92a783`.
-- Strict predecessor **v0.2.284 → v0.2.285**, five frontend/API/read-only service files, **zero migrations**.
-- Local tests passed (PHP mocked query/permission cases, browser with original React library, existing teacher-issuance/Division disposal regression checks). **Live authenticated stock-ledger reconciliation not done.**
-- School sees its own office, Division can opt into active supervised-school consolidation, draft book identities remain protected.
-
-## Policy and safety
-
-IPDAMS records real physical transactions and actual paper signatories, not digital approvals. Books identified for disposal cannot be physically disposed in IPDAMS before genuine written Division authorization is recorded. The read-only Details ledger never posts stock, infers approval, or changes paper records. Only authorized scoped encoders operate relevant transactions; each write is auditable.
-
-Retain separate website+SQL backups before installing; use Settings → System Updates and verify strict predecessor. Do not fabricate production transactions for tests.
-
-After v0.2.285 UAT, finish textbook exceptions and printable documents, then roll the successful compact tabs/dialogs/contrasting tables into **Property Accountability** and **Inventory Management** in separate controlled updates.
-
-The private GitHub `main` branch is a release-documentation index, not a verified Hostinger production source mirror. Do not deploy it wholesale. This checkpoint edit is documentation only.
+After v0.2.287 owner testing, verify Super Admin read-only viewing of every authorized office, Historical Property original fund source, and Division/School UI parity; then continue Property and Inventory workflows. Preserve independent website and SQL backups and use version-gated ZIP updates only. GitHub main is a documentation index, not deployable production source.
