@@ -1,3 +1,17 @@
+# IPDAMS Release Checkpoint — November 6, 2026 (v0.2.295 staged)
+
+**Owner-confirmed installed and working:** **v0.2.294**. The owner reports Appendix 64 semi-expendable issued report prints successfully. Owner clarifies **Posted by = the genuine Division MOOE In-Charge assigned to that school**, while **Certified by = the school's Property Custodian**.
+
+**Next package staged, not yet installed:** **v0.2.295**, an exact v0.2.294 → v0.2.295 update, **5 changed files, zero migrations**, SHA-256 `9db368d67d7317dba3d0faf45660110702bca504950c488008fee5d051b112c7`. It uses the previously configured Division MOOE Assignments, effective on the ICS issuance date, to fill the officer's name and designation in the Posted by section; signature and date stay blank for paper. If no valid dated assignment exists, leaves identity blank with a preview warning; other-school officers are never substituted. Printing does not post accounts, ICS/RIS or stock.
+
+- [v0.2.295 installer — IPDAMS Development Drive](https://drive.google.com/file/d/1p08Kc8jkWzcv5m2gRhEmA9ZWTVdEtOKs/view)
+- [v0.2.295 release notes and UAT](V0.2.295_SEMI_REPORT_POSTED_BY_DIVISION_MOOE_OFFICER_UAT_2026-11-06.md)
+- [v0.2.295 detailed owner test guide](https://drive.google.com/file/d/162b2r9Ic0PUDm3Mb6KoHN_L2MF1o8r0k/view)
+
+**Validation:** 18 as-of and scope checks, 8 renderer assertions, PHP/JS syntax, A4 PDF fixtures and ZIP manifest/checksum verification passed. Production authenticated assignment and actual print acceptance remain outstanding. No live website/SQL changes or GitHub Actions were made to prepare this version.
+
+---
+
 # IPDAMS Development Checkpoint — November 6, 2026 (v0.2.294 prepared)
 
 **Owner-confirmed installed and working:** v0.2.293. Owner confirms Print RIS action works, and requests formal **Report of Semi-Expendable Property Issued** matching the provided Appendix 64 styling and smaller italic official UACS title under each code.
