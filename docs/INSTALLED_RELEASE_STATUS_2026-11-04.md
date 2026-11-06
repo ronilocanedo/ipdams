@@ -1,3 +1,22 @@
+# IPDAMS Release Checkpoint — 2026-11-06 (Travel Itinerary Stage A)
+
+**Last explicitly owner-confirmed installed:** v0.2.296. A separate v0.2.297 Travel Authority print typography patch was offered but the owner did not explicitly confirm installing it.
+
+**New version v0.2.298 is packaged, staged and NOT yet confirmed installed.** It adds Appendix 45 itinerary transcription inside documentary travel reimbursement claims, item-by-item official receipt classification for fare/per diem/other, and a separate scoped **Expenses Without Official Receipts** report with print/CSV/pagination. Claimed amounts are **not** automatically eligible, reimbursable, DV-linked or paid.
+
+- [v0.2.298 release, local tests and UAT](V0.2.298_TRAVEL_APPENDIX45_ITINERARY_NO_RECEIPT_REPORT_UAT_2026-11-06.md).
+- [Installer from v0.2.296 (rolls in v0.2.297 typography)](https://drive.google.com/file/d/1NmA31vA96CbhOoz-OAzAnBM1eSPuxKJq/view): **0.2.296 → 0.2.298; 8 files; 0 migrations.**
+- [Installer from v0.2.297](https://drive.google.com/file/d/17yV9CeT5av5Whj2P1C7mgtH-FnbIQQIA/view): **0.2.297 → 0.2.298; 7 files; 0 migrations.**
+- [v0.2.298 installation and UAT guide](https://drive.google.com/file/d/1Q0AJ8uemBECNeJuwFiTyWQe-T9ijG3ow/view).
+
+**Local checks:** 31 PHP validation tests, 15 mock-PDO scoped report/pagination tests, 27 React-style UI logic/save/report tests, PHP lint/Node syntax/CSS parser, and ZIP SHA-256/CRC/version gates pass. Chromium refused local navigation (`ERR_BLOCKED_BY_ADMINISTRATOR`); no successful browser or live database UAT is claimed.
+
+**Important source integrity finding:** `public/api/index.php` is based on the last modified v0.2.285 source (not the older website backup), avoiding route loss for working Textbooks/Property. Original v0.2.296 application JS and HTML were preserved with only itinerary changes; v0.2.297 changed another PHP print file only.
+
+**Next**: owner installs only the version-matching ZIP and tests an authentic completed School MOOE/split-funded TA → itemized itinerary → claim draft → separate without-receipt report. Preserve signed originals and independent website/SQL backups. **No DV, check, journal, fund or payment actions in Stage A.** Stages B/C/D remain design pending; never repurpose procurement reimbursement DV or grant electronic approval requirements to paper signatories.
+
+---
+
 # Next development focus — Travel Reimbursement → Consolidated Employee DV (design, 2026-11-06)
 
 Owner requests that **Travel Reimbursement calculate/document only the amount eligible for reimbursement**, while **Disbursement Voucher** combines multiple unpaid travel claims for the same employee into one DV and manages actual payment. Sample uploaded Appendix 45 itinerary shows claimed PHP 5,730 fare + PHP 3,150 per diem + PHP 110 other = PHP 8,990, which is **NOT** automatically allowable or paid.
