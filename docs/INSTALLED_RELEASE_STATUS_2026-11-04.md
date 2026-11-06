@@ -1,38 +1,27 @@
-# IPDAMS Release Checkpoint — Updated 2026-11-06
+# IPDAMS Development Checkpoint — November 6, 2026
 
-**Latest owner-confirmed installed baseline:** v0.2.288. The owner subsequently tested the Historical Property form and reported an empty Historical Property tab after registration; source assets already existed in Asset Register. The owner did not explicitly confirm installation of v0.2.289.
+## Last explicit owner-confirmed installation
 
-**New staged fix: v0.2.290 (NOT confirmed installed)** — [release notes](V0.2.290_HISTORICAL_PROPERTY_REGISTER_AND_TRANSFERRED_OUT_REPORTS_2026-11-06.md). Available as **two strict predecessors** (choose only the matching actual installed version): `v0.2.289 → v0.2.290` and `v0.2.288 → v0.2.290` rollup. Six files, zero migrations.
+The owner confirmed **v0.2.288** installed and that Historical Property **+ Add Missing Catalog Item** appeared after refreshing. Subsequent **v0.2.289** condition dropdown and **v0.2.290** Historical Property register / transferred-out holdings correction packages were prepared, but the owner has not explicitly stated the currently installed release. **Do not assume v0.2.290 installed.** The latest user screenshots concern the ICS/RIS printed format and do not identify the update version.
 
-- Adds an actual paginated Historical Property register with View Details and post-registration refresh, plus Show transferred-out history.
-- Excludes accepted transferred-out source assets (status `TRANSFERRED`) from current sending-school Asset Register, standard asset lists, special-role asset register and semi-expendable current A.1/A.8 report datasets. Receiving Division active asset remains. Past ICS/PAR and transfer/movement reports remain intact.
-- 26 source/SQLite fixture checks and two desktop/mobile Chromium tests passed; php lint, JS syntax and release manifests verified; **live production data/report reconciliation remains pending**.
-- Important: no rewriting ownership, stock or financial data; no production Hostinger/DB actions. User uses backups and strict System Updates ZIP install.
+## NEW: v0.2.291 — STAGED, NOT YET INSTALLED
 
-## Prior development record
+User provided official-looking template examples for **Appendix 59 ICS** and **Appendix 63 RIS** after showing a plain unbordered browser output from "Print RIS + ICS".
 
-# IPDAMS Installed / Staged Release Checkpoint — Updated 2026-11-06
+This update corrects both the Property Accountability combined ICS/RIS and the standalone ICS and consumable supplies RIS print routes. It separates RIS and ICS into full black-bordered A4 portrait sheets, official group columns, quantity/amount and signature sections, with an external stylesheet resistant to restrictive CSP. Does not create a new RIS record or fabricate its separate number, paper signatures or fund code.
 
-## Most recent owner-confirmed installed version
+- [v0.2.291 release notes, technical controls and UAT](V0.2.291_FORMAL_RIS_ICS_APPENDICES_PRINT_UAT_2026-11-06.md)
+- [v0.2.291 installation and testing guide](https://drive.google.com/file/d/1vv748moAQwSEF_76tc6x2CoWrnXoyf_c/view)
+- [Direct installer **v0.2.290 → v0.2.291**](https://drive.google.com/file/d/1wyIxcL8zQiKGRulhCSOFKotSgHhKqkAG/view) — 7 application files, SHA256 `841d33f845085272f093599836bff1f39f81db7a005ee622189dc690316785e8`
+- [Rollup **v0.2.289 → v0.2.291**](https://drive.google.com/file/d/18CbsIFqmgKWuJGIKXSn3lUuyOVah-ZKe/view) — 11 files, SHA256 `1a183dc86fcca1632c5de2e298621a73213130edab94425ed7a8d8ef2afc67c1`
+- [Rollup **v0.2.288 → v0.2.291**](https://drive.google.com/file/d/1-3txK5ShFK4DNzyBBfsBR2V0qNQzgnvT/view) — 11 files, SHA256 `4dd61829efd743221e596d4a3fda4e200c12fcd5726ad0afc773a625ae343884`
 
-**v0.2.288 is installed and working.** The owner confirmed that Historical Property **+ Add missing catalog item** appears after refreshing the page (initially old JavaScript remained cached). Earlier UI corrections through v0.2.287 also owner-confirmed working.
+**No database migrations**, financial/accountability postings or changes to existing issued documents. The exact package must match Settings → System Updates predecessor version; don't bypass gates.
 
-## Staged new update — owner has not yet installed
+### Test distinction
 
-**v0.2.289** introduces a required per-unit **Physical condition** dropdown in Historical Property. This replaces the mixed free-text "Condition or remarks" input with the five existing Property Details choices: **Serviceable, Needs Maintenance, For Inspection, For Repair, Under Repair**. Formal Unserviceable/For Disposal remains in the separate Condition & Disposal process.
+PHP and JS syntax, ZIP hashes and A4 PDF rendering passed. Combined RIS+ICS rendered as exactly **2 pages**, standalone ICS and supplies RIS as **1 page each**, with both 8-item and 20-item cases and signature sections. Chromium local navigation was blocked by administrator restrictions so **real browser print, authentic role and live MariaDB UAT are NOT confirmed**. Owner should print existing genuine finalized documents and verify physical output, scope, source amount and zero new stock records before accepting.
 
-- [Version v0.2.289 ZIP installer](https://drive.google.com/file/d/1IKNN85v4QBEcojFl54jvLM7pNZOe8gBC/view)
-- [v0.2.289 release notes / UAT](V0.2.289_HISTORICAL_PROPERTY_CONDITION_DROPDOWN_UAT_2026-11-06.md)
-- Exact version gate: **0.2.288 → 0.2.289**, **2 frontend files, 0 migrations**.
-- SHA-256: `9c50a77aad42da3997a4e3d973252888861fc5055691a7ed6001662bb315847a`.
-- **22** JS logic checks, plus **2 desktop/mobile Chromium flow runs**, passed. Fixture-backed testing only; production MariaDB and real registration UAT pending.
+## Business rules still in force
 
-The registration preserves per-unit serial/location, old property number, and the v0.2.288 catalog quick-add workflow. The server `asset.opening` request format is unchanged, and catalog creation never posts property/stock/finance automatically. Initial Historical Property conditions are selected individually, not defaulted to Serviceable.
-
-## Next acceptance steps
-
-Install via Settings → System Updates only after independent website and SQL backups and exact predecessor confirmation. Refresh browser after install. Open Historical Property registration, choose two units, select two conditions, and use legitimate records to verify the saved conditions show on Property Details. Continue Property Accountability and Inventory Management UX consistency tests.
-
-## Security / deployment
-
-GitHub main is a documentation/review index, **not** a verified deployable mirror. Don't deploy it wholesale. No live production website, SQL, payment, stock, or transaction changes were performed while preparing v0.2.289.
+IPDAMS documents actual paperwork; it does not electronically approve, sign or simulate approvals. Original fund sources/acquisition metadata are documentary, not financial postings. Transferred-out assets must not count as current school holdings after Division receipt but must retain sending school transfer history. Each update has independent website+SQL backups, exact version gate, scope validation and no production resets. GitHub default branch is documentation-oriented, not a verified deployable production source mirror.
