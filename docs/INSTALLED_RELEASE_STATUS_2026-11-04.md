@@ -1,30 +1,25 @@
-# IPDAMS Installed and Staged Release Checkpoint — Updated 2026-11-06
+# IPDAMS Installed / Staged Release Checkpoint — Updated 2026-11-06
 
 ## Most recent owner-confirmed installed version
 
-**v0.2.287 installed and working.** The owner confirmed that the v0.2.287 correction resolved the oversized stacked Property Accountability tabs and differing Division theme. v0.2.286's Super Admin/Property & Inventory UI improvements are included. Previously confirmed: textbook teacher issuance/disposal and reporting v0.2.284; book ledger v0.2.285 was included via the appropriate v0.2.286 roll-up if needed.
+**v0.2.288 is installed and working.** The owner confirmed that Historical Property **+ Add missing catalog item** appears after refreshing the page (initially old JavaScript remained cached). Earlier UI corrections through v0.2.287 also owner-confirmed working.
 
-## v0.2.288 — Staged only, owner installation pending
+## Staged new update — owner has not yet installed
 
-The new owner-requested patch allows **creating a missing PPE or Semi-expendable catalog item from inside Historical Property registration** without navigating away. Selecting **+ Add missing catalog item** opens a compact modal. Enter item name, existing unit, active Division-approved classification/UACS, then Save; the new item is selected automatically in the preserved historical property form.
+**v0.2.289** introduces a required per-unit **Physical condition** dropdown in Historical Property. This replaces the mixed free-text "Condition or remarks" input with the five existing Property Details choices: **Serviceable, Needs Maintenance, For Inspection, For Repair, Under Repair**. Formal Unserviceable/For Disposal remains in the separate Condition & Disposal process.
 
-- [Version 0.2.288 release notes, controls, local browser testing and UAT](V0.2.288_HISTORICAL_PROPERTY_CATALOG_QUICK_ADD_UAT_2026-11-06.md).
-- [v0.2.288 ZIP installer](https://drive.google.com/file/d/1y0JJcOoRa5qpZ9prrk8xeIGGEDX-lJHL/view).
-- [v0.2.288 installation/UAT guide](https://drive.google.com/file/d/1gaSD963uQZvN7SUrZtIt1ArxnqAN4b-_/view).
+- [Version v0.2.289 ZIP installer](https://drive.google.com/file/d/1IKNN85v4QBEcojFl54jvLM7pNZOe8gBC/view)
+- [v0.2.289 release notes / UAT](V0.2.289_HISTORICAL_PROPERTY_CONDITION_DROPDOWN_UAT_2026-11-06.md)
+- Exact version gate: **0.2.288 → 0.2.289**, **2 frontend files, 0 migrations**.
+- SHA-256: `9c50a77aad42da3997a4e3d973252888861fc5055691a7ed6001662bb315847a`.
+- **22** JS logic checks, plus **2 desktop/mobile Chromium flow runs**, passed. Fixture-backed testing only; production MariaDB and real registration UAT pending.
 
-**Predecessor gate 0.2.287 → 0.2.288. 2 frontend changed files; zero database migrations. SHA256 `e04e71186adb014ab472eaa705c21fc249eeebe509d2d24c83251419448d2703`.**
+The registration preserves per-unit serial/location, old property number, and the v0.2.288 catalog quick-add workflow. The server `asset.opening` request format is unchanged, and catalog creation never posts property/stock/finance automatically. Initial Historical Property conditions are selected individually, not defaulted to Serviceable.
 
-Uses existing server `master.item.create`, with original school/Division scoping, UACS approval, role permissions and audit. Creating a catalog item does **not** register physical historical property, move inventory or post accounting entries. School catalog is scoped, Division catalog shared according to existing policy, Super Admin read-only Office Viewer remains non-mutating.
+## Next acceptance steps
 
-**Testing distinction:** 15 React component checks and local Chromium desktop/mobile full dialog interactions passed using mocked authorized API responses. Live production MariaDB and real role credentials remain untested and require owner UAT. Don't invent production asset transactions.
+Install via Settings → System Updates only after independent website and SQL backups and exact predecessor confirmation. Refresh browser after install. Open Historical Property registration, choose two units, select two conditions, and use legitimate records to verify the saved conditions show on Property Details. Continue Property Accountability and Inventory Management UX consistency tests.
 
-## Next
+## Security / deployment
 
-Confirm owner install of v0.2.288 and test historical catalog quick-add with a real missing approved item. Continue Property Accountability and Inventory Management improvements based on actual user testing.
-
-## Security and deployment cautions
-
-- Keep independent website and SQL backups and use strict version-gated updater ZIPs.
-- Do not override Division classification or catalog scope rules.
-- GitHub main is documentation/review focused, not a verified live source mirror; never deploy it over Hostinger wholesale.
-- Assistant prepared ZIP/docs only; no production web/SQL writes, reset, migration, posting, or GitHub Actions run.
+GitHub main is a documentation/review index, **not** a verified deployable mirror. Don't deploy it wholesale. No live production website, SQL, payment, stock, or transaction changes were performed while preparing v0.2.289.
