@@ -1,3 +1,14 @@
+# Next development focus — Travel Reimbursement → Consolidated Employee DV (design, 2026-11-06)
+
+Owner requests that **Travel Reimbursement calculate/document only the amount eligible for reimbursement**, while **Disbursement Voucher** combines multiple unpaid travel claims for the same employee into one DV and manages actual payment. Sample uploaded Appendix 45 itinerary shows claimed PHP 5,730 fare + PHP 3,150 per diem + PHP 110 other = PHP 8,990, which is **NOT** automatically allowable or paid.
+
+- [Implementation design and source findings](TRAVEL_ITINERARY_CLAIMS_CONSOLIDATED_EMPLOYEE_DV_DESIGN_2026-11-06.md)
+- [Full detailed integration and test plan in IPDAMS Development Drive](https://drive.google.com/file/d/1otq-fFWDgxdJ4RSVaXb4SCIyoqUUMKdM/view)
+
+**Critical source limitation:** existing `TravelReimbursement.php` is documentary only; current `dv.create` `REIMBURSEMENT` is **one procurement advance**, not employee travel. Therefore adding multi-claim DV needs a separate DV type, eligible-claim accounting, real schema migration and concurrency guards. Do not pretend existing procurement reimbursement can be repurposed or claim this design is an installable patch. Must preserve original procurement DVs, proper employee and fund IDs, wet-signature paper review, balanced UACS journal and true payment state only after a recorded check/other payment event. No live website/database writes performed to prepare the design.
+
+---
+
 # IPDAMS — Current Development Checkpoint (2026-11-06)
 
 **Last owner-confirmed installed version:** **v0.2.296**, MOOE assignment saving works. **v0.2.297 is packaged, NOT yet installed or live-tested.**
