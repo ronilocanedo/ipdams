@@ -1,3 +1,5 @@
+> **Version status update (2026-11-11):** Owner-reported installed IPDAMS is **v0.2.351**; see [current checkpoint](IPDAMS_V0.2.351_RELEASE_CHECKPOINT_2026-11-11.md). The v0.2.215 / v0.2.216 references in the historical controls below describe 26 October 2026 only. A future installer must require **exact v0.2.351** until owner confirms a newer installed version; no code sync or release is authorized merely by this documentation update. The existing migration, bank, accountant, tenant-security and manual-deployment safety gates remain in force.
+
 # IPDAMS release safety
 
 1. Release version must advance exactly from the **user-confirmed installed predecessor**. Current owner-confirmed installed version at this checkpoint: `v0.2.215` (successful selected Custom Reset reported; read-only reconciliation pending).
