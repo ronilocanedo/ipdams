@@ -1,3 +1,7 @@
+> **CURRENT COORDINATION CHECKPOINT — 2026-11-11 (PHT), superseding earlier *current* labels below.** User reports **v0.2.351 installed**. Recorded [release evidence and missing source baseline](IPDAMS_V0.2.351_RELEASE_CHECKPOINT_2026-11-11.md) and [proposed fund utilization / withholding-to-Division DV / audit design](IPDAMS_FUND_TAX_PERIOD_AUDIT_DESIGN_2026-11-11.md). Verified release-guide chain v0.2.348 → v0.2.350 → v0.2.351; GitHub application code **not synced or deployable** at that version; no authenticated Hostinger/MariaDB 351 readback, CI deployment, production schema change or financial posting performed by this documentation update. Private Drive release refs and SHA-256 listed in linked checkpoint. All v0.2.213–0.2.216 statuses below are historical and must not be used for install decisions. Next code sync requires sanitized, hash-verified hosted v0.2.351 source; don't force a predecessor mismatch or overwrite newer hosted code.
+
+---
+
 # IPDAMS — GitHub ↔ Google Drive synchronization register
 
 
