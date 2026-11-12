@@ -2,12 +2,12 @@
 
 Private coordination and review repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting, and audit workflows.
 
-## Current checkpoint — 11 November 2026
+## Current checkpoint — 12 November 2026
 
-- **Owner-reported installed application: `v0.2.351`.** The installed version is not independently authenticated against Hostinger/MariaDB in this GitHub documentation update.
-- Release lineage from verified Google Drive guidance: `v0.2.348 → v0.2.350 → v0.2.351`. The incompatible `v0.2.349` package **was not part of that upgrade path**. See [v0.2.351 release checkpoint](docs/IPDAMS_V0.2.351_RELEASE_CHECKPOINT_2026-11-11.md).
-- **Next designed requirement:** [period fund utilization, tax disposition, Division-payable withholding transfer and audit history](docs/IPDAMS_FUND_TAX_PERIOD_AUDIT_DESIGN_2026-11-11.md). The design is **not installed code**.
-- **GitHub is NOT an up-to-date deployable copy of the hosted application.** Its older branches/PRs track design and UAT history, and a verified, sanitized `v0.2.351` source baseline is still required. Do not use `main` to overwrite Hostinger.
+- **Owner-reported installed application: `v0.2.368`; `v0.2.369` installer prepared for owner UAT, not yet installed.** The installed version is not independently authenticated against Hostinger/MariaDB.
+- [v0.2.369 quotation totals release evidence and installer SHA256](docs/IPDAMS_V0.2.369_QUOTATION_TOTALS_RELEASE_2026-11-12.md). A narrow review-only UI diff and CSS live under `patches/v0.2.369/`; these **are not deployable by themselves**.
+- Earlier [v0.2.351 checkpoint](docs/IPDAMS_V0.2.351_RELEASE_CHECKPOINT_2026-11-11.md) and [fund/tax audit design](docs/IPDAMS_FUND_TAX_PERIOD_AUDIT_DESIGN_2026-11-11.md) remain historical records, **not** current installed-code assertions.
+- **GitHub is NOT an up-to-date deployable copy of the hosted application.** The owner installed incremental ZIPs to Hostinger; `main` only tracks reviewed release coordination. Do not use `main` to overwrite Hostinger, merge untested old draft feature PRs, or trigger automatic deployments.
 
 ## Development safety
 
