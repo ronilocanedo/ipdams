@@ -6,7 +6,7 @@
 ## Observed inventory (metadata only)
 Hostinger has an IPDAMS website at `ipdams.depedtagb.online`. Its listed document-root tree includes `private/app` (**73 PHP application files**), `private/tests` (3 files), `private/scripts` (2 files), top-level API PHP endpoints, and first-party JS/CSS/HTML in the public tree. The site has a `private/.env`, database and runtime/storage directories; these are **not source-import candidates**. Hostinger did not report a linked website Git repository. Presence of version-numbered CSS filenames is **not proof** of the site's installed application version.
 
-The website file-content readback did **not** independently establish the installed version or file hashes at this checkpoint. Prior GitHub README reported owner-installed v0.2.368 and prepared v0.2.369 on 2026-11-12; treat both as **historical and unverified for 2026-11-13** until readback.
+Read-only file-content inspection confirms `private/app/ReleaseVersion.php` declares only a **bootstrap baseline 0.1.9** and expressly says installed-version state in private storage supersedes it. **Do not mistake 0.1.9 for the installed version.** The website file-content readback did **not** independently establish the actual installed version or complete file hashes at this checkpoint. Prior GitHub README reported owner-installed v0.2.368 and prepared v0.2.369 on 2026-11-12; treat both as **historical and unverified for 2026-11-13** until readback.
 
 ## Do NOT import these
 - `private/.env*`, secrets or credentials, production config, API tokens and signing keys, even if accidentally embedded in a PHP source file.
