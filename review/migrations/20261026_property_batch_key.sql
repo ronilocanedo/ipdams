@@ -1,0 +1,1 @@
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS registration_batch_key VARCHAR(48) NULL;
