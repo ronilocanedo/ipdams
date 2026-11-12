@@ -1,0 +1,54 @@
+--- a/public/assets/app.js
++++ b/public/assets/app.js
+@@ -7924,6 +7924,31 @@
+             const select=(value,onChange,placeholder,rows,label)=>h('select',{value,onChange:e=>onChange(e.target.value),disabled:!write},h('option',{value:''},placeholder),...rows.map(r=>h('option',{key:r.id,value:r.id},label(r))));
+             const btn=(label)=>h('button',{type:'submit',className:'primary',disabled:s.busy||!write},s.busy?'Saving…':label);
+             const money=v=>'₱'+Number(v||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
++            // Quotation preview only. The server continues to store and validate the
++            // original RFQ quantity and supplier's offered unit price independently.
++            // Calculate in cent-thousandths: prices use centavos, quantities may
++            // have 3 decimal places. Avoid accumulating binary floating-point pesos.
++            const quoteLineMilleCents=line=>{
++                const raw=String(line.price??'').trim();
++                const qty=Number(line.quantity);
++                if(!/^\d+(?:\.\d{1,2})?$/.test(raw)||!Number.isFinite(qty)||qty<=0)return null;
++                const unitCents=Math.round(Number(raw)*100);
++                const qtyMillis=Math.round(qty*1000);
++                if(unitCents<=0||qtyMillis<=0||!Number.isSafeInteger(unitCents)||!Number.isSafeInteger(qtyMillis))return null;
++                const total=unitCents*qtyMillis;
++                return Number.isSafeInteger(total)?total:null;
++            };
++            const quotePreviewTotal=lines=>{
++                if(!lines.length)return null;
++                let sum=0;
++                for(const line of lines){
++                    const amount=quoteLineMilleCents(line);
++                    if(amount===null||!Number.isSafeInteger(sum+amount))return null;
++                    sum+=amount;
++                }
++                return sum;
++            };
++            const quotePreviewPeso=value=>value===null?'—':money(Math.round(value/1000)/100);
+             const prNewRfqChoice=p=>{
+                 const purpose=String(p.purpose||'').replace(/\s+/g,' ').trim()||'Purpose not recorded';
+                 const name=String(p.requestor_name||'').replace(/\s+/g,' ').trim()||'Requester not recorded';
+@@ -8060,7 +8085,18 @@
+                         s.workflowRFQ&&!quotableRfqs.some(r=>String(r.id)===String(s.workflowRFQ))?h('p',{className:'workflow-error',role:'alert'},'This RFQ is no longer accepting quotations. Close this form and refresh the register.'):null,
+                         field('Supplier quotation date *',h('input',{type:'date',required:true,max:localToday(),min:String((rfqs.find(r=>String(r.id)===String(s.workflowRFQ))?.issued_at||'')).slice(0,10)||undefined,value:s.workflowQuoteDate,onChange:e=>this.setState({workflowQuoteDate:e.target.value,workflowError:''})}),s.workflowQuoteDate),
+                     field('Quotation reference / evidence (optional)',h('input',{type:'text',maxLength:500,placeholder:'If available: quotation number or document reference',value:s.workflowQuoteEvidence,onChange:e=>this.setState({workflowQuoteEvidence:e.target.value})})),
+-                        s.workflowQuoteLines.length?smallTable(['Item','Quantity','Offered unit price (₱)','Compliant?'],s.workflowQuoteLines.map((l,i)=>h('tr',{key:l.pr_line_id},h('td',null,l.item_name+' ('+l.unit+')'),h('td',null,l.quantity),h('td',null,h('input',{type:'number',min:'0.01',step:'0.01',required:true,value:l.price,onChange:e=>this.workflowPatchLine('quote',i,'price',e.target.value),'aria-label':'Offered price for '+l.item_name})),h('td',null,h('input',{type:'checkbox',checked:l.compliant,onChange:e=>this.workflowPatchLine('quote',i,'compliant',e.target.checked),'aria-label':'Compliant '+l.item_name}))))):h('p',{className:'workflow-hint'},'Select an RFQ to load its item lines.'),
++                        s.workflowQuoteLines.length?h('div',{className:'workflow-quote-pricing'},
++                            smallTable(['Item','Quantity','Offered unit price (₱)','Total (₱)','Compliant?'],s.workflowQuoteLines.map((l,i)=>h('tr',{key:l.pr_line_id},
++                                h('td',null,l.item_name+' ('+l.unit+')'),
++                                h('td',null,l.quantity),
++                                h('td',null,h('input',{type:'number',min:'0.01',step:'0.01',required:true,value:l.price,onChange:e=>this.workflowPatchLine('quote',i,'price',e.target.value),'aria-label':'Offered price for '+l.item_name})),
++                                h('td',null,h('output',{className:'workflow-quote-line-total','aria-label':'Computed total for '+l.item_name},quotePreviewPeso(quoteLineMilleCents(l)))),
++                                h('td',null,h('input',{type:'checkbox',checked:l.compliant,onChange:e=>this.workflowPatchLine('quote',i,'compliant',e.target.checked),'aria-label':'Compliant '+l.item_name}))))),
++                            h('div',{className:'workflow-quote-live-summary','aria-live':'polite'},
++                                h('span',null,'Quotation total'),
++                                h('strong',null,quotePreviewPeso(quotePreviewTotal(s.workflowQuoteLines))),
++                                quotePreviewTotal(s.workflowQuoteLines)===null?h('small',null,'Enter the offered unit price for every item.'):null)):
++                            h('p',{className:'workflow-hint'},'Select an RFQ to load its item lines.'),
+                         h('p',{className:'workflow-hint'},'Awarded or fully ordered RFQs are read-only in the register and cannot accept another quotation.'),
+                         h('button',{type:'submit',className:'primary',disabled:s.busy||!write||!s.workflowRFQ||!quotableRfqs.some(r=>String(r.id)===String(s.workflowRFQ))},s.busy?'Saving…':'Save Supplier Quotation')),
+                     s.workflowRFQ?h('div',{className:'workflow-quotation-review'},
