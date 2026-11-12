@@ -1,0 +1,31 @@
+--- a/private/app/Domain.php
++++ b/private/app/Domain.php
+@@ -5579,11 +5579,27 @@
+                     $anchor=$row;$number=$this->registered($org,$kind,$anchor);
+                 }
+                 q($this->db,'UPDATE accountability_documents SET display_number=? WHERE id=?',[$number,$row]);
+-                $this->insert('asset_movements',[
++                $movementId=$this->insert('asset_movements',[
+                     'asset_id'=>$asset['id'],'event_type'=>'ISSUE',
+                     'from_custodian'=>$asset['custodian'],'to_custodian'=>$custodian,
+                     'reason'=>count($assets)>1?'Manual group issue recorded; signature remains external':'Manual issue recorded; signature remains external',
+                     'actor_id'=>$this->user['id']]);
++                // Verify identity and custody within this transaction before making an immutable link.
++                $evidence=one($this->db,
++                    'SELECT m.id,m.asset_id,m.event_type,m.to_custodian,d.id AS document_id,d.asset_id AS document_asset_id,d.organization_id,d.custodian AS document_custodian,d.status,d.doc_type FROM asset_movements m JOIN accountability_documents d ON d.id=? WHERE m.id=? FOR UPDATE',
++                    [$row,$movementId]);
++                demand($evidence!==null && (int)$evidence['asset_id']===(int)$asset['id']
++                    && (int)$evidence['document_asset_id']===(int)$asset['id']
++                    && (int)$evidence['organization_id']===$org
++                    && $evidence['event_type']==='ISSUE'
++                    && $evidence['status']==='FINALIZED'
++                    && $evidence['doc_type']===$kind
++                    && trim((string)$evidence['document_custodian'])===$custodian
++                    && trim((string)$evidence['to_custodian'])===$custodian,
++                    'Issuance link consistency check failed; no partial custody changes committed',409);
++                $this->insert('accountability_movement_links',[
++                    'organization_id'=>$org,'accountability_document_id'=>$row,
++                    'asset_movement_id'=>$movementId,'asset_id'=>(int)$asset['id']]);
+                 q($this->db,'UPDATE assets SET custodian=? WHERE id=? AND organization_id=?',[$custodian,$asset['id'],$org]);
+                 $items[]=['asset_id'=>(int)$asset['id'],'tag'=>(string)$asset['property_tag'],
+                     'description'=>(string)$asset['item_name'],'accountability_row_id'=>$row];
