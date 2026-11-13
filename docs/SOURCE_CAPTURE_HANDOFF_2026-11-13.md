@@ -1,6 +1,12 @@
 # IPDAMS v0.2.375 source capture handoff
 
-**Status:** Source capture tool prepared and *synthetically tested*; **not yet executed against all 210 live files**. A separate, local-only toolkit download has been delivered in the ChatGPT conversation on 2026-11-13. The toolkit contains `capture_source.sh`, `verify_source.py`, the owner-provided 210-entry SHA-256 manifest and `README_FIRST.txt`.
+**Status update (owner-reported, 2026-11-13):** The local SSH source capture completed; tool output reported **210/210 original-file SHA-256 matches**, **0 blocking flags**, and **6 review flags**. The machine-readable JSON report has **not yet been supplied or assessed**, so the six findings remain unresolved; this is **not approval to package, share, merge, or deploy source**. A separate, local-only toolkit download has been delivered in the ChatGPT conversation on 2026-11-13. The toolkit contains `capture_source.sh`, `verify_source.py`, the owner-provided 210-entry SHA-256 manifest and `README_FIRST.txt`.
+
+## Latest reported capture outcome
+- WSL local folder: `C:\\Users\\Loy\\IPDAMS-safe-source\\source_capture_results\\` (private local location; not synced by this step).
+- Report requested: `source_validation_report.json` **only**. Do not upload the `hostinger_source_code_only.tar` archive or run `--pack --reviewed` until all six findings are classified and authorization/security review is complete.
+- SSH client initially saw an unrecognized ED25519 host key and user accepted it; independently verify Hostinger's advertised SSH fingerprint from an authenticated channel before future transfers if not already verified. The displayed fingerprint is not itself proof of server identity.
+- Source hashes matching a previous live-source manifest do not prove code has no secrets, full application security, all deployed assets, or that production stayed unchanged after capture.
 
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
