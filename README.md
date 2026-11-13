@@ -1,8 +1,17 @@
 # IPDAMS — Integrated Procurement, Disbursement and Asset Management System
 
+## Latest verified Hostinger checkpoint — 13 November 2026
+
+- **Currently installed on Hostinger: `v0.2.375`.** Independently checked read-only against `private/storage/private/settings/installed-version.json` on 2026-11-13.
+- **GitHub application source is available in branch [`develop/hostinger-v0.2.375`](https://github.com/ronilocanedo/ipdams/tree/develop/hostinger-v0.2.375)** — 210 SHA-256-verified first-party files, two exact legacy React runtime files, tested offline static build tooling, and updated Settings smoke test.
+- **For OpenCode or another coding agent:** clone or switch to `develop/hostinger-v0.2.375`. The default `main` branch remains **documentation/coordination**, NOT the up-to-date application workspace. OpenCode can otherwise report the older `v0.2.368` from historical documentation.
+- **No automatic Hostinger ↔ GitHub synchronization exists.** This is a pinned source snapshot, not an authorization to deploy. PHP integration/financial UAT, React 16 security replacement, ownership/privacy/licensing approval and release readiness remain outstanding.
+- Source/audit history: [PR #83](https://github.com/ronilocanedo/ipdams/pull/83) (complete source, DRAFT), [PR #84](https://github.com/ronilocanedo/ipdams/pull/84) (Settings test fix, DRAFT), [PR #85](https://github.com/ronilocanedo/ipdams/pull/85) (frontend build, DRAFT). Keep PRs draft; no merge, production update, live DB access or GitHub Actions is implied.
+
+
 Private coordination and review repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting, and audit workflows.
 
-## Current checkpoint — 12 November 2026
+## Historical checkpoint — 12 November 2026 (superseded)
 
 - **Owner-reported installed application: `v0.2.368`; `v0.2.369` installer prepared for owner UAT, not yet installed.** The installed version is not independently authenticated against Hostinger/MariaDB.
 - [v0.2.369 quotation totals release evidence and installer SHA256](docs/IPDAMS_V0.2.369_QUOTATION_TOTALS_RELEASE_2026-11-12.md). A narrow review-only UI diff and CSS live under `patches/v0.2.369/`; these **are not deployable by themselves**.
