@@ -8,6 +8,22 @@
 - SSH client initially saw an unrecognized ED25519 host key and user accepted it; independently verify Hostinger's advertised SSH fingerprint from an authenticated channel before future transfers if not already verified. The displayed fingerprint is not itself proof of server identity.
 - Source hashes matching a previous live-source manifest do not prove code has no secrets, full application security, all deployed assets, or that production stayed unchanged after capture.
 
+## 13 November security follow-up — six UI placeholder flags
+
+Owner uploaded `source_validation_report.json` (archive SHA-256 `42e5b85cd67e61f7bd71257a55cdb7320aa95faf97a6e1328fb85e133fe4f312`). Its result was **210/210 file hashes matching**, **0 reported BLOCK**, **6 reported REVIEW**: five email-literal hits in `assets/app.js` and one in `private/frontend/src/app.tsx`.
+
+A **read-only Hostinger review** of the six surrounding code locations found that each is an email input-field **placeholder/example** in Division/school/administrator forms or a login form. The reported strings do not appear to be saved user account records or credentials at those inspected locations. This is a *localized source-context classification*, not clearance for the whole application.
+
+**Critical scanner limitation found:** The original `verify_source.py` uses `list(regex.finditer(data))[:5]` per pattern **per file**. Consequently it may have missed additional email-like literals and/or credentials. Six findings is a **capped count**, not proof that the rest of the 210-file archive is clear. This must be corrected before packaging or GitHub import.
+
+A downloadable **local-only second-pass** `IPDAMS_source_review_v2.py` and README were prepared and synthetic-tested. The new checker:
+- Reopens the same restricted local source tar (no live SSH required), checks the tar's prior SHA-256 and verifies every one of the 210 files against the original manifest.
+- Scans **all** regex matches without a five-per-pattern cap; includes path/line/category/hint but **never includes matched email or token values** in the JSON.
+- Marks identified email input placeholders as candidates for human review **without suppressing their REVIEW flags**.
+- Has **no code packing or GitHub upload command**. It cannot authorize source release or bypass manual privacy, source ownership, licensing, financial integrity and external credential-scanner review.
+
+**Next gate:** Owner runs the second-pass tool locally and shares **`source_validation_report_v2.json` only**, not the raw `.tar` archive or any source file. No `--pack --reviewed` yet.
+
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
 
