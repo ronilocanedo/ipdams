@@ -1,0 +1,68 @@
+/* v0.2.184: Division Other MOOE procurement opt-in checkbox alignment.
+   Presentation only: eligibility and saving remain controlled by existing JS/API. */
+.division-class-editor .division-procurement-options {
+  display: block;
+  min-width: 0;
+  margin-block: 12px 6px;
+}
+.division-class-editor .division-procurement-heading {
+  display: block;
+  margin: 0 0 7px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.division-class-editor .division-procurement-help {
+  margin: 0 0 9px;
+}
+.division-class-editor .division-procurement-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
+  width: 100%;
+}
+.division-class-editor .division-procurement-list label.division-procurement-choice {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 10px !important;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid #dbe5eb;
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: normal;
+  text-align: left;
+  line-height: 1.4;
+}
+.division-class-editor .division-procurement-list input[type="checkbox"] {
+  appearance: auto !important;
+  display: inline-block !important;
+  position: static !important;
+  width: 16px !important;
+  min-width: 16px !important;
+  max-width: 16px !important;
+  height: 16px !important;
+  min-height: 16px !important;
+  max-height: 16px !important;
+  flex: 0 0 16px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.division-class-editor .division-procurement-list .division-procurement-choice > span {
+  display: inline;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.division-class-editor .division-procurement-choice:focus-within {
+  outline: 2px solid #0f9c91;
+  outline-offset: 2px;
+}

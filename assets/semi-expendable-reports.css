@@ -1,0 +1,18 @@
+:root{font-family:Arial,sans-serif;color:#172235;background:#f4f6f9}*{box-sizing:border-box}body{margin:0}.tools{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#183354;color:#fff;padding:13px 22px}.tools a{color:#fff}.tools button{padding:9px 15px;border-radius:5px;border:0;cursor:pointer}.wrap{max-width:1180px;margin:20px auto;padding:0 16px}.card{background:#fff;border:1px solid #dce2ec;border-radius:8px;padding:18px;margin:12px 0}.caption{color:#536477;font-size:13px}.warning{border-left:4px solid #b56b16;background:#fff7e9;padding:12px;margin:12px 0}.status{font-weight:700;color:#763d00}.heading{text-align:center;margin-bottom:16px}.heading h1{font-size:18px;margin:8px 0;text-transform:uppercase}.heading small{display:block;line-height:1.6}.filters{display:flex;flex-wrap:wrap;align-items:end;gap:12px}.filters label{display:grid;gap:5px;font-size:13px}.filters select,.filters input{padding:8px;min-width:145px;max-width:340px}.filters button{padding:9px 15px}.tabs{display:flex;flex-wrap:wrap;gap:6px}.tabs a{padding:9px 12px;border-radius:5px;border:1px solid #bdc8d6;text-decoration:none;color:#183354;font-size:13px}.tabs a.active{background:#173d67;color:#fff}.sheet{background:white;border:1px solid #d3d9e0;padding:24px;margin:16px 0;overflow:auto}.sheet table{width:100%;border-collapse:collapse;font-size:11px}.sheet th,.sheet td{padding:7px 6px;border:1px solid #6f7c89;text-align:left;vertical-align:top}.sheet th{background:#eff2f5}.sheet td.money{text-align:right;white-space:nowrap}.sheet .muted{color:#69717c}.signatures{margin-top:30px;display:flex;justify-content:space-around;gap:35px;font-size:11px}.signatures div{flex:1;border-top:1px solid #7b858f;padding-top:6px;text-align:center}.empty{text-align:center;color:#667080;padding:28px}.blocker{border-left:4px solid #ad6d00;padding:10px 14px;background:#fff9ee}.print-footer{font-size:10px;color:#576679;margin-top:20px}@media print{@page{size:A4 landscape;margin:13mm}body{background:#fff}.noprint,.tools,.filters,.tabs{display:none!important}.wrap{padding:0;margin:0;max-width:none}.sheet{border:0;padding:0;margin:0;overflow:visible}.warning{color:#333;border-color:#000}.sheet table{font-size:9pt}.sheet tr{break-inside:avoid}.heading h1{font-size:14pt}.card{border:0;padding:0}}
+
+/* v0.2.241: Same-origin embedded report modal in IPDAMS. */
+.embedded .tools{display:none}
+.embedded .wrap{max-width:none;margin:0;padding:12px 14px 24px}
+.embedded .report-controls{position:sticky;top:0;z-index:12;background:#f4f6f9;padding:2px 0 8px;border-bottom:1px solid #dce2ec;box-shadow:0 3px 12px rgba(15,35,58,.07)}
+.embedded .report-controls .card{margin:0 0 8px;padding:10px 14px}
+.embedded .report-controls h2{font-size:15px;margin:0 0 4px}
+.embedded .report-controls .caption{margin:0 0 6px}
+.embedded .report-controls .filters{gap:8px}
+.embedded .report-controls .filters label{font-size:12px}
+.embedded .report-controls .filters select,.embedded .report-controls .filters input{min-width:120px;max-width:230px;padding:7px}
+.embedded .report-controls .tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;scrollbar-width:thin;padding-bottom:2px}
+.embedded .report-controls .tabs a{white-space:nowrap;flex:0 0 auto}
+.embedded .sheet{padding:16px;margin:12px 0}
+.embedded .sheet table{min-width:760px}
+@media (max-width:700px){.embedded .wrap{padding:8px}.embedded .report-controls .filters label{flex:1 1 125px}.embedded .report-controls .filters select,.embedded .report-controls .filters input{width:100%;min-width:0}.embedded .sheet{padding:10px}}
+@media print{.embedded .wrap{padding:0}.embedded .report-controls{display:none!important}.embedded .sheet{padding:0;overflow:visible}.embedded .sheet table{min-width:0}}

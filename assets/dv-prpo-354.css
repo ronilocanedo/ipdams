@@ -1,0 +1,11 @@
+/* v0.2.354: optional PR/PO reimbursement actions belong in DV preparation only. */
+.dv-extra-354{border:1px solid #d4e3e8;border-radius:9px;padding:11px 12px;margin:13px 0;background:#f8fbfb}
+.dv-extra-354-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.dv-extra-354-head .hint{margin:3px 0 0}
+.dv-extra-354-head button{flex-shrink:0}
+.dv-extra-354-body{margin-top:12px;border-top:1px solid #d4e3e8;padding-top:10px}
+.dv-extra-354 .employee-claim-panel{margin-top:12px}
+.dv-extra-354-item{padding:9px 0;border-top:1px solid #e0e9ed;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dv-extra-354-item .hint{margin:3px 0 0;font-size:12px}
+.dv-extra-354-item-actions{display:flex;gap:7px;flex-shrink:0}
+@media(max-width:650px){.dv-extra-354-head,.dv-extra-354-item{flex-direction:column;align-items:stretch}.dv-extra-354-head button,.dv-extra-354-item-actions button{width:100%}}

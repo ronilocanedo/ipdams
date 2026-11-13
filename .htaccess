@@ -1,0 +1,12 @@
+Options -Indexes
+DirectoryIndex index.php
+RewriteEngine On
+RewriteRule ^private(?:/|$) - [F,L,NC]
+RewriteRule ^(?:\.env|\.git)(?:/|$) - [F,L,NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
+<FilesMatch "(?i)\.(?:env|ini|log|sql|bak|md|lock|json)$">
+Require all denied
+</FilesMatch>
+

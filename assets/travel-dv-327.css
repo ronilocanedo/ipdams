@@ -1,0 +1,50 @@
+/* v0.2.327 — scoped Employee Travel DV draft composer; external CSS for CSP-safe layout. */
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] {
+  width: min(1040px, calc(100vw - 28px));
+  max-width: 1040px;
+  max-height: calc(100dvh - 28px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] > .dv-compose-scroll {
+  overflow-y: auto;
+  min-height: 0;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] nav.dv-type-tabs {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 7px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 2px 0 9px !important;
+  scrollbar-width: thin;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] nav.dv-type-tabs > button {
+  flex: 0 0 auto;
+  min-width: 118px;
+  padding: 9px 12px;
+  text-align: center;
+  display: block;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .pr-detail-actions {
+  flex-shrink: 0;
+}
+@media (max-width: 650px) {
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 14px);
+  }
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] nav.dv-type-tabs > button {
+    min-width: 112px;
+    padding: 8px 10px;
+  }
+}

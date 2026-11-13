@@ -1,0 +1,15 @@
+/* v0.2.172: focused DV register width reduction; no financial styling side effects */
+.dv-register-compact {min-width:0;}
+.dv-register-table-wrap{max-width:100%;overflow-x:auto;}
+.dv-register-table{width:100%;border-collapse:collapse;table-layout:auto;}
+.dv-register-table th{font-size:.78rem;color:#708497;text-transform:uppercase;text-align:left;padding:12px 9px;white-space:nowrap;}
+.dv-register-table td{padding:12px 9px;border-top:1px solid #e9eef3;vertical-align:middle;font-size:.85rem;}
+.dv-register-table .dv-reg-payee{min-width:180px;max-width:300px;overflow-wrap:anywhere;}
+.dv-reg-payee strong{display:block;color:#22364a;font-size:.88rem;line-height:1.4;}
+.dv-reg-payee small,.dv-mobile-proprietor{display:block;color:#708497;font-size:.76rem;line-height:1.45;margin-top:3px;}
+.dv-register-table .dv-reg-number{min-width:102px;}
+.dv-register-table .dv-reg-money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.dv-register-table .dv-reg-actions{min-width:126px;max-width:178px;}
+.dv-reg-actions button{display:inline-block;margin:0 6px 4px 0;padding:3px 0;font-size:.78rem;white-space:nowrap;}
+@media (min-width:850px){.dv-register-table th:nth-child(n+4):nth-child(-n+6){text-align:right;}}
+@media (max-width:1180px){.dv-register-table td,.dv-register-table th{padding:9px 6px;font-size:.75rem}.dv-register-table .dv-reg-payee{min-width:155px}}

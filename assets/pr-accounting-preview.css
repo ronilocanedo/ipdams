@@ -1,0 +1,7 @@
+/* Read-only preliminary documentation hint; never printed on PR. */
+.pr-accounting-preview {display:flex;flex-direction:column;gap:3px;margin-top:5px;font-size:11px;line-height:1.35;min-width:0;}
+.pr-accounting-refresh {border:0;padding:0;background:transparent;color:#086c73;font-size:11px;text-align:left;text-decoration:underline;cursor:pointer;width:max-content;max-width:100%;}
+.pr-accounting-summary {display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere;color:#284b58;border-left:2px solid #7ca8a9;padding:3px 5px;background:#f3f8f8;}
+.pr-accounting-summary strong {font-weight:650;}
+.pr-accounting-summary small {font-size:10.5px;color:#624a25;}
+@media print {.pr-accounting-preview {display:none!important;}}

@@ -1,0 +1,38 @@
+/* IPDAMS v0.2.312: restore true horizontal Reimbursement subtabs.
+   The global app stylesheet styles every <nav> as flex-direction:column;
+   the reimbursement nav must explicitly override that behavior. */
+nav.travel-311-tabs[role="tablist"]{
+  display:flex;
+  flex-direction:row;
+  flex-wrap:nowrap;
+  align-items:center;
+  justify-content:flex-start;
+  gap:6px;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  padding:8px 0 9px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  white-space:nowrap;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+nav.travel-311-tabs[role="tablist"] > button[role="tab"]{
+  display:inline-flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  align-self:center;
+  width:auto;
+  min-width:max-content;
+  max-width:none;
+  min-height:35px;
+  white-space:nowrap;
+  text-align:center;
+}
+@media (max-width:600px){
+  nav.travel-311-tabs[role="tablist"] { gap:4px; }
+  nav.travel-311-tabs[role="tablist"] > button[role="tab"] { padding:7px 10px; font-size:12px; }
+}

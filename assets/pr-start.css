@@ -1,0 +1,22 @@
+/* IPDAMS v0.2.38 — guided start of Purchase Request. No database/business rules changed. */
+.pr-start-intro{border-left:4px solid #0d9889;background:linear-gradient(110deg,#f4fcfa 0%,#fff 80%);}
+.pr-start-intro h3{margin:4px 0 6px;font-size:20px;color:#173b50;}
+.pr-start-intro p{margin:0 0 10px;max-width:850px;color:#456477;line-height:1.55;}
+.pr-start-eyebrow{font-size:10px;letter-spacing:1px;font-weight:800;color:#08796e;}
+.pr-start-counts,.pr-start-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:10px;}
+.pr-start-counts span{background:#ebf3f6;border-radius:18px;padding:5px 10px;color:#355369;font-size:12px;font-weight:650;}
+.pr-start-tools button{min-height:40px;}
+.pr-start-form{scroll-margin-top:16px;}
+.pr-start-form .section-head{gap:10px;flex-wrap:wrap;}
+.pr-start-notice,.pr-start-help,.pr-start-footnote{line-height:1.5;color:#496475;font-size:12px;}
+.pr-start-notice{background:#f0f7fa;padding:10px 12px;border-radius:8px;margin:8px 0 14px;}
+.pr-start-help{margin:5px 0 10px;}
+.pr-start-footnote{margin:3px 0 12px;padding:8px 12px;border-left:3px solid #dabd6b;}
+.pr-start-alert{border:1px solid #e4ba86;background:#fff9ec;color:#684b27;border-radius:8px;padding:12px;margin:10px 0;line-height:1.45;}
+.pr-start-alert p{margin:6px 0 10px;}
+.pr-start-estimate{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #e5ecef;padding:12px 0;margin-top:10px;color:#406075;}
+.pr-start-estimate strong{color:#087769;font-size:20px;font-variant-numeric:tabular-nums;}
+.pr-start-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.pr-start-actions .pr-start-help{margin:0;}
+.pr-start-intro button:focus-visible,.pr-start-form button:focus-visible,.pr-start-form input:focus-visible,.pr-start-form select:focus-visible{outline:3px solid #0e9d8d;outline-offset:2px;}
+@media(max-width:720px){.pr-start-intro h3{font-size:18px;}.pr-start-tools button{width:100%;}.pr-start-estimate strong{font-size:17px;}.pr-start-actions{align-items:stretch;flex-direction:column;}.pr-start-actions>button{width:100%;}}

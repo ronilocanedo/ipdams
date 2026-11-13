@@ -1,0 +1,29 @@
+/* v0.2.374 — tax-transfer workflow, deliberately scoped to DV module. */
+.tax-transfer-373{margin-top:12px}
+.tax-transfer-head{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+.tax-transfer-head h3{margin:0 0 6px}
+.tax-transfer-head p{margin:0;max-width:730px}
+.tax-transfer-body{padding-top:12px;display:grid;gap:12px}
+.tax-transfer-tools{display:flex;justify-content:flex-end}
+.tax-transfer-create{border:1px solid #d7e6ed;border-radius:10px;padding:15px;background:#f7fbfc;display:grid;gap:10px}
+.tax-transfer-create h4{margin:0}
+.tax-transfer-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tax-transfer-form-grid .field{min-width:0}
+.tax-transfer-form-grid .field :is(input,select){max-width:100%;min-width:0;box-sizing:border-box;width:100%}
+.tax-transfer-reference{grid-column:1/-1}
+.tax-transfer-table-wrap{overflow-x:auto;max-width:100%}
+.tax-transfer-table{min-width:490px;font-size:13px}
+.tax-transfer-table td:last-child,.tax-transfer-table th:last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tax-transfer-total{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#e9f5f4;border-radius:7px;padding:12px 15px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.tax-transfer-total strong{font-size:17px;color:#0b776a}
+.tax-transfer-history{display:grid;gap:10px}
+.tax-transfer-record{border:1px solid #d9e6eb;border-radius:9px;padding:12px;display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.tax-transfer-record > div:first-child{flex:1 1 260px;min-width:0}
+.tax-transfer-record > div:first-child small{display:block;color:#576e80;overflow-wrap:anywhere;margin-top:5px}
+.tax-transfer-status{font-size:12px;color:#1b6378;font-weight:600;background:#eaf5f8;padding:5px 8px;border-radius:5px}
+.tax-transfer-review{flex-basis:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;border-top:1px solid #dbe9ec;padding-top:12px}
+.tax-transfer-review .field{min-width:0}.tax-transfer-review .field input{width:100%;min-width:0;box-sizing:border-box}
+.tax-transfer-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px}
+@media(max-width:700px){.tax-transfer-head{align-items:stretch}.tax-transfer-head button{width:100%}.tax-transfer-form-grid,.tax-transfer-review{grid-template-columns:1fr}.tax-transfer-reference{grid-column:auto}}
+.tax-transfer-attestation{display:flex;align-items:flex-start;gap:9px;font-size:12px;color:#35576a;line-height:1.5}
+.tax-transfer-attestation input{margin-top:3px}

@@ -1,0 +1,12 @@
+/* v0.2.364: compact fund workflows; no payment or bank state is controlled by CSS. */
+.mooe-monitor-row{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.mooe-monitor-main{display:flex;flex-wrap:wrap;align-items:center;gap:5px 14px}
+.mooe-monitor-main strong{font-size:13px}
+.mooe-monitor-main span,.mooe-monitor-main small{font-size:12px}
+.mooe-monitor-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}
+.mooe-monitor-confirm{padding:12px;border:1px solid #d7e4eb;border-radius:10px;background:#f7fafb}
+.mooe-monitor-confirm .field{margin-bottom:0}
+.mooe-monitor-actions{display:flex;gap:8px;justify-content:flex-end}
+.ipdams-action-center .ipdams-action-row-content{min-width:0}
+.ipdams-action-center .ipdams-action-row-content small{line-height:1.4}
+@media(max-width:700px){.mooe-monitor-row,.mooe-monitor-confirm{padding:10px}.mooe-monitor-form{grid-template-columns:1fr}}

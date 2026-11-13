@@ -1,0 +1,194 @@
+/* IPDAMS v0.2.25 — space-efficient layout; no document/accounting logic changes.
+   This stylesheet loads last and deliberately preserves keyboard outlines,
+   scrolling tables, and >=40px touch controls on small screens. */
+:root { --ipdams-gap: 9px; }
+html { scroll-padding-top: 18px; }
+/* Application: navigation and content density */
+.sidebar { width:196px; flex-basis:196px; }
+.brand { padding:11px 12px 13px; gap:8px; }
+.brand-square { width:31px; height:31px; font-size:19px; border-radius:7px; }
+.brand strong { font-size:15px; letter-spacing:.3px; }
+.brand small { font-size:8px; letter-spacing:.8px; }
+.side-label { margin:10px 13px 6px; font-size:9px; }
+.sidebar nav { gap:1px; padding:0 7px; }
+.sidebar nav .navitem { padding:7px 9px; font-size:12px; gap:7px; border-radius:6px; min-height:34px; }
+.sidebar nav .navitem.active { padding-left:6px; }
+.sidebar nav .navitem>span { font-size:16px; width:18px; }
+.sidebar-foot { padding:8px 10px 10px; }
+.sidebar .avatar { width:30px; height:30px; }
+.topbar { height:47px; padding:0 18px; }
+.topbar-school select { min-height:32px; padding:4px 9px; font-size:12px; }
+.topbar-right { gap:7px; }
+.secure { padding:4px 8px; font-size:10px; }
+.main-body { max-width:none; padding:14px 18px; }
+.workspace-context { padding:6px 9px; margin-bottom:8px; font-size:12px; }
+.content-header { margin-bottom:9px; gap:10px; }
+.content-header h1 { font-size:21px; margin:2px 0; line-height:1.2; }
+.content-header p { font-size:11px; line-height:1.35; }
+.eyebrow { letter-spacing:1px; }
+.section-stack { gap:8px; }
+.surface { padding:11px 13px; margin-bottom:9px; border-radius:8px; }
+.surface>h3 { margin-bottom:8px; }
+.section-head { margin-bottom:8px; gap:8px; }
+.section-head h3,.surface>h3 { font-size:13px; }
+.two-col, .two-col-main { gap:10px; }
+.two-col-main { margin-bottom:9px; }
+.hero { min-height:116px; padding:13px 20px; margin-bottom:9px; border-radius:9px; }
+.hero h2 { font-size:19px; margin:3px 0; }
+.hero p { font-size:11px; line-height:1.35; margin-bottom:7px; }
+.hero-tag { font-size:9px; }
+.hero-art { transform:scale(.61); width:145px; height:110px; }
+.hero-action { padding:6px 10px; min-height:32px; }
+.stat-grid { gap:7px; margin-bottom:9px; }
+.stat { padding:9px 11px; border-radius:8px; }
+.stat-icon { width:24px; height:24px; font-size:15px; margin-bottom:5px; }
+.stat-number { font-size:20px; }
+.stat-label { font-size:10px; margin-top:1px; }
+.step { padding:7px 0; gap:8px; }
+.step>span { padding:6px; }
+.alert-row { padding:8px 0; gap:8px; }
+/* Dense, readable entry forms; three columns only on wide screens. */
+.form-grid { column-gap:9px; row-gap:4px; margin-bottom:6px; }
+.field { gap:3px; margin-bottom:5px; }
+.field>span { font-size:11px; }
+.field input,.field select,.field textarea { padding:6px 8px; min-height:33px; font-size:12px; border-radius:5px; }
+.field textarea { min-height:54px; }
+.primary,.outline { min-height:33px; padding:6px 10px; gap:8px; font-size:12px; border-radius:5px; }
+.hint { margin:6px 0; padding:7px 9px; font-size:11px; line-height:1.35; }
+.body-muted { font-size:11px; line-height:1.35; }
+.inline-actions { gap:5px; }
+.line-heading { margin:8px 0 5px; }
+.line-grid { padding-top:7px; gap:7px; }
+.choice-row { gap:6px; margin-bottom:9px; }
+.choice,.choice.chosen { padding:7px 9px; gap:3px; }
+.choice b { font-size:11px; }
+.choice small { font-size:10px; line-height:1.3; }
+.allocation { padding:7px 9px; gap:8px; }
+.dv-tax-builder { padding:9px; margin:8px 0; }
+.dv-tax-row { padding:6px 0; gap:6px; }
+.count,.mini-tag { padding:4px 7px; font-size:10px; }
+.status { padding:4px 7px; }
+.error,.success { padding:8px 10px; margin-bottom:9px; }
+/* Keep all Reference Data tabs on one line; horizontal scroll on narrower screens. */
+.master-tabs { flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap:2px; margin-bottom:8px; scrollbar-width:thin; }
+.master-tab { flex-shrink:0; white-space:nowrap; padding:7px 9px; font-size:11px; border-bottom-width:2px; }
+.master-tabs button:focus-visible,.reference-editor-toggle:focus-visible { outline:2px solid #0fa893; outline-offset:2px; }
+.reference-editor-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; border:1px solid #e0e9ec; padding:7px 10px; background:#fff; border-radius:7px; margin-bottom:1px; }
+.reference-editor-toolbar p { margin:0; font-size:11px; color:#6a8390; }
+.reference-editor-toggle { font-weight:700; }
+.reference-editor { scroll-margin-top:14px; }
+.reference-editor .section-head { margin-bottom:8px; }
+/* Tables: more rows visible; long descriptions remain readable instead of being deleted. */
+.table-scroll { max-width:100%; overflow:auto; scrollbar-width:thin; }
+.master-table th,.table-box th { padding:6px 8px; font-size:10px; letter-spacing:.15px; }
+.master-table td,.table-box td { padding:6px 8px; font-size:11px; line-height:1.3; }
+.master-table .empty,.table-box .empty { padding:13px; }
+.master-table tbody tr:hover,.table-box tbody tr:hover { background:#f8fbfb; }
+.text-btn { padding:4px 3px; font-size:11px; }
+/* Supplier ATC checklists remain in distinct tax types, but do not grow without limit. */
+.supplier-atc-select { padding:9px 11px; border-radius:7px; }
+.supplier-atc-select legend { font-size:12px; }
+.supplier-atc-group { margin-top:7px; }
+.supplier-atc-group h4 { margin:5px 0; font-size:12px; }
+.supplier-atc-choice { padding:5px 4px; line-height:1.35; font-size:11px; }
+.supplier-atc-group .hint { margin:4px 0; }
+/* Existing floating ATC editor: maximize usable space while retaining scroll. */
+.atc-modal-backdrop { padding:10px; }
+.atc-dialog { width:min(880px,100%); max-height:calc(100dvh - 20px); }
+.atc-dialog-head { padding:9px 13px; }
+.atc-dialog-head h2 { font-size:16px; margin-top:2px; }
+.atc-dialog-close { width:34px; height:34px; font-size:21px; }
+.atc-dialog-content { padding:10px 14px 13px; }
+.atc-edit-form { padding:8px; }
+.atc-rate-section { margin-top:10px; }
+.atc-inner-form { margin-top:9px; padding:9px; }
+.atc-actions,.atc-dialog-actions { gap:6px; margin-top:7px; }
+.atc-dialog-form .form-grid { gap:6px 9px; }
+.atc-dialog .field textarea { min-height:68px; }
+.atc-dialog-alert { padding:7px 9px; margin-bottom:7px; }
+/* Other reference managers */
+.uacs-reference { gap:8px; }
+.uacs-reference .uacs-filters { gap:6px; }
+.uacs-reference .uacs-stats { gap:6px 15px; }
+.division-class-editor { margin-top:9px; padding-top:9px; }
+.org-tab-panel { gap:7px; }
+.org-tab { padding:7px 9px; }
+.org-branch { padding:8px 9px; }
+.org-hierarchy { gap:5px; margin-top:6px; }
+.main-body footer { padding:12px 0; }
+/* Settings uses a separate PHP page; shared density rules are scoped to it. */
+.settings-sidebar { width:196px; flex-basis:196px; }
+.settings-brand { padding:11px 12px 13px; gap:8px; }
+.settings-logo { width:31px; height:31px; font-size:19px; border-radius:7px; }
+.settings-brand strong { font-size:15px; letter-spacing:.3px; }
+.settings-brand small { font-size:8px; }
+.settings-side-label { margin:10px 13px 6px; font-size:9px; }
+.settings-main-nav { padding:0 7px; gap:1px; }
+.settings-navitem { padding:7px 9px; gap:7px; min-height:34px; font-size:12px; border-radius:6px; }
+.settings-navitem.active { padding-left:6px; }
+.settings-navitem span { font-size:16px; width:18px; }
+.settings-side-foot { padding:8px 10px 10px; }
+.settings-avatar { width:30px; height:30px; }
+.settings-content main { max-width:none; padding:14px 18px; }
+.settings-eyebrow { font-size:9px; margin-bottom:4px; }
+.settings-content h1 { font-size:21px; margin:1px 0 3px; }
+.settings-content .lead { margin-bottom:8px; font-size:11px; }
+.settings-tabs { flex-wrap:nowrap; overflow-x:auto; gap:2px; margin-bottom:9px; }
+.settings-tab { flex-shrink:0; white-space:nowrap; padding:7px 10px; font-size:12px; border-radius:6px 6px 0 0; }
+.settings-content .panel { padding:11px 13px; margin-bottom:9px; }
+.settings-content h2 { font-size:15px; margin-bottom:6px; }
+.settings-content .panel p { line-height:1.35; margin:7px 0; }
+.settings-content label { margin:6px 0 3px; font-size:12px; }
+.settings-content input,.settings-content textarea,.settings-content select { padding:6px 8px; min-height:33px; font-size:12px; }
+.settings-content button { padding:6px 10px; min-height:33px; margin-top:5px; font-size:12px; }
+.settings-content .grid { gap:9px; }
+.settings-content table th,.settings-content table td { padding:5px 7px; font-size:11px; }
+.settings-content .release { padding:9px 0; }
+.settings-content .review-form { gap:6px; margin:7px 0; }
+.settings-content .preflight { padding:9px; margin:8px 0; }
+.settings-content .history-group { margin:7px 0; }
+.settings-content .history-group>summary { padding:7px 0; }
+.settings-content .history-record>summary { padding:7px; }
+.settings-content .readiness-grid { gap:7px; }
+.settings-content .readiness-grid>div { padding:8px; }
+.settings-content .reset-mode-options,.settings-content .reset-groups { gap:7px; }
+.settings-content .reset-mode-card,.settings-content .reset-group { padding:8px 10px; gap:9px; }
+/* On tablet keep two-column forms only when they fit. */
+@media(min-width:1280px){
+  .main-body .form-grid:not(.atc-dialog-form .form-grid) { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .main-body .form-grid .master-wide { grid-column:1/-1; }
+  .main-body .two-col-main .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .atc-dialog-form .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:1000px){
+  .sidebar,.settings-sidebar { width:176px; flex-basis:176px; }
+  .main-body,.settings-content main { padding:12px; }
+  .topbar { padding:0 12px; }
+  .hero-art { display:none; }
+}
+@media(max-width:760px){
+  /* No shrinking below reasonable touch targets on phones. */
+  .sidebar,.settings-sidebar { width:100%; height:auto; min-height:0; position:relative; }
+  .sidebar .brand,.settings-brand { padding:9px 12px; }
+  .sidebar nav,.settings-main-nav { gap:3px; padding:6px 7px; }
+  .sidebar nav .navitem,.settings-navitem { min-height:40px; padding:9px 10px; font-size:12px; }
+  .sidebar nav .navitem.active,.settings-navitem.active { padding:8px 10px; }
+  .topbar { min-height:45px; height:auto; padding:7px 12px; }
+  .topbar-school select,.field input,.field select,.field textarea,.primary,.outline,
+  .settings-content input,.settings-content select,.settings-content textarea,.settings-content button { min-height:40px; font-size:13px; }
+  .main-body,.settings-content main { padding:10px 11px; }
+  .content-header h1,.settings-content h1 { font-size:19px; }
+  .hero { min-height:105px; padding:11px; }
+  .hero h2 { font-size:17px; }
+  .surface,.settings-content .panel { padding:10px; }
+  .form-grid,.main-body .form-grid { grid-template-columns:1fr; }
+  .atc-dialog .form-grid { grid-template-columns:1fr; }
+  .atc-dialog .master-wide { grid-column:auto; }
+  .atc-dialog-head { padding:9px 11px; }
+  .atc-dialog-content { padding:10px 11px; }
+  .master-tabs,.settings-tabs { scrollbar-width:thin; }
+  .master-tab,.settings-tab { min-height:38px; }
+  .reference-editor-toolbar { align-items:stretch; }
+  .reference-editor-toggle { min-height:40px; }
+}
+@media(prefers-reduced-motion:reduce){ *,*::before,*::after { scroll-behavior:auto!important; } }

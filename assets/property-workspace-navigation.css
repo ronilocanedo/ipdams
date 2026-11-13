@@ -1,0 +1,147 @@
+/* IPDAMS v0.2.258: grouped Property Accountability tabs only.
+   Deliberately do not modify the shared Inventory Management tab styles. */
+.inventory-workspace .property-workspace-navigation {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+}
+.section-stack nav.property-workspace-groups,
+nav.property-workspace-groups {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 7px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    background: transparent;
+}
+.property-workspace-groups > .property-group-tab {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 3px;
+    min-width: 0;
+    min-height: 58px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 11px !important;
+    margin: 0 !important;
+    border: 1px solid #d6e2e9 !important;
+    border-radius: 9px !important;
+    color: #36576c !important;
+    background: #f5f8fa !important;
+    box-shadow: none !important;
+    text-align: left;
+    cursor: pointer;
+}
+.property-workspace-groups > .property-group-tab:hover {
+    background: #e9f3f6 !important;
+    border-color: #97bbc7 !important;
+}
+.property-workspace-groups > .property-group-tab.is-active {
+    background: #eaf6f6 !important;
+    border-color: #2f9ca5 !important;
+    box-shadow: inset 0 0 0 1px #2f9ca5 !important;
+    color: #135865 !important;
+}
+.property-group-name {
+    font-size: .86rem;
+    line-height: 1.25;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+.property-group-description {
+    color: #597487;
+    font-size: .69rem;
+    line-height: 1.3;
+    font-weight: 450;
+    overflow-wrap: anywhere;
+}
+.property-workspace-subnav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px 12px;
+    min-width: 0;
+    padding: 7px 10px;
+    border: 1px solid #d8e4ea;
+    border-radius: 9px;
+    background: #f7fafc;
+}
+.property-workspace-subnav-label {
+    flex: 0 0 auto;
+    color: #5b7080;
+    font-size: .73rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.section-stack nav.property-workspace-subtabs,
+nav.property-workspace-subtabs {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+}
+.property-workspace-subtabs > .property-workspace-subtab {
+    flex: 0 1 auto;
+    min-width: 0;
+    width: auto;
+    min-height: 31px;
+    padding: 6px 10px !important;
+    margin: 0 !important;
+    border: 1px solid transparent !important;
+    border-radius: 7px !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: #466276 !important;
+    font-size: .79rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+.property-workspace-subtabs > .property-workspace-subtab:hover {
+    background: #e5f0f4 !important;
+}
+.property-workspace-subtabs > .property-workspace-subtab.is-active {
+    color: #08606d !important;
+    background: #fff !important;
+    border-color: #b6d5d9 !important;
+    box-shadow: 0 1px 3px #12384b16 !important;
+}
+.property-group-tab:focus-visible,
+.property-workspace-subtab:focus-visible {
+    outline: 2px solid #138e9b !important;
+    outline-offset: 2px;
+}
+.property-workspace-panel { width: 100%; min-width: 0; }
+@media (max-width: 930px) {
+    .section-stack nav.property-workspace-groups,
+    nav.property-workspace-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+    .property-workspace-groups > .property-group-tab { min-height: 45px; padding: 8px 9px !important; }
+    .property-group-description { display: none; }
+    .property-workspace-subnav { padding: 6px 8px; gap: 5px 8px; }
+    .property-workspace-subnav-label { width: 100%; }
+    .property-workspace-subtabs > .property-workspace-subtab { font-size: .75rem; padding: 6px 8px !important; }
+}
+@media print {
+    .property-workspace-navigation { display: none !important; }
+}

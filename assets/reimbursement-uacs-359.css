@@ -1,0 +1,18 @@
+/* IPDAMS 0.2.359 — compact itemized reimbursement accounting */
+.reim-359-panel{max-width:100%;min-width:0}
+.reim-359-groups{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.reim-359-group,.reim-359-item,.reim-359-dv-line{border:1px solid #dce8ec;border-radius:9px;padding:10px 12px;background:#fbfdfd}
+.reim-359-group-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;flex-wrap:wrap}
+.reim-359-group-header span,.reim-359-item small{color:#466677}
+.reim-359-line{display:grid;grid-template-columns:minmax(0,1fr) 140px auto;gap:7px;align-items:center;margin-top:7px}
+.reim-359-line select,.reim-359-line input{box-sizing:border-box;min-height:36px;width:100%;min-width:0;font:inherit}
+.reim-359-line input{text-align:right;font-variant-numeric:tabular-nums}
+.reim-359-line .outline{min-height:36px;white-space:nowrap}
+.reim-359-group>.outline{margin-top:8px}
+.reim-359-item{display:flex;flex-direction:column;gap:5px}
+.reim-359-item small{display:block;font-size:11px;margin-top:2px}
+.reim-359-totals{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:12px 0;padding:10px;background:#f0f7f8;border-radius:7px;font-variant-numeric:tabular-nums}
+.reim-359-valid{color:#06755b;font-weight:650}.reim-359-invalid{color:#a34132;font-weight:650}
+.reim-359-dv-line{display:flex;flex-direction:column;gap:5px;margin:5px 0}
+.reim-359-dv-split{display:flex;justify-content:space-between;gap:12px;font-size:12px;border-top:1px solid #e0ebed;padding-top:4px}
+@media(max-width:640px){.reim-359-line{grid-template-columns:minmax(0,1fr) 100px}.reim-359-line .outline{grid-column:1/-1;justify-self:start}.reim-359-totals{align-items:flex-start;flex-direction:column}}

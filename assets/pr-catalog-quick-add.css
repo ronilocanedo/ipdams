@@ -1,0 +1,5 @@
+/* Inline PR catalog creation: keep existing PR in place. */
+.pr-quick-add-option {color:var(--primary,#1457a0);font-weight:700;border-top:1px solid #dae2ee;}
+.pr-quick-add-dialog {max-width:630px;width:min(94vw,630px);max-height:90vh;overflow:auto;}
+.pr-quick-add-dialog .form-grid {margin-bottom:14px;}
+.pr-quick-add-backdrop {z-index:1600;}

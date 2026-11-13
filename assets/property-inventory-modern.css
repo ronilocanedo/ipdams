@@ -1,0 +1,312 @@
+/* v0.2.286 — Textbooks visual language for Property + Inventory. CSS-only presentation changes. */
+.ipdams-property-modern,.ipdams-stock-modern{--ipd-border:#bdcbd9;--ipd-ink:#163450;--ipd-bg:#f3f7fb;--ipd-accent:#13638d}
+.ipdams-property-modern .property-workspace-groups,
+.ipdams-property-modern .property-workspace-subtabs,
+.ipdams-stock-modern .inventory-tabbar{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;gap:6px;padding:5px 2px 10px;scrollbar-width:thin;-webkit-overflow-scrolling:touch;align-items:stretch}
+.ipdams-property-modern .property-group-tab,
+.ipdams-property-modern .property-workspace-subtab,
+.ipdams-stock-modern .inventory-tab{flex:0 0 auto!important;min-width:max-content;white-space:nowrap;border:1px solid #c5d3e1;background:#edf3f8;color:#234866;border-radius:9px;padding:10px 14px;font-weight:650;box-shadow:none;transition:background .15s ease}
+.ipdams-property-modern .property-group-tab.is-active,
+.ipdams-property-modern .property-workspace-subtab.is-active,
+.ipdams-stock-modern .inventory-tab.is-active{color:#fff;background:#145783;border-color:#145783;box-shadow:0 1px 2px #17364f22}
+.ipdams-property-modern .property-group-description{display:none}
+.ipdams-property-modern .property-workspace-navigation,
+.ipdams-stock-modern .inventory-tab-panel{border:1px solid #d6e1ec;border-radius:13px;background:#fff;padding:8px 12px;margin-block:4px 10px}
+.ipdams-property-modern .inventory-tab-panel{background:#fff;border-radius:12px}
+.ipdams-property-modern .surface,.ipdams-stock-modern .surface{border:1px solid #cfdbe7;border-radius:12px;background:#fff;box-shadow:0 1px 3px #0d31520b}
+.ipdams-property-modern .table-wrap,.ipdams-stock-modern .table-wrap{border:1px solid #bacadb;border-radius:10px;overflow:auto;background:#fff;max-width:100%}
+.ipdams-property-modern table,.ipdams-stock-modern table{width:100%;border-collapse:separate;border-spacing:0}
+.ipdams-property-modern table thead th,.ipdams-stock-modern table thead th{background:#1b4568!important;color:#fff!important;font-weight:700!important;letter-spacing:.015em;border-right:1px solid #5d7f9b;border-bottom:2px solid #123c5c;padding:10px 12px;text-align:left;white-space:nowrap}
+.ipdams-property-modern table tbody td,.ipdams-stock-modern table tbody td{background:#fff;border-right:1px solid #d6e0eb;border-bottom:1px solid #d8e1eb;padding:10px 12px;vertical-align:top}
+.ipdams-property-modern table tbody tr:nth-child(even) td,.ipdams-stock-modern table tbody tr:nth-child(even) td{background:#f2f6fa}
+.ipdams-property-modern table tbody tr:hover td,.ipdams-stock-modern table tbody tr:hover td{background:#e8f2f9}
+.ipdams-property-modern table tbody td:last-child,.ipdams-stock-modern table tbody td:last-child{border-right:0}
+.ipdams-action-intro{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid #ccdce9;border-radius:11px;background:#f3f8fc;padding:12px 16px;margin-bottom:12px}
+.ipdams-action-intro h3{margin:0 0 4px;color:#163450;font-size:1.05rem}.ipdams-action-intro p{margin:0;font-size:.88rem}
+.ipdams-action-dialog-body{padding:16px 20px;max-height:70vh;overflow:auto}.ipdams-action-dialog-body .form-grid{grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr))}
+.ipdams-dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:18px;border-top:1px solid #dbe5ef;padding-top:12px}
+.ipdams-office-view-toggle{white-space:nowrap;border:1px solid #9cb8cc;background:#e8f1f7;color:#224c6c;border-radius:8px;padding:7px 9px;cursor:pointer;font-size:.78rem;font-weight:650}
+.ipdams-office-view-toggle.is-viewing{background:#1c5279;border-color:#1c5279;color:white}
+.ipdams-superadmin-view-banner{display:flex;flex-wrap:wrap;gap:5px 16px;align-items:center;border:1px solid #bed3e3;background:#eaf4fa;color:#194863;padding:10px 14px;border-radius:9px;margin-bottom:12px;font-size:.88rem}
+.ipdams-superadmin-view-banner strong{font-weight:750}
+@media(max-width:720px){.ipdams-property-modern .property-workspace-navigation,.ipdams-stock-modern .inventory-tab-panel{padding:5px 6px}.ipdams-action-intro{padding:11px}.ipdams-action-intro>button{width:100%}.ipdams-action-dialog-body{padding:10px;max-height:73vh}.ipdams-office-view-toggle{max-width:180px;font-size:.75rem}.ipdams-property-modern table,.ipdams-stock-modern table{min-width:560px}}
+
+
+/* v0.2.287: Match the compact Textbooks tabs in school AND Division workspaces.
+   The older property navigation CSS assigns a flex-direction:column (from the
+   general nav), width:100% !important, min-height:58px and a teal active state.
+   An explicit row direction and scoped !important sizing are necessary: simply
+   setting display:flex still leaves four full-width, vertically stacked tabs. */
+.ipdams-property-modern .property-workspace-navigation > nav.property-workspace-groups {
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:7px !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:4px 3px 9px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+}
+.ipdams-property-modern .property-workspace-groups > button.property-group-tab {
+    display:inline-flex !important;
+    flex:0 0 auto !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    justify-content:center !important;
+    align-self:center !important;
+    width:auto !important;
+    max-width:none !important;
+    min-width:0 !important;
+    min-height:36px !important;
+    height:auto !important;
+    padding:9px 13px !important;
+    margin:0 !important;
+    white-space:nowrap !important;
+    border:1px solid #c0d1e1 !important;
+    border-radius:8px !important;
+    color:#254761 !important;
+    background:#edf3f9 !important;
+    box-shadow:none !important;
+    text-align:center !important;
+    line-height:1.2;
+}
+.ipdams-property-modern .property-workspace-groups > button.property-group-tab:hover:not(.is-active) {
+    background:#e2edf6 !important;
+    border-color:#8bb0cb !important;
+}
+.ipdams-property-modern .property-workspace-groups > button.property-group-tab.is-active,
+.ipdams-property-modern .property-workspace-groups > button.property-group-tab[aria-pressed="true"] {
+    color:#fff !important;
+    background:#145783 !important;
+    border-color:#145783 !important;
+    box-shadow:0 1px 3px #0e355022 !important;
+}
+.ipdams-property-modern .property-workspace-groups .property-group-description {display:none !important}
+.ipdams-property-modern .property-workspace-subnav {
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    min-width:0;
+    align-items:center;
+    gap:6px;
+    padding:5px 7px;
+    border:1px solid #d7e3ee;
+    background:#f5f9fd;
+}
+.ipdams-property-modern .property-workspace-subnav-label {flex:0 0 auto;white-space:nowrap;color:#365975}
+.ipdams-property-modern .property-workspace-subnav > nav.property-workspace-subtabs {
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    flex:1 1 auto !important;
+    align-items:center !important;
+    gap:4px !important;
+    min-width:0 !important;
+    width:auto !important;
+    max-width:100% !important;
+    margin:0 !important;
+    padding:1px 0 !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    scrollbar-width:thin;
+}
+.ipdams-property-modern .property-workspace-subtabs > button.property-workspace-subtab {
+    flex:0 0 auto !important;
+    width:auto !important;
+    max-width:none !important;
+    min-width:0 !important;
+    min-height:32px !important;
+    margin:0 !important;
+    padding:7px 10px !important;
+    background:transparent !important;
+    color:#34536e !important;
+    white-space:nowrap !important;
+    border:1px solid transparent !important;
+    border-radius:7px !important;
+    box-shadow:none !important;
+}
+.ipdams-property-modern .property-workspace-subtabs > button.property-workspace-subtab.is-active,
+.ipdams-property-modern .property-workspace-subtabs > button.property-workspace-subtab[aria-selected="true"] {
+    background:#fff !important;
+    color:#145783 !important;
+    border-color:#b6d0e2 !important;
+    box-shadow:0 1px 3px #0f36501b !important;
+}
+.ipdams-property-modern .property-workspace-groups > button:focus-visible,
+.ipdams-property-modern .property-workspace-subtabs > button:focus-visible,
+.ipdams-stock-modern .inventory-tabbar > button:focus-visible,
+.division-consolidation .divcon-tab:focus-visible {
+    outline:2px solid #217fa9 !important;
+    outline-offset:2px !important;
+}
+
+/* Inventory's old stylesheet hardcodes teal active tabs with !important. */
+.ipdams-stock-modern nav.inventory-tabbar {
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    gap:6px !important;
+    border:1px solid #d1deeb;
+    background:#f4f8fc;
+}
+.ipdams-stock-modern nav.inventory-tabbar > button.inventory-tab {
+    width:auto !important;
+    min-width:0 !important;
+    flex:0 0 auto !important;
+    padding:9px 13px !important;
+    margin:0 !important;
+    color:#254761 !important;
+    background:#edf3f9 !important;
+    border:1px solid #c0d1e1 !important;
+    border-radius:8px !important;
+    box-shadow:none !important;
+}
+.ipdams-stock-modern nav.inventory-tabbar > button.inventory-tab.is-active {
+    color:#fff !important;
+    background:#145783 !important;
+    border-color:#145783 !important;
+    box-shadow:0 1px 3px #0e355022 !important;
+}
+
+/* Bring the separately authored Division Consolidation theme into the
+   same navy/blue, high-contrast table system as Textbooks, Property & Inventory.
+   Layout-only: no consolidated totals, office scope or report filters change. */
+.division-consolidation {
+    --dc-ink:#163450;
+    --dc-teal:#145783;
+    --dc-line:#cfdeeb;
+    --dc-soft:#f3f7fb;
+    --dc-muted:#54718a;
+    min-width:0;
+}
+.division-consolidation .divcon-filter,
+.division-consolidation .divcon-report {
+    background:#fff;
+    border:1px solid #cfdbe7;
+    border-radius:12px;
+    box-shadow:0 1px 3px #0d31520b;
+}
+.division-consolidation .divcon-status,
+.division-consolidation .divcon-report-meta span {
+    background:#edf4fa;
+    color:#245271;
+    border-color:#bed4e6;
+}
+.division-consolidation .divcon-nav {
+    display:flex !important;
+    flex-direction:column !important;
+    flex-wrap:nowrap !important;
+    gap:7px !important;
+    width:100%;
+    min-width:0;
+}
+.division-consolidation .divcon-nav-overview {
+    display:flex;
+    grid-column:auto !important;
+    min-width:0;
+}
+.division-consolidation .divcon-nav-group {
+    display:grid !important;
+    grid-template-columns:minmax(135px,175px) minmax(0,1fr) !important;
+    align-items:center;
+    gap:8px 12px;
+    padding:8px 11px;
+    min-width:0;
+    background:#fff;
+    border:1px solid #d5e2ec;
+    border-radius:10px;
+}
+.division-consolidation .divcon-nav-grouphead {margin:0;min-height:0}
+.division-consolidation .divcon-nav-grouphead h3 {font-weight:750;color:#254761;margin:0 0 2px}
+.division-consolidation .divcon-nav-grouphead small {font-size:10.5px;line-height:1.25;color:#688097}
+.division-consolidation .divcon-nav-items {
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    gap:6px !important;
+    min-width:0 !important;
+    max-width:100%;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    padding:3px 0;
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+}
+.division-consolidation button.divcon-tab {
+    flex:0 0 auto !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-height:34px !important;
+    min-width:0 !important;
+    width:auto !important;
+    padding:8px 12px !important;
+    margin:0 !important;
+    white-space:nowrap !important;
+    background:#edf3f9 !important;
+    color:#254761 !important;
+    border:1px solid #c0d1e1 !important;
+    border-radius:8px !important;
+    box-shadow:none !important;
+    font-size:12px;
+}
+.division-consolidation button.divcon-tab:hover:not(.is-active) {
+    background:#e3eff8 !important;
+    border-color:#9abbd2 !important;
+}
+.division-consolidation button.divcon-tab.is-active,
+.division-consolidation button.divcon-tab[aria-selected="true"] {
+    background:#145783 !important;
+    color:#fff !important;
+    border-color:#145783 !important;
+}
+.division-consolidation .divcon-eyebrow,
+.division-consolidation .divcon-card-link {color:#145783 !important}
+.division-consolidation .divcon-overview-strip {background:#f1f7fc;border-color:#cfdbe7}
+.division-consolidation .divcon-table-scroll {border-color:#b9cbda;background:#fff}
+.division-consolidation table.divcon-table {border-collapse:separate;border-spacing:0}
+.division-consolidation table.divcon-table thead th {
+    background:#1b4568 !important;
+    color:#fff !important;
+    font-weight:750 !important;
+    border-right:1px solid #5d7f9b;
+    border-bottom:2px solid #123c5c;
+    text-transform:none;
+}
+.division-consolidation table.divcon-table tbody td {
+    background:#fff;
+    border-right:1px solid #d5e1eb;
+    border-bottom:1px solid #d8e3ed;
+}
+.division-consolidation table.divcon-table tbody tr:nth-child(even) td {background:#f2f6fa}
+.division-consolidation table.divcon-table tbody tr:hover td {background:#e8f2f9}
+.division-consolidation table.divcon-table thead th:last-child,
+.division-consolidation table.divcon-table tbody td:last-child {border-right:0}
+.division-consolidation .divcon-loading {background:#e9f3f9;border-left-color:#145783;color:#245271}
+@media (max-width:720px) {
+    .ipdams-property-modern .property-workspace-navigation {padding:7px 8px}
+    .ipdams-property-modern .property-workspace-subnav {gap:5px}
+    .ipdams-property-modern .property-workspace-subnav-label {display:none}
+    .division-consolidation .divcon-nav-group {grid-template-columns:1fr !important;gap:3px;padding:7px 9px}
+    .division-consolidation .divcon-nav-grouphead small {display:none}
+    .division-consolidation .divcon-nav-items {padding:3px 0 6px}
+}
+@media print {
+    .ipdams-property-modern .property-workspace-navigation,
+    .ipdams-stock-modern nav.inventory-tabbar,
+    .division-consolidation .divcon-nav {display:none !important}
+}

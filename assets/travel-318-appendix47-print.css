@@ -1,0 +1,38 @@
+/* IPDAMS Appendix 47 official paper form. Loaded by <link> so restrictive CSP does not block it. */
+@page { size: A4 portrait; margin: 20mm 23mm 16mm 23mm; }
+html, body { margin: 0; padding: 0; color: #090909; background: #fff; }
+body { font-family: "Bookman Old Style", "Times New Roman", Georgia, serif; font-size: 9.8pt; line-height: 1.16; }
+.appendix47-sheet { display: block; width: 100%; max-width: 175mm; margin: 0 auto; }
+.appendix47-sheet, .appendix47-sheet * { box-sizing: border-box; }
+.appendix47-sheet .appendix { text-align: right; font-size: 9pt; font-style: italic; margin: 0 0 8mm; }
+.appendix47-sheet h1 { text-align: center; font-size: 11.2pt; font-weight: bold; line-height: 1.12; margin: 0 0 10mm; }
+.appendix47-sheet .meta { display: table; table-layout: fixed; width: 100%; margin: 0 0 10mm; font-weight: bold; }
+.appendix47-sheet .meta > div { display: table-cell; vertical-align: top; }
+.appendix47-sheet .meta > div:first-child { width: 62%; }
+.appendix47-sheet .meta > div:last-child { width: 38%; padding-left: 4mm; }
+.appendix47-sheet .station-row { display: table; table-layout: fixed; width: 100%; margin: 0 0 11mm; }
+.appendix47-sheet .station-row > div { display: table-cell; width: 50%; text-align: center; vertical-align: top; padding: 0 4mm; }
+.appendix47-sheet .sign-name { font-weight: bold; text-decoration: underline; overflow-wrap: anywhere; }
+.appendix47-sheet .sign-position { font-size: 8.6pt; line-height: 1.15; }
+.appendix47-sheet .station-row .sign-name { font-size: 9pt; }
+.appendix47-sheet .station-row .sign-position { font-size: 8.3pt; }
+.appendix47-sheet .cert-para { text-align: justify; text-indent: 9mm; line-height: 1.24; margin: 0 0 7mm; }
+.appendix47-sheet .choices { margin: 0 0 6mm 8mm; }
+.appendix47-sheet .choice { display: table; width: 100%; table-layout: fixed; margin: 0 0 1mm; line-height: 1.19; }
+.appendix47-sheet .choice .mark { display: table-cell; width: 11mm; white-space: nowrap; vertical-align: top; }
+.appendix47-sheet .choice span:last-child { display: table-cell; vertical-align: top; }
+.appendix47-sheet .detail-label { margin: 3mm 0 2mm; }
+.appendix47-sheet .entry-text { margin: 0 0 3mm 8mm; min-height: 5mm; white-space: pre-wrap; overflow-wrap: anywhere; }
+.appendix47-sheet .entry-text.emphasis { text-transform: uppercase; font-weight: bold; text-decoration: underline; }
+.appendix47-sheet .entry-text.evidence { text-transform: uppercase; font-weight: bold; text-decoration: none; }
+.appendix47-sheet .evidence-line { display: block; white-space: normal; min-height: 4mm; line-height: 1.15; }
+.appendix47-sheet .employee-block { margin: 8mm 0 10mm 52%; width: 48%; text-align: center; page-break-inside: avoid; }
+.appendix47-sheet .employee-block .salutation { text-align: left; margin: 0 0 1mm; }
+.appendix47-sheet .signature-space { height: 8mm; }
+.appendix47-sheet .affirmation { text-indent: 8mm; text-align: justify; margin: 0 0 7mm; line-height: 1.22; }
+.appendix47-sheet .approved-block { margin: 0 0 0 52%; width: 48%; text-align: center; page-break-inside: avoid; }
+.appendix47-sheet .approved-block .salutation { text-align: left; margin: 0 0 2mm; }
+@media print {
+  html, body { margin: 0 !important; background: white !important; }
+  .appendix47-sheet .station-row, .appendix47-sheet .employee-block, .appendix47-sheet .approved-block { break-inside: avoid; }
+}

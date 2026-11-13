@@ -1,0 +1,29 @@
+/* v0.2.360: Compact PR/PO reimbursement debit account review.
+ * Form-only: no fund, DV, payroll, tax, check or journal style changes. */
+.reim-360-panel{padding:12px 14px;min-width:0}
+.reim-360-panel>h3{margin:0 0 5px;font-size:15px}
+.reim-360-panel>.hint{margin:4px 0 9px;font-size:11px;line-height:1.45}
+.reim-360-panel .reim-360-groups{gap:0;margin:10px 0}
+.reim-360-colheads,.reim-360-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(175px,1.7fr) 125px;gap:10px;align-items:center}
+.reim-360-colheads{font-size:11px;font-weight:650;color:#4f6576;padding:0 9px 6px}
+.reim-360-colheads span:last-child{text-align:right}
+.reim-360-row{padding:8px 9px;border:1px solid #dbe7ea;border-bottom:0;min-width:0;background:#fff}
+.reim-360-row:first-of-type{border-radius:7px 7px 0 0}
+.reim-360-row:nth-last-child(2){border-bottom:1px solid #dbe7ea;border-radius:0 0 7px 7px}
+.reim-360-item-label,.reim-360-item-account{min-width:0}
+.reim-360-item-label strong{display:block;font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+.reim-360-item-label small,.reim-360-hint{display:block;font-size:10.5px;line-height:1.35;color:#627588;margin:3px 0 0}
+.reim-360-item-account select,.reim-360-row>input{min-width:0;width:100%;height:33px;min-height:33px;box-sizing:border-box;font-size:12px;padding:5px 8px;border-radius:5px}
+.reim-360-row>input{text-align:right;font-variant-numeric:tabular-nums}
+.reim-360-bottom-hint{font-size:11px;line-height:1.4;color:#526d7b;margin:7px 2px 0}
+.reim-360-panel .reim-359-totals{margin:8px 0;padding:8px 11px;font-size:12px}
+.reim-360-panel .employee-claim-attest{margin:5px 0}
+.reim-360-panel .field>input{min-height:34px}
+@media(max-width:650px){
+  .reim-360-colheads{display:none}
+  .reim-360-row{grid-template-columns:minmax(0,1fr) 114px;gap:6px 9px}
+  .reim-360-item-label{grid-column:1/-1}
+  .reim-360-item-account{grid-column:1}
+  .reim-360-row>input{grid-column:2;align-self:start}
+  .reim-360-bottom-hint{font-size:11px}
+}

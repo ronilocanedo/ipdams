@@ -1,0 +1,41 @@
+/* IPDAMS v0.2.13 — compact density, preserving accessible controls. */
+.main-body{padding:22px 28px;max-width:1510px}
+.topbar{height:59px;padding:0 28px}.topbar-school select{padding:6px 10px;min-height:36px}.topbar-right{gap:10px}.secure{padding:6px 10px}
+.sidebar{width:222px;flex-basis:222px}.brand{padding:15px 15px 19px;gap:9px}.brand strong{font-size:17px}.brand-square{width:36px;height:36px;font-size:22px}.side-label{margin:17px 17px 9px}.sidebar nav{padding:0 9px;gap:2px}.sidebar nav .navitem{padding:9px 10px;gap:10px}.sidebar nav .navitem.active{padding-left:7px}.sidebar-foot{padding:10px 12px 14px}
+.workspace-context{padding:7px 11px;margin-bottom:13px;gap:7px;border-radius:7px}.workspace-context-kind{padding:3px 8px}
+.content-header{margin-bottom:15px;gap:14px}.content-header h1{font-size:24px;margin:4px 0}.content-header p{line-height:1.4;font-size:12px}.eyebrow{font-size:9px;letter-spacing:1.4px}
+.section-stack{gap:12px}.surface{padding:15px 17px;margin-bottom:12px;border-radius:9px}.surface>h3{margin-bottom:12px}.section-head{margin-bottom:11px}.section-head h3,.surface>h3{font-size:14px}
+.form-grid{row-gap:6px;column-gap:12px;margin-bottom:9px}.field{gap:4px;margin-bottom:7px}.field input,.field select,.field textarea{padding:8px 10px;min-height:36px;border-radius:6px}.field textarea{min-height:60px}.primary,.outline{padding:8px 12px;min-height:36px;gap:12px;border-radius:6px}.hint{padding:9px 11px;margin:9px 0;line-height:1.45}.body-muted{line-height:1.45}.inline-actions{gap:7px}
+.master-tabs{gap:3px;margin-bottom:10px}.master-tab{padding:9px 11px}.master-table th,.table-box th{padding:8px 9px}.master-table td,.table-box td{padding:8px 9px}.master-table .empty{padding:19px}.table-box .empty{padding:20px}
+.org-tab{padding:9px 12px}.org-tab-panel{gap:10px}.org-profile-readonly{margin:9px 0}.org-branch{padding:10px}.org-hierarchy{gap:8px;margin-top:10px}
+.hero{min-height:156px;padding:17px 25px;margin-bottom:14px}.hero h2{font-size:21px;margin:6px 0}.hero p{line-height:1.45}.hero-art{transform:scale(.83);transform-origin:right center}.stat-grid{gap:9px;margin-bottom:13px}.stat{padding:13px}.stat-icon{width:28px;height:28px;font-size:17px;margin-bottom:9px}.stat-number{font-size:23px}.stat-label{margin-top:3px}.two-col,.two-col-main{gap:12px}.two-col-main{margin-bottom:11px}
+.choice-row{gap:8px;margin-bottom:14px}.choice{padding:10px;gap:5px}.choice.chosen{padding:9px}.allocation{padding:9px}.dv-tax-builder{padding:11px;margin:11px 0}.dv-tax-row{padding:7px 0}.atc-directory-head{align-items:center!important}.atc-directory-head .body-muted{margin:4px 0}.atc-directory .atc-search-field{max-width:400px}
+/* Floating ATC add, edit and rate dialogs */
+body.atc-dialog-open{overflow:hidden}
+.atc-modal-backdrop{position:fixed;inset:0;z-index:250;background:rgba(12,29,43,.68);display:flex;align-items:center;justify-content:center;padding:16px}
+.atc-dialog{width:min(790px,100%);max-height:calc(100dvh - 32px);min-height:0;display:flex;flex-direction:column;overflow:hidden;border:1px solid #d6e6e9;border-radius:12px;background:#fff;box-shadow:0 28px 88px rgba(0,0,0,.28)}
+.atc-dialog-head{display:flex;gap:15px;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid #e5ebef;flex:none}.atc-dialog-head h2{font-size:19px;line-height:1.25;margin:5px 0 0;color:#153548}.atc-dialog-close{width:38px;height:38px;border:1px solid #d9e4e7;border-radius:7px;background:#fff;color:#496a79;font-size:24px;cursor:pointer;flex:none}.atc-dialog-close:hover{background:#f0f6f6}.atc-dialog-close:focus-visible{outline:3px solid #1aa78e;outline-offset:2px}
+.atc-dialog-content{padding:16px 20px 20px;overflow-y:auto;overscroll-behavior:contain;min-height:0}.atc-dialog-content>.body-muted,.atc-dialog-content>div>.body-muted{margin:0 0 12px}.atc-dialog-form .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.atc-dialog-form .master-wide{grid-column:1/-1}.atc-dialog-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-top:11px;flex-wrap:wrap}.atc-edit-caption{margin:0 0 10px;font-size:12px;color:#667f8a}.atc-edit-form{padding:12px;border:1px solid #e2ebee;border-radius:8px;background:#fafcfc}
+.atc-rate-section{margin-top:16px}.atc-rate-section .section-head{margin:0 0 9px}.atc-rate-section h4{font-size:13px;color:#24485b;margin:0}.atc-rate-section .master-table{min-width:520px}.atc-inner-form{padding:13px;margin-top:12px}.atc-inner-form h4{margin-bottom:10px}.atc-actions{margin-top:12px}
+.atc-dialog-alert{padding:10px 12px;margin-bottom:12px;border-radius:7px;font-size:12px}.atc-dialog-alert.is-error{background:#fff0ee;color:#963a32;border:1px solid #ffd9d3}.atc-dialog-alert.is-success{background:#e8faf0;color:#217052;border:1px solid #cdecd9}
+@media(max-width:1150px){.main-body{padding:20px}.topbar{padding:0 20px}.sidebar{width:197px;flex-basis:197px}}
+@media(max-width:760px){.sidebar{position:relative;width:100%;height:auto;min-height:0}.sidebar .brand{padding:10px 14px}.sidebar nav{padding:7px 9px}.sidebar nav .navitem{padding:8px 10px}.sidebar nav .navitem.active{padding:8px 10px 6px}.topbar{height:auto;padding:8px 14px}.main-body{padding:15px 12px}.content-header h1{font-size:21px}.surface{padding:12px}.hero{min-height:132px;padding:15px}.hero h2{font-size:19px}.org-tab{padding:9px}.atc-dialog-form .form-grid{grid-template-columns:1fr}.atc-dialog-form .master-wide{grid-column:auto}.atc-dialog-head{padding:12px 14px}.atc-dialog-content{padding:12px 14px}.atc-modal-backdrop{padding:8px}.atc-dialog{max-height:calc(100dvh - 16px)}.atc-directory-head{flex-wrap:wrap}.atc-directory-head>.inline-actions{width:100%}.atc-directory .atc-search-field{max-width:none}}
+@media(prefers-reduced-motion:reduce){.atc-dialog,.atc-modal-backdrop{scroll-behavior:auto}}
+
+/* IPDAMS 0.2.36 | Staging-only keyboard and narrow-screen refinements.
+   No React, API, printing, supplier, or document-state logic modified. */
+.main-body :is(a, button, input, textarea, select, summary):focus-visible,
+.sidebar :is(a, button, input, select):focus-visible,
+.topbar :is(a, button, input, select):focus-visible {
+  outline: 3px solid #168d80;
+  outline-offset: 2px;
+}
+.main-body :is(.surface, .field, .form-grid, .section-stack) { min-width: 0; }
+.main-body :is(input, textarea, select) { max-width: 100%; }
+.main-body .hint { overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .main-body .inline-actions { flex-wrap: wrap; }
+  .main-body .inline-actions > button { max-width: 100%; }
+  .main-body :is(.master-tabs, .org-tabs) { max-width: 100%; overflow-x: auto; }
+  .main-body :is(.master-tab, .org-tab) { flex-shrink: 0; }
+}
