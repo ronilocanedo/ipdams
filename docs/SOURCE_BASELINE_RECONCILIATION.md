@@ -8,6 +8,9 @@ Hostinger has an IPDAMS website at `ipdams.depedtagb.online`. Its listed documen
 
 Read-only file-content inspection confirms `private/app/ReleaseVersion.php` declares only a **bootstrap baseline 0.1.9** and expressly says installed-version state in private storage supersedes it. **Do not mistake 0.1.9 for the installed version.** The website file-content readback did **not** independently establish the actual installed version or complete file hashes at this checkpoint. Prior GitHub README reported owner-installed v0.2.368 and prepared v0.2.369 on 2026-11-12; treat both as **historical and unverified for 2026-11-13** until readback.
 
+## 13 November 2026 discovery checkpoint
+A path-and-size-only inventory is available in [`SOURCE_DISCOVERY_2026-11-13.md`](SOURCE_DISCOVERY_2026-11-13.md): 202 preliminary code-review candidates across PHP app/API files, TypeScript/frontend, tests and first-party-looking JS/CSS. These are **not approved source imports**; no complete content archive, file SHA-256 set or full-secret scan is available. Source review must confirm original code vs built artifacts before import.
+
 ## Do NOT import these
 - `private/.env*`, secrets or credentials, production config, API tokens and signing keys, even if accidentally embedded in a PHP source file.
 - Any database dump, SQL containing real records, live migrations copied without review, backups, logs, generated exports, uploads, branding that identifies individual schools, scanned documents, personnel records, banking/check data, signed forms or runtime/storage.
