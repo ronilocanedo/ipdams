@@ -62,6 +62,18 @@ Owner ran v1.2. Gitleaks AGAIN scanned ~4.36 MB and found **2 potential leaks**;
 
 Local-only `IPDAMS_Gitleaks_WSL_Path_Fix_v1.3_2026-11-13.zip` prepared; includes revised PowerShell scanner and same v1.2 Python sanitizer. Only executable discovery differs; original 210 SHA-256 verification, tar hash, Gitleaks `--redact=100` rules, values-free summary and temporary cleanup preserved. ZIP and static checks passed and v1.2 Python sanitizer synthetic tests passed. **Native Windows execution remains owner-side unverified**. Two Gitleaks results remain **UNCLASSIFIED**; owner should upload only `gitleaks_sanitized_summary.json` after successful run. No approval to package/import rest of code, merge or deploy.
 
+## v1.3 WSL path conversion failed; local v1.4 conversion prepared (2026-11-13)
+
+Owner ran the v1.3 local Gitleaks wrapper. Gitleaks completed a 4.36 MB scan and again reported **2 potential leaks**, but `Get-WslPath` reported `wslpath: C:UsersLoyIPDAMS-safe-sourceIPDAMS_Gitleaks_Sanitize_v1.2.py` and failed. The WSL default shell had removed Windows path backslashes from the argument passed to `wslpath -u`. The original verified source TAR, source hashes, Hostinger live application and database remain unchanged. The **two possible leaks remain unclassified**.
+
+Created **local-only v1.4** toolkit `IPDAMS_Gitleaks_WSL_Path_Fix_v1.4_2026-11-13.zip` with `IPDAMS_Gitleaks_Local_Scan_v1.4.ps1`, unchanged `IPDAMS_Gitleaks_Sanitize_v1.2.py`, and README. Instead of invoking `wslpath` through the shell, v1.4:
+- requires an absolute local drive-letter Windows path and constructs corresponding `/mnt/<drive>/...` path **without invoking a shell**;
+- checks that WSL can access required local files using `wsl.exe --exec test -f`;
+- uses `wsl.exe --exec python3` to pass each path as one argument;
+- preserves original archive hash `42e5b85cd67e61f7bd71257a55cdb7320aa95faf97a6e1328fb85e133fe4f312`, **210/210** per-file verification, Gitleaks `dir --redact=100`, metadata-only sanitized report and temporary cleanup.
+
+Toolkit ZIP validation, Python compilation, static script guards and representative drive/path conversion checks **PASS**; **not yet tested in native Windows PowerShell**. Owner must run v1.4 locally, then upload **only** `source_capture_results/gitleaks_sanitized_summary.json` for two-findings triage. Do not upload raw TAR or Gitleaks findings, package source, merge or deploy until reviewed.
+
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
 
