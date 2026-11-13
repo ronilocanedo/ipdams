@@ -17,6 +17,10 @@ A path-and-size-only inventory is available in [`SOURCE_DISCOVERY_2026-11-13.md`
 - Third-party minified libraries as first-party sources without their correct licenses/provenance.
 - A ZIP of the entire document root. `.gitignore` alone does not protect against embedded secrets.
 
+## SHA-256 integrity checkpoint (2026-11-13)
+
+A safe **read-only SSH hash helper** is available at [`tools/ipdams_source_sha256_manifest.sh`](../tools/ipdams_source_sha256_manifest.sh) with [eight provisional API-derived hashes](SOURCE_HASH_CHECKPOINT_2026-11-13.md). These eight digests were reconstructed from Hostinger text responses with an inferred final LF; they have **not** been matched to server-side `sha256sum` and must not be labeled verified. The source-discovery file list also remains metadata only. See the checkpoint for exact collection and comparison procedure.
+
 ## Approved procedure for a future code-only import
 1. Freeze an inventory checkpoint via **read-only** Hostinger listing; confirm precise installed version and updater release manifest through authenticated read-only access. Do not infer from file names.
 2. Start an explicit **allowlist**, file by file, for first-party app classes, API routes, public first-party JS/CSS/HTML, **reviewed** tests, database schema definitions/migrations and development documentation. Verify ownership and source authenticity.
