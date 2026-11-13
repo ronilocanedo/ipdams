@@ -1,3 +1,5 @@
+**UPDATE — validated after owner SHA manifest upload:** The owner-generated 210-file server-byte SHA-256 manifest was checked and eight historical provisional digests matched **8/8**. Full register: [`SOURCE_HASH_VALIDATION_2026-11-13.md`](SOURCE_HASH_VALIDATION_2026-11-13.md). The **provisional status below is historical** and describes the point *before* the later SSH cross-check. GitHub source parity is still not established.
+
 # SHA-256 source hash checkpoint — 13 November 2026
 
 **Status: PROVISIONAL API-TEXT HASHES, NOT YET SERVER-BYTE VERIFIED.**  
