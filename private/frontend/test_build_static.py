@@ -42,12 +42,12 @@ class StaticBuildTests(unittest.TestCase):
         b.ROOT, b.ASSETS, b.ENTRY, b.NOTICE, b.PINNED = self.original
 
     def test_identical_rebuild(self):
-        one = b.build(self.root / 'out1')
-        two = b.build(self.root / 'out2')
+        one = b.build(self.root / 'private/frontend/out1')
+        two = b.build(self.root / 'private/frontend/out2')
         self.assertEqual(one, two)
-        self.assertEqual((self.root / 'out1/build-manifest.json').read_bytes(),
-                         (self.root / 'out2/build-manifest.json').read_bytes())
-        self.assertEqual((self.root / 'out1/assets/app.js').read_bytes(),
+        self.assertEqual((self.root / 'private/frontend/out1/build-manifest.json').read_bytes(),
+                         (self.root / 'private/frontend/out2/build-manifest.json').read_bytes())
+        self.assertEqual((self.root / 'private/frontend/out1/assets/app.js').read_bytes(),
                          (self.root / 'assets/app.js').read_bytes())
         self.assertEqual(len(one['files']), 6)
 
@@ -67,9 +67,9 @@ class StaticBuildTests(unittest.TestCase):
             b.preflight()
 
     def test_refuse_overwrite(self):
-        b.build(self.root / 'out')
+        b.build(self.root / 'private/frontend/out')
         with self.assertRaises(FileExistsError):
-            b.build(self.root / 'out')
+            b.build(self.root / 'private/frontend/out')
 
     def test_refuse_source_overwrite(self):
         with self.assertRaisesRegex(ValueError, 'must not replace source'):
