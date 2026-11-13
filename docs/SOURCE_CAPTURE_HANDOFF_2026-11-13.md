@@ -24,6 +24,18 @@ A downloadable **local-only second-pass** `IPDAMS_source_review_v2.py` and READM
 
 **Next gate:** Owner runs the second-pass tool locally and shares **`source_validation_report_v2.json` only**, not the raw `.tar` archive or any source file. No `--pack --reviewed` yet.
 
+## Second-pass v2 result (owner uploaded, 2026-11-13)
+
+The owner ran the locally prepared **uncapped** regex scanner on the existing code-only tar and uploaded `source_validation_report_v2.json`. Recorded:
+- `tool=ipdams-source-review-v2`; `status=VERIFY_OK_REVIEW_REQUIRED`
+- **210/210** original file SHA-256 values match the owner-supplied manifest; **0 BLOCK**, **6 REVIEW**, all six category `literal_email_address`; `ui_placeholder_candidates_still_review_required=6`.
+- Existing local archive SHA-256 `42e5b85cd67e61f7bd71257a55cdb7320aa95faf97a6e1328fb85e133fe4f312`.
+- Findings: `assets/app.js` at scanner lines **5353, 5371, 5403, 5411, 14083**; `private/frontend/src/app.tsx` at scanner line **59**. Report lines are **scanner offsets**; prior text-API inspection of nearby content shows placeholder strings at the following rendered lines (usually one line later). Avoid modifying code due to indexing differences.
+- Previously inspected Hostinger code context places the six matching email literals in **contact-email, account-provisioning and login UI placeholders**. They appear low-risk *at those specific locations*, and none of these six represent a reported hard-coded token or a retrieved employee/customer record.
+- The **uncapped scan found no additional literal-email matches under its own regex rules**. This is a strong local result but **does not establish that the complete 210-file source is free of passwords, private records, proprietary dependencies or secrets not covered by those patterns**.
+
+**Decision:** the six reviewed source locations are explainable as UI examples; no code edit is required for these examples. **Packaging remains blocked** until an independent secret-pattern scanner (e.g., local Gitleaks directory scan), manual PII/license inspection, and explicit owner clearance. Never upload a raw Gitleaks report because it may contain actual secret values. No server-side source, database, application or financial operation was changed as part of this review.
+
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
 
