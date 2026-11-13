@@ -1,1 +1,14 @@
-{"name":"ipdams-frontend","version":"0.1.0","private":true,"description":"Offline development TypeScript/React static assets; refer to frontend/README.md for production upgrade","scripts":{"build":"tsc --project tsconfig.json"},"devDependencies":{"typescript":"^5.8.3"}}
+{
+  "name": "ipdams-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reviewed no-network static snapshot; legacy TSX is not production frontend source",
+  "scripts": {
+    "build": "python3 build_static.py",
+    "build:legacy-prototype": "tsc --project tsconfig.json",
+    "check:legacy-types": "tsc --project tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  }
+}
