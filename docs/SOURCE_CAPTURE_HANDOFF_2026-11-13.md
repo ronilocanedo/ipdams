@@ -74,6 +74,21 @@ Created **local-only v1.4** toolkit `IPDAMS_Gitleaks_WSL_Path_Fix_v1.4_2026-11-1
 
 Toolkit ZIP validation, Python compilation, static script guards and representative drive/path conversion checks **PASS**; **not yet tested in native Windows PowerShell**. Owner must run v1.4 locally, then upload **only** `source_capture_results/gitleaks_sanitized_summary.json` for two-findings triage. Do not upload raw TAR or Gitleaks findings, package source, merge or deploy until reviewed.
 
+## Gitleaks v1.4 successful: two findings independently inspected (2026-11-13)
+
+Owner uploaded `gitleaks_sanitized_summary.json` produced by the local v1.4 Windows/WSL scan. Summary reports:
+- `tool=ipdams-gitleaks-local-sanitizer-v1.2`, `status=GITLEAKS_FINDINGS_REVIEW_REQUIRED`.
+- **210** source file hashes verified and original local archive SHA-256 `42e5b85cd67e61f7bd71257a55cdb7320aa95faf97a6e1328fb85e133fe4f312`.
+- **2 findings** with `rule_id=generic-api-key`:
+  - `private/app/DvAppendix32.php`, Gitleaks `start_line=100`.
+  - `private/app/Domain.php`, Gitleaks `start_line=2537`.
+
+**Localized read-only Hostinger inspection:** the first is a SQL `config_key` lookup for DV signatories; the second is a `DV_SIGNATORIES_KEY` constant. Compared the raw literal values *in memory without printing or persisting them*: they are **identical 25-character, human-readable, underscore-delimited identifiers**, contain a signatory-related term, and neither is an API key, credential, random token or stored person record. The one-line difference between Gitleaks and Hostinger API line displays is due to source API offset, **not a different file**.
+
+**Classification:** the two **specific** Gitleaks findings are **false positives** from `generic-api-key` detecting a configuration key name. No security fix, credential revocation or production source change is indicated by these **two sites**. The prior six email-literal UI placeholder regex REVIEW hits were also inspected and classified low risk.
+
+**Caveat / release gate:** This is **not** a comprehensive audit of all source, dependency provenance, licensing, personal data, application behavior or authorization boundaries; regex scans may miss secrets. No source ZIP has been approved or uploaded, no GitHub source merge or Hostinger deployment has occurred, and the code is still a partial pilot. Next step is **local manual privacy/licensing/source-content review**, plus strictly allowlisted, verified code-only packaging and another comparison before any complete source import. Keep raw source TAR and raw scanner results local.
+
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
 
