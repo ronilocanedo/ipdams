@@ -89,6 +89,16 @@ Owner uploaded `gitleaks_sanitized_summary.json` produced by the local v1.4 Wind
 
 **Caveat / release gate:** This is **not** a comprehensive audit of all source, dependency provenance, licensing, personal data, application behavior or authorization boundaries; regex scans may miss secrets. No source ZIP has been approved or uploaded, no GitHub source merge or Hostinger deployment has occurred, and the code is still a partial pilot. Next step is **local manual privacy/licensing/source-content review**, plus strictly allowlisted, verified code-only packaging and another comparison before any complete source import. Keep raw source TAR and raw scanner results local.
 
+## Private 210-file review candidate helper prepared (2026-11-13)
+
+Created downloadable local-only `IPDAMS_Private_Source_Review_Candidate_Toolkit_2026-11-13.zip`, containing one Python 3 standard-library script and a safety README. The package contains **no production source** or credentials. Its integrity was checked, and it passed synthetic normal/tampered-file/changed-findings/explicit-authority/no-overwrite tests.
+
+The script first dry-runs validation of the **unchanged owner local source TAR**, its original pinned SHA-256 `42e5b85cd67e61f7bd71257a55cdb7320aa95faf97a6e1328fb85e133fe4f312`, all 210 original-file digest values, and **both** metadata-only scanner reports. It requires the **exact six** previously reviewed UI email placeholder matches and the **exact two** DV-signatory configuration-identifier false positives; any changed signal, extra archive path or hash mismatch fails closed.
+
+An explicit owner flag `--prepare-candidate --confirm-authorized-private-review` is required to **prepare only a restricted local code ZIP**, `source_capture_results/IPDAMS_source_210_PRIVATE_REVIEW_CANDIDATE.zip`. It also writes `candidate_review_summary.json`. No ZIP is produced in dry-run mode, and no existing candidate is overwritten. The ZIP is **for private source audit only**, not merge or deployment approval. External sources, scans and private school/employee records must never be added to this allowlist; the script does no network calls or source execution.
+
+**Next user action:** run dry-run locally, then create candidate only with authority to share code for private review; upload only the candidate ZIP and sanitized summary to the existing private IPDAMS development conversation. The assistant must independently validate the archive, secret/privacy/license indicators and code scope before making **a separate draft full-source import PR**. User should never upload raw capture TAR, raw Gitleaks JSON or live credentials.
+
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
 
