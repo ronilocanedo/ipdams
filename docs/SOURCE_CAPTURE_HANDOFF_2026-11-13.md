@@ -56,6 +56,12 @@ Owner re-ran the local Gitleaks scanner after the v1.1 parser patch. Gitleaks sc
 
 **Next acceptance gate:** Owner uploads only `source_capture_results/gitleaks_sanitized_summary.json` created by v1.2. Both detections must be classified before any source packing or further GitHub import. Never upload raw source tar or unredacted Gitleaks findings.
 
+## Gitleaks v1.2 multi-WSL path selection issue and v1.3 fix (2026-11-13)
+
+Owner ran v1.2. Gitleaks AGAIN scanned ~4.36 MB and found **2 potential leaks**; the scanner itself completed. Wrapper error: `The term 'C:\\WINDOWS\\system32\\wsl.exe C:\\Program Files\\WSL\\wsl.exe C:\\Users\\Loy\\AppData\\Local\\Microsoft\\WindowsApps\\wsl.exe' is not recognized...`. Root cause: PowerShell `Get-Command wsl.exe` returned **three ApplicationInfo results** and `$wsl.Source` expanded into a concatenated set of paths rather than one executable. The fix is to explicitly select **one** command using `| Select-Object -First 1` for WSL, tar and Gitleaks before invoking `.Source`.
+
+Local-only `IPDAMS_Gitleaks_WSL_Path_Fix_v1.3_2026-11-13.zip` prepared; includes revised PowerShell scanner and same v1.2 Python sanitizer. Only executable discovery differs; original 210 SHA-256 verification, tar hash, Gitleaks `--redact=100` rules, values-free summary and temporary cleanup preserved. ZIP and static checks passed and v1.2 Python sanitizer synthetic tests passed. **Native Windows execution remains owner-side unverified**. Two Gitleaks results remain **UNCLASSIFIED**; owner should upload only `gitleaks_sanitized_summary.json` after successful run. No approval to package/import rest of code, merge or deploy.
+
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
 
