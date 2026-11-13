@@ -18,6 +18,8 @@ The highest current constraint is that GitHub `main` contains coordination docum
 | `.github/pull_request_template.md` | Release, security, database and UAT review gates |
 | `docs/SOURCE_BASELINE_RECONCILIATION.md` | Safe Hostinger→GitHub source acceptance procedure |
 | `docs/TEST_MATRIX.md` | Progressive cross-module regression plan |
+| `docs/SOURCE_DISCOVERY_2026-11-13.md` | Read-only metadata inventory of candidate Hostinger application files; **not** code import or SHA audit |
+| `docs/FREELLMAPI_LOCAL_PILOT.md` | Optional local, synthetic-data-only coding-agent evaluation; **not** an installation |
 
 ## Working architecture principle
 Adopt a **modular monolith**, gradually: one application and a carefully governed MariaDB, with separated domain responsibilities and reusable authorization, audit, numbering, reference data and document-print services. **No architecture rewrite is authorized by this document.**
