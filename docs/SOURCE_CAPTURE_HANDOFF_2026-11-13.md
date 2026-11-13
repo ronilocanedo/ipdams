@@ -36,6 +36,16 @@ The owner ran the locally prepared **uncapped** regex scanner on the existing co
 
 **Decision:** the six reviewed source locations are explainable as UI examples; no code edit is required for these examples. **Packaging remains blocked** until an independent secret-pattern scanner (e.g., local Gitleaks directory scan), manual PII/license inspection, and explicit owner clearance. Never upload a raw Gitleaks report because it may contain actual secret values. No server-side source, database, application or financial operation was changed as part of this review.
 
+## Gitleaks independently scanned — 2 potential leaks and wrapper parser fix (2026-11-13)
+
+Owner ran Gitleaks on the verified local code archive. Gitleaks itself reported **approximately 4.36 MB scanned and 2 potential leaks**, before the original PowerShell wrapper failed with `Cannot convert the "System.Object[]" value of type "System.Object[]" to type "System.Int32"`.
+
+**Meaning:** Gitleaks completed detection, but the script did **not** produce a trustworthy sanitized summary. The two findings are **unclassified and must not be ignored or assumed false positives**. No complete-source GitHub import, packaging, merge or deployment may proceed on this basis.
+
+The failure is consistent with Windows PowerShell 5.1 passing a **nested JSON object array** where the script expected one scalar record's `StartLine`. Prepared a revised **local-only** v1.1 wrapper `IPDAMS_Gitleaks_Parser_Fix_v1.1_2026-11-13.zip` that uses a JSON object wrapper and explicit nested-array flattening, ensures a scalar validated start-line, validates finding file path against the 210-file manifest, and emits **only relative path, numeric line and Gitleaks rule**. It preserves original tar SHA validation and 210/210 per-file hash checks, uses the same `gitleaks dir --redact=100` rules, and deletes temporary extracted source and raw finding output. Static checks passed; native Windows PowerShell runtime execution remains owner-side **unverified**.
+
+**Next step:** Owner replaces only the local `IPDAMS_Gitleaks_Local_Scan.ps1` with the v1.1 script and reruns it. Share **only** `source_capture_results/gitleaks_sanitized_summary.json`, not the raw scan output, archive, credential, or source file. If warnings or parser errors persist, stop and share the error without raw secret values. The two findings must be individually reviewed before any clearance.
+
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
 
