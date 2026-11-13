@@ -46,6 +46,16 @@ The failure is consistent with Windows PowerShell 5.1 passing a **nested JSON ob
 
 **Next step:** Owner replaces only the local `IPDAMS_Gitleaks_Local_Scan.ps1` with the v1.1 script and reruns it. Share **only** `source_capture_results/gitleaks_sanitized_summary.json`, not the raw scan output, archive, credential, or source file. If warnings or parser errors persist, stop and share the error without raw secret values. The two findings must be individually reviewed before any clearance.
 
+## Follow-up: Gitleaks PowerShell JSON parser v1.1 also failed (2026-11-13)
+
+Owner re-ran the local Gitleaks scanner after the v1.1 parser patch. Gitleaks scanned **approximately 4.36 MB**, again reporting **2 potential leaks**, but the wrapper failed with `The property 'records' cannot be found on this object.` The source capture is unaffected; the **two Gitleaks detections remain unclassified**.
+
+**v1.2 replacement prepared:** A local-only ZIP `IPDAMS_Gitleaks_Parser_Fix_v1.2_2026-11-13.zip` contains a PowerShell 5.1 runner, a standalone WSL Python JSON sanitizer, and instructions. This avoids *all* PowerShell `ConvertFrom-Json` logic. The runner rechecks original archive SHA-256 and all 210 exact file digests, runs the same local Gitleaks `dir --redact=100` scan, then invokes WSL Python to parse Gitleaks results into a sanitized **relative_file/start_line/rule_id only** summary. Both extracted source and raw Gitleaks report remain local and are cleaned afterward. No source ZIP, GitHub upload, Hostinger write, transaction or deployment occurs.
+
+**Testing:** Python compilation and a synthetic test matrix passed for two findings including Windows absolute and relative paths, 210 manifest entries, removal of raw secret/match values, rejection of unknown paths, malformed JSON shape, nested line numbers, archive hash mismatch, contradictory scanner codes and empty reports when Gitleaks reported findings. ZIP integrity passed. Native Windows PowerShell runtime still needs owner confirmation; do not label it proven until the owner runs it successfully.
+
+**Next acceptance gate:** Owner uploads only `source_capture_results/gitleaks_sanitized_summary.json` created by v1.2. Both detections must be classified before any source packing or further GitHub import. Never upload raw source tar or unredacted Gitleaks findings.
+
 ## Purpose
 Obtain a byte-identical code-only archive of **only** the 210 source-shaped files in the previously recorded hash manifest, in order to reconcile with GitHub. Do not copy `.env`, uploads, private storage, production user/financial records, database backups or third-party runtime binaries.
 
