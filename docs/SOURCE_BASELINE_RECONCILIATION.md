@@ -19,6 +19,9 @@ A path-and-size-only inventory is available in [`SOURCE_DISCOVERY_2026-11-13.md`
 
 ## SHA-256 integrity checkpoint (2026-11-13)
 
+**Update — server hash reference now recorded:** The owner uploaded a read-only SSH-generated 210-file `sha256sum` manifest. Its format, sorted paths and uniqueness were verified, and all eight earlier provisional API hashes matched the on-server values. The complete **LF-normalized** hash file and validation details are stored in [`SOURCE_HASH_VALIDATION_2026-11-13.md`](SOURCE_HASH_VALIDATION_2026-11-13.md). This is a baseline for only the allowlisted source-shaped paths, not a source import or an independently duplicated full-server readback. GitHub `main` is still **not** a deployable mirror; the actual installed version, source contents, and sanitization are pending.
+
+
 A safe **read-only SSH hash helper** is available at [`tools/ipdams_source_sha256_manifest.sh`](../tools/ipdams_source_sha256_manifest.sh) with [eight provisional API-derived hashes](SOURCE_HASH_CHECKPOINT_2026-11-13.md). These eight digests were reconstructed from Hostinger text responses with an inferred final LF; they have **not** been matched to server-side `sha256sum` and must not be labeled verified. The source-discovery file list also remains metadata only. See the checkpoint for exact collection and comparison procedure.
 
 ## Approved procedure for a future code-only import
