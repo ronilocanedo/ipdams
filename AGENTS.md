@@ -23,6 +23,11 @@ The Integrated Procurement, Disbursement and Asset Management System (IPDAMS) su
 6. Prepare release manifest, file hashes, verified predecessor, rollback/recovery instructions, and owner UAT checklist. No automation touching live data.
 7. Record branch/commit, file hashes, Drive artifact, UAT results and actual **owner-confirmed installed version**. Distinguish prepared, tested and installed.
 
+## Optional external AI coding gateways
+- FreeLLMAPI and other multi-provider LLM routers are **experimental local development aids**, not IPDAMS services. A local gateway typically forwards prompts and source content to remote third-party providers.
+- Do not send any actual IPDAMS proprietary source, personnel, bank/check, tax, attachment or production operational content to a free LLM provider without a provider-specific data-handling and authorization review. Default to fabricated fixtures only.
+- Never enable an agent's unrestricted shell/network, autonomous deployment, GitHub write access or Hostinger credentials during a free-model pilot. See `docs/FREELLMAPI_LOCAL_PILOT.md`.
+
 ## Confidentiality
 Never commit .env, credentials, tokens, database exports, production records, bank/check data, personnel files, signed forms, attachments, backups, or logs containing private information. `.gitignore` is NOT an adequate secret scanner. Use synthetic fixtures and review every imported file for embedded secrets.
 
