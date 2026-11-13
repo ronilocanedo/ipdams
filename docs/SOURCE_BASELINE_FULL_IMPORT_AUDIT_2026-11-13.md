@@ -42,3 +42,9 @@
 - After owner push: **verify 210 source paths in this PR**, compare selected GitHub source bytes with the manifest, run code review and request approvals. Import and review remain DRAFT until explicit release gates.
 
 Other draft PRs remain separate: #81 foundation/210-hash reference and #82 8-file pilot. This draft intentionally does not rely on either being merged.
+
+## Owner import attempt: WSL private GitHub authentication pending (2026-11-13)
+
+Owner ran the local import helper successfully in `--dry-run`: ZIP SHA-256, all **210/210** file digests and sanitized security reports matched. Owner then explicitly invoked `--push-to-draft --confirm-private-repo-import`. The helper validated all inputs again but the **WSL `git clone` failed** with `remote: Repository not found` for the private HTTPS remote. This is consistent with missing WSL GitHub authentication, not a missing repository: the GitHub connector separately confirmed `ronilocanedo/ipdams` is **PRIVATE**, with owner `ronilocanedo`, default `main` and accessible draft PR #83. As of this checkpoint the PR still changes **only this audit document** and contains **none of the 210 source files**. No source Git commit or push was performed; no Hostinger or database changes were made.
+
+**Recovery gate:** Authenticate **WSL GitHub CLI** to the correct GitHub account using browser/device sign-in (`gh auth login --hostname github.com --git-protocol https --web`, `gh auth setup-git`) and verify private branch access with read-only `git ls-remote --heads`. Never supply a token, password or SSH private key in the conversation or embed it in remote URLs. Then rerun the original exact-hash-gated helper. If the previously failed clone left a partial local directory, inspect its contents before removing anything. No merge/deploy authorization is implied.
