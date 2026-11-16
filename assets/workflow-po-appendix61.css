@@ -1,0 +1,12 @@
+/* Purchase Order creation modal — v0.2.142 */
+.workflow-po-form .workflow-po-purpose,.workflow-po-form .workflow-po-supplier{padding:12px 14px;border:1px solid #d5e1e6;border-radius:7px;background:#f7fafb;overflow-wrap:anywhere;line-height:1.5}
+.workflow-po-form .workflow-po-purpose{margin:4px 0 12px}
+.workflow-po-form .workflow-po-supplier{margin:10px 0 16px}
+.workflow-po-form .workflow-po-supplier h4{margin:0 0 8px;color:#173950}
+.workflow-po-form .workflow-po-supplier small{display:block;color:#617582;margin-top:7px}
+.workflow-po-form .workflow-po-money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.workflow-po-form .workflow-po-total{margin:12px 0 16px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#edf7f5;border:1px solid #c5e8df;border-radius:7px;color:#075d50}
+.workflow-po-form .workflow-po-terms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.workflow-po-form .workflow-po-terms .field{min-width:0}
+.workflow-po-form .workflow-table input[type=number]{max-width:120px}
+@media(max-width:650px){.workflow-po-form .workflow-po-terms{grid-template-columns:1fr}.workflow-po-form .workflow-table input[type=number]{max-width:95px}}

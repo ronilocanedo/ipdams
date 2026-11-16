@@ -1,0 +1,9 @@
+/* v0.2.214 property batch entry; scoped to property workspace elements only. */
+.inventory-workspace .property-unit-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;max-width:100%;margin:12px 0 18px}
+.inventory-workspace .property-unit-card {min-width:0;margin:0;border:1px solid #cddce5;border-radius:10px;padding:12px;background:#fbfdff}
+.inventory-workspace .property-unit-card legend {font-weight:700;color:#114153;padding:0 7px;max-width:100%;white-space:normal}
+.inventory-workspace .property-unit-card .field,.inventory-workspace .property-edit-scoped .field {min-width:0}
+.inventory-workspace .property-unit-card input,.inventory-workspace .property-edit-scoped input {width:100%;max-width:100%;box-sizing:border-box}
+.inventory-workspace .property-edit-scoped {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:11px;margin-bottom:14px;min-width:0}
+.inventory-workspace fieldset, .inventory-workspace form {max-width:100%}
+@media(max-width:580px) {.inventory-workspace .property-unit-grid,.inventory-workspace .property-edit-scoped {grid-template-columns:minmax(0,1fr)}}

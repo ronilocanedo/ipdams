@@ -1,0 +1,12 @@
+/* v0.2.369 — computed supplier quotation totals (read-only preview). */
+.workflow-quote-pricing .workflow-table{min-width:710px}
+.workflow-quote-pricing .workflow-table th:nth-child(2),
+.workflow-quote-pricing .workflow-table td:nth-child(2){text-align:right;font-variant-numeric:tabular-nums}
+.workflow-quote-pricing .workflow-table th:nth-child(4),
+.workflow-quote-pricing .workflow-table td:nth-child(4){min-width:120px;text-align:right}
+.workflow-quote-pricing .workflow-table td:nth-child(3) input{max-width:165px}
+.workflow-quote-line-total{display:inline-block;color:#143c53;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.workflow-quote-live-summary{margin:9px 0 12px;display:flex;justify-content:flex-end;align-items:baseline;gap:12px;flex-wrap:wrap;padding:10px 14px;background:#eef7f7;border:1px solid #d6e8ea;border-radius:6px;color:#26495c}
+.workflow-quote-live-summary strong{font-size:1.04rem;font-variant-numeric:tabular-nums;color:#007f74}
+.workflow-quote-live-summary small{width:100%;text-align:right;color:#627c8b}
+@media(max-width:700px){.workflow-quote-live-summary{justify-content:space-between;padding:9px}.workflow-quote-live-summary small{text-align:left}}

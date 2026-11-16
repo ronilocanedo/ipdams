@@ -1,0 +1,8 @@
+/* v0.2.367: concise quotation lifecycle tabs; read-only source status */
+.workflow-quote-buckets{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 14px}
+.workflow-quote-bucket{display:flex;align-items:center;gap:9px;justify-content:center;border:1px solid #d3e0e8;background:#f7fafb;color:#23445b;border-radius:7px;padding:9px 14px;font:inherit;cursor:pointer}
+.workflow-quote-bucket.active{background:#e8f7f3;border-color:#009d8b;color:#006b61;font-weight:700}
+.workflow-quote-bucket:focus-visible{outline:3px solid #46bfae;outline-offset:2px}
+.workflow-quote-bucket-count{background:#edf2f5;border-radius:12px;padding:2px 8px;font-size:.85em;font-variant-numeric:tabular-nums}
+.workflow-quote-state{display:block;margin-top:5px;font-size:.83rem;color:#566c7c}
+@media(max-width:700px){.workflow-quote-bucket{flex:1 1 140px;padding:9px 7px}}

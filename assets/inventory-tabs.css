@@ -1,0 +1,53 @@
+/* v0.2.194 compact Inventory Management tab navigation. No financial/inventory transaction behavior changes. */
+.inventory-workspace{min-width:0}
+.inventory-guide{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;padding:8px 12px;background:#f5f9fb;border:1px solid #d8e6eb;border-radius:9px;color:#456272;font-size:.82rem}
+.inventory-property-link{font-size:.8rem!important;padding:6px 11px!important;white-space:nowrap;min-height:32px}
+.inventory-tabbar{display:flex;flex-wrap:nowrap;gap:3px;overflow-x:auto;max-width:100%;padding:3px;background:#edf3f6;border:1px solid #d6e2e9;border-radius:10px;scrollbar-width:thin}
+.inventory-tab{flex:0 0 auto;border:0!important;background:transparent!important;box-shadow:none!important;color:#416078!important;padding:8px 13px!important;border-radius:7px!important;margin:0!important;white-space:nowrap;line-height:1.2;font-size:.84rem;font-weight:650;min-height:36px}
+.inventory-tab:hover{background:#dceaf1!important;color:#17384d!important}
+.inventory-tab.is-active{background:#fff!important;color:#116a75!important;box-shadow:0 1px 3px #10253d1c!important}
+.inventory-tab:focus-visible{outline:2px solid #128e9a;outline-offset:-2px}
+.inventory-tab-panel{min-width:0}
+.inventory-tab-content{display:grid;gap:12px;min-width:0}
+.inventory-tab-content>.surface{margin:0}
+.inventory-context{padding:10px 12px;background:#f6fafb;border-left:3px solid #68b4bf;border-radius:5px;color:#456272;font-size:.83rem;line-height:1.45;margin:0}
+@media(max-width:620px){.inventory-tab{font-size:.78rem;padding:8px 10px!important}.inventory-guide{align-items:flex-start}.inventory-property-link{width:auto}}
+@media print{.inventory-tabbar,.inventory-guide{display:none!important}}
+
+.inventory-guide-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* v0.2.195: IPDAMS' global `nav` is a vertical sidebar; the inventory and
+   property tablists are independent HORIZONTAL tab controls. Keep the rule
+   scoped so the sidebar and unrelated navigation are not changed. */
+.section-stack nav.inventory-tabbar,
+nav.inventory-tabbar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    width: 100%;
+    min-height: 44px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 3px 4px;
+    scrollbar-width: thin;
+}
+nav.inventory-tabbar > .inventory-tab {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: max-content;
+    align-self: center;
+    text-align: center;
+}
+@media (max-width: 620px) {
+    nav.inventory-tabbar { min-height: 42px; gap: 2px; }
+    nav.inventory-tabbar > .inventory-tab { min-height: 34px; }
+}
+
+/* v0.2.196: historical non-supply receipts remain available read-only, not as RIS choices. */
+.inventory-stock-review{margin-top:12px;padding:10px 12px;border:1px solid #dbe7eb;border-radius:8px;background:#f9fbfc;min-width:0}
+.inventory-stock-review>summary{cursor:pointer;font-weight:650;color:#4b6374;font-size:12px;line-height:1.5}
+.inventory-stock-review:focus-within{outline-color:#139c88}
+.inventory-stock-review .table-scroll{max-width:100%;overflow:auto}

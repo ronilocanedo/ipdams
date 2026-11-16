@@ -1,0 +1,58 @@
+/* IPDAMS v0.2.323 · Compact non-posting chronological expense-review register.
+   Scoped to expense review to avoid altering the Documents tab and other workflows. */
+.travel-323-review{display:block;min-width:0;padding:0 2px}
+.travel-323-review h4{margin:0 0 4px;font-size:15px}
+.travel-323-head{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:4px 0 12px}
+.travel-323-progress{display:inline-flex;padding:6px 10px;border:1px solid #b5d7d4;border-radius:999px;background:#ebf6f4;color:#155f56;font-weight:700;font-size:12px}
+.travel-323-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:10px 0 15px}
+.travel-323-metrics>div{padding:11px 13px;border:1px solid #dbe7ec;border-radius:9px;background:#f7fafb;min-width:0;display:flex;gap:4px;flex-direction:column}
+.travel-323-metrics small{font-size:11px;color:#5d7385}
+.travel-323-metrics strong{font-size:16px;color:#14374b;font-variant-numeric:tabular-nums;white-space:nowrap}
+.travel-323-sessions{margin:0 0 14px;border:1px solid #d9e6ea;border-radius:9px;background:#fbfdfd;padding:10px 13px}
+.travel-323-sessions summary{font-size:13px;font-weight:650;color:#174e61;cursor:pointer;list-style-position:inside}
+.travel-323-sessions>p{margin:9px 0}
+.travel-323-session{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:9px 0;padding:11px;border:1px solid #e0e9ee;border-radius:9px;background:white}
+.travel-323-session .field{min-width:0}
+.travel-323-session .field input,.travel-323-session .field select{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.travel-323-session>button{align-self:end}
+.travel-323-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:8px 0 12px}
+.travel-323-filters>.field{flex:1 1 180px;max-width:280px;margin:0}
+.travel-323-filters select{width:100%;max-width:100%}
+.travel-323-list{overflow-x:auto;border:1px solid #d7e5e9;border-radius:10px;background:#fff;max-width:100%}
+.travel-323-table{width:100%;min-width:710px;border-collapse:collapse;font-size:12px}
+.travel-323-table th{background:#183d57;color:white;font-weight:650;text-align:left;white-space:nowrap;padding:10px 9px}
+.travel-323-table td{border-top:1px solid #e1eaf0;padding:10px 9px;vertical-align:middle}
+.travel-323-table tbody tr:nth-child(even){background:#f7fafb}
+.travel-323-table tbody tr:hover{background:#f0f7f7}
+.travel-323-table td strong{font-size:12px;color:#123c4d;font-weight:650}
+.travel-323-table td small{display:block;font-size:11px;line-height:1.4;color:#5c7182;max-width:295px;overflow-wrap:anywhere}
+.travel-323-table .travel-323-money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:650}
+.travel-323-table .travel-323-edit{min-height:31px;padding:5px 11px;font-size:12px}
+.travel-323-pill{display:inline-flex;align-items:center;white-space:nowrap;padding:5px 8px;border-radius:8px;background:#f0f4f6;color:#4e6472;font-size:11px;font-weight:650}
+.travel-323-allowed{background:#e3f3e9;color:#1b6644}
+.travel-323-partially_allowed{background:#fff1d6;color:#825a0d}
+.travel-323-excluded{background:#f9e8e6;color:#9a3631}
+.travel-323-needs_evidence{background:#fff0df;color:#88541c}
+.travel-323-flag{display:inline-block;padding:3px 5px;border-radius:4px;background:#fff0e2;color:#91430a;font-size:10px;line-height:1.3;margin-top:4px}
+.travel-323-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px;margin:13px 0}
+.travel-323-history{border-top:1px solid #e1e8eb;padding-top:11px}
+.travel-323-history summary{cursor:pointer;font-size:12px;color:#244c61}
+.travel-323-overlay{z-index:19200}
+.travel-323-dialog{width:min(720px,calc(100vw - 24px))}
+.travel-323-source{display:grid;gap:4px;background:#f5f9fa;border:1px solid #dbe9ea;padding:12px;border-radius:8px;margin-bottom:15px}
+.travel-323-source strong{font-size:13px}
+.travel-323-source small{font-size:12px;color:#4f6675}
+.travel-323-modal-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.travel-323-modal-fields>.field{min-width:0;margin:0}
+.travel-323-modal-fields input,.travel-323-modal-fields select,.travel-323-modal-fields textarea{width:100%;max-width:100%;box-sizing:border-box}
+.travel-323-modal-fields .travel-323-wide{grid-column:1/-1}
+.travel-323-warning{background:#fff2e5;border-left:3px solid #e1a052;color:#684318;padding:10px;margin:0 0 12px;font-size:12px}
+@media(max-width:850px){.travel-323-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.travel-323-session{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.travel-323-metrics{gap:6px}.travel-323-metrics>div{padding:8px}.travel-323-metrics strong{font-size:13px}.travel-323-session,.travel-323-modal-fields{grid-template-columns:1fr}.travel-323-filters>.field{max-width:none;flex:1 1 100%}.travel-323-actions button{flex:1 1 120px}}
+
+/* Documentary verification is a distinct step, located under Documents. */
+.travel-323-division{margin:12px 0;padding:12px 14px;border:1px solid #d9e6ec;border-radius:10px;background:#f8fbfc}
+.travel-323-division>summary{font-size:13px;font-weight:700;color:#174e61;cursor:pointer}
+.travel-323-division .travel-311-review{background:#fff;margin-top:12px}
+.travel-323-review-status{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:9px 12px;background:#f4f9fb;border-left:3px solid #26ae98;color:#395c6b;font-size:12px;margin:0 0 13px}
+.travel-323-review-status button{font-size:12px;min-height:30px}

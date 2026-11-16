@@ -1,0 +1,104 @@
+/* Cash & Bank navigation: presentation-only; no changes to financial workflows. */
+.cb-page { min-width: 0; }
+.cb-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 7px;
+}
+.cb-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 12px 15px;
+    border: 1px solid #dce7e8;
+    border-radius: 13px;
+    background: #ffffff;
+    box-shadow: 0 2px 9px rgba(21, 44, 64, .03);
+}
+.cb-stat-label { color: #536e7e; font-size: 12px; font-weight: 700; letter-spacing: .01em; }
+.cb-stat-value { color: #133047; font-size: clamp(18px, 2vw, 26px); line-height: 1.15; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.cb-stat small { font-size: 11px; line-height: 1.4; color: #667c8a; }
+/* A global `nav` rule uses flex-direction: column for the sidebar.
+   Explicitly override it for this horizontal financial workspace tab bar. */
+nav.cb-tabs {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+    padding: 4px;
+    margin: 0 0 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid #e0eaeb;
+    border-radius: 11px;
+    background: #f0f5f5;
+    scrollbar-width: thin;
+}
+.cb-tab {
+    appearance: none;
+    flex: 1 1 0;
+    min-width: 145px;
+    border: 0;
+    border-radius: 7px;
+    padding: 9px 12px;
+    color: #435d6b;
+    background: transparent;
+    font: inherit;
+    font-weight: 650;
+    font-size: 13px;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color .15s, background .15s, box-shadow .15s;
+}
+.cb-tab:hover { color: #087f75; background: #fff; }
+.cb-tab.is-active { color: #087b70; background: #fff; box-shadow: 0 2px 7px rgba(24, 61, 70, .10); }
+.cb-tab:focus-visible { outline: 3px solid #18ad9b; outline-offset: -3px; }
+.cb-active-panel { min-width: 0; }
+.cb-active-panel > .surface { margin-top: 0; }
+.cb-active-panel .field input[type="checkbox"] { width: auto; margin-right: 8px; vertical-align: middle; }
+.cb-panel-surface { min-width: 0; }
+.cb-panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 12px; }
+.cb-panel-header h3 { margin-bottom: 4px; }
+.cb-panel-header p { margin-top: 0; }
+.cb-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(150px, 1fr); gap: 12px; align-items: end; margin: 12px 0; }
+.cb-filters > .field { margin: 0; min-width: 0; }
+.cb-filters input, .cb-filters select { width: 100%; min-width: 0; }
+.cb-panel-surface .table-box { padding: 12px; box-shadow: none; border: 1px solid #e5eded; }
+.cb-panel-surface .table-scroll { max-width: 100%; }
+.cb-active-panel button { max-width: 100%; }
+@media (max-width: 1040px) {
+    .cb-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cb-tab { flex: 0 0 auto; }
+}
+@media (max-width: 620px) {
+    .cb-summary { gap: 8px; }
+    .cb-stat { padding: 12px; border-radius: 10px; }
+    .cb-stat-label { font-size: 11px; }
+    .cb-stat-value { font-size: 18px; }
+    nav.cb-tabs { gap: 3px; padding: 3px; }
+    .cb-tab { min-width: 136px; padding: 9px 10px; font-size: 12px; }
+    .cb-filters { grid-template-columns: minmax(0, 1fr); }
+}
+
+.cb-empty { padding: 17px; border: 1px dashed #bfcfd1; border-radius: 11px; background: #f8fbfb; color: #4b6772; font-size: 13px; line-height: 1.6; }
+.cb-empty button { margin-left: 10px; }
+.cb-action-note { margin-bottom: 12px; }
+
+/* Physical check stock attestations: keep the checkbox beside its text. */
+.cb-active-panel .cb-checkbox-field {
+    display: flex !important; flex-direction: row !important;
+    align-items: center; justify-content: flex-start;
+    gap: 9px; width: 100%; padding: 3px 0; border: none;
+    background: transparent; text-align: left; line-height: 1.35;
+    cursor: pointer;
+}
+.cb-active-panel .cb-checkbox-field input[type="checkbox"] {
+    display: inline-block; flex: 0 0 16px; width: 16px !important;
+    height: 16px !important; min-width: 16px; max-width: 16px;
+    margin: 0 !important; padding: 0 !important; appearance: auto;
+}

@@ -1,0 +1,14 @@
+/* v0.2.315 · Appendix 47 compact, mobile-safe certificate editor */
+.travel-315-certificate-card{border:1px solid #cee1e6;background:#f8fbfd;border-radius:12px;padding:14px 16px;margin:14px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.travel-315-certificate-card h4{margin:0 0 4px;font-size:16px;color:#15324a}
+.travel-315-certificate-card .hint{margin:0 0 6px;max-width:680px;font-size:12px}
+.travel-315-status{font-size:12px;font-weight:700;color:#116866;margin:0}
+.travel-315-dialog{width:min(750px,calc(100vw - 24px))}
+.travel-315-form{display:grid;grid-template-columns:1fr;gap:13px}
+.travel-315-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.travel-315-meta>div{border:1px solid #dce6ed;background:#f7fafc;padding:11px;border-radius:8px;min-width:0}
+.travel-315-meta small{display:block;color:#597183}
+.travel-315-meta strong{display:block;overflow-wrap:anywhere}
+.travel-315-refund{border:1px solid #eadac6;border-radius:9px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.travel-315-refund .hint{grid-column:1/-1}
+@media(max-width:680px){.travel-315-meta,.travel-315-refund{grid-template-columns:1fr}.travel-315-certificate-card{padding:12px}.travel-315-dialog{width:100%;max-height:calc(100dvh - 10px)}}

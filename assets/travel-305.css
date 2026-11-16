@@ -1,0 +1,41 @@
+/* v0.2.305: a single chronological expense list, with a compact Add Expense window. */
+.travel-305-destination,.travel-305-expenses{border:1px solid #d4e0e8;padding:14px;border-radius:10px;background:#fafcfe;display:grid;gap:10px}
+.travel-305-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.travel-305-topline h4{margin:0}
+.travel-305-topline .hint{margin:5px 0}
+.travel-305-rate{margin:0;padding:10px 12px;background:#eff8f4;border:1px solid #c9e3d9;border-radius:7px;font-weight:650;color:#1b5c4b}
+.travel-305-expense-table{min-width:800px}
+.travel-305-expense-table td:nth-child(n+3):nth-child(-n+6){white-space:nowrap}
+.travel-305-inline-actions{display:flex;align-items:center;gap:5px}
+.travel-305-inline-actions button{padding:5px 8px;font-size:12px}
+.travel-305-empty{border:1px dashed #aebfca;background:#fff;border-radius:8px;padding:18px;text-align:center;margin:0;color:#4c6170}
+.travel-305-overlay{position:fixed;z-index:1500;inset:0;background:rgba(16,35,50,.65);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.travel-305-dialog{background:#fff;color:#183149;width:min(720px,100%);max-height:calc(100dvh - 32px);overflow-y:auto;border-radius:12px;border:1px solid #a6bfce;padding:18px;box-shadow:0 25px 60px rgba(0,0,0,.3);display:grid;gap:13px}
+.travel-305-dialog-title{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #d2dce4;padding-bottom:8px}
+.travel-305-dialog-title h3{margin:0}
+.travel-305-compact-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.travel-305-dte-info{display:grid;gap:10px;border:1px solid #b8d9e2;border-radius:8px;padding:12px;background:#f4fbfc}
+.travel-305-ceiling{display:flex;flex-direction:column;justify-content:center;gap:4px;background:#e6f6ef;padding:10px;border-radius:8px}
+.travel-305-ceiling span{font-size:12px}
+.travel-305-ceiling strong{font-size:18px}
+.travel-305-meal{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;border-top:1px dotted #afc4d2;padding:8px 0}
+.travel-305-meal .form-grid{grid-column:1/-1}
+.travel-305-proof{display:grid;gap:8px;padding:10px;border-bottom:1px dashed #c1d1db}
+.travel-305-dialog-actions{display:flex;justify-content:flex-end;gap:9px;position:sticky;bottom:-18px;background:#fff;padding:12px 0;border-top:1px solid #d5e0e8}
+.travel-305-dialog .field{min-width:0}
+.travel-305-dialog input,.travel-305-dialog select{max-width:100%}
+@media(max-width:640px){.travel-305-dialog{padding:12px}.travel-305-compact-grid{grid-template-columns:1fr}.travel-305-dialog-actions{bottom:-12px}.travel-305-inline-actions{flex-direction:column}.travel-305-meal{grid-template-columns:1fr}}
+
+/* v0.2.306: universal, always-visible expense amounts and travel time range. */
+.travel-306-instructions{margin:0;padding:9px 11px;border-radius:7px;background:#f0f5fa;color:#24465b;font-size:13px}
+.travel-306-time-fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.travel-306-time-hint{margin:-8px 0 0;color:#5c7081;font-size:12px}
+.travel-306-amount-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.travel-306-amount-field{padding:10px;border:1px solid #c8d8e3;border-radius:8px;background:#fbfdff;min-width:0}
+.travel-306-amount-field input{width:100%}
+.travel-306-amount-field small{display:block;color:#526f6b;margin-top:5px;font-size:11px;line-height:1.4}
+.travel-306-expense-total{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #d5e0e8;padding:11px 3px 0;font-size:14px}
+.travel-306-expense-total strong{font-size:17px}
+.travel-306-time-range{font-size:11px;color:#536c7e;white-space:nowrap;margin-top:3px}
+@media(max-width:720px){.travel-306-time-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.travel-306-time-fields>.field:last-child{grid-column:1/-1}.travel-306-amount-grid{grid-template-columns:1fr}}
+.travel-306-suggested{margin-top:7px;padding:5px 8px;font-size:11px;max-width:100%;white-space:normal;text-align:left}

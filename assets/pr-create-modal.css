@@ -1,0 +1,20 @@
+/* v0.2.43 — New PR shares the floating editor pattern of Edit PR. */
+body.ipdams-pr-create-open{overflow:hidden;}
+.pr-create-modal{width:min(1060px,calc(100vw - 24px));max-height:calc(100dvh - 24px);}
+.pr-create-modal .pr-detail-header h2{margin:0;font-size:20px;line-height:1.3;}
+.pr-create-modal .pr-detail-scroll{overscroll-behavior:contain;}
+.pr-create-modal .pr-start-form{margin:0;padding:0;border:0;background:transparent;box-shadow:none;}
+.pr-create-modal .pr-start-form>.section-head{display:none;}
+.pr-create-modal .pr-start-fields{min-width:0;}
+.pr-create-modal .pr-start-actions{display:none;}
+.pr-create-modal .form-grid .field,.pr-create-modal .line-grid .field{min-width:0;}
+.pr-create-modal button:focus-visible,.pr-create-modal input:focus-visible,
+.pr-create-modal select:focus-visible,.pr-create-modal textarea:focus-visible{outline:3px solid #0e9d8d;outline-offset:2px;}
+.pr-create-modal .pr-detail-actions{flex-shrink:0;}
+@media(max-width:720px){
+ .modal-backdrop:has(.pr-create-modal){padding:6px;}
+ .pr-create-modal{width:100%;max-height:calc(100dvh - 12px);}
+ .pr-create-modal .pr-detail-header{padding:12px;}
+ .pr-create-modal .pr-detail-scroll{padding:12px;}
+ .pr-create-modal .pr-detail-actions{padding:10px 12px;}
+}

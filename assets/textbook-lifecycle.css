@@ -1,0 +1,37 @@
+/* IPDAMS v0.2.284 | paper-based textbook teacher accountability and disposal */
+.textbook-lifecycle .section-head{display:flex;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:13px}
+.textbook-lifecycle .section-head>div:first-child{flex:1 1 260px}
+.textbook-lifecycle .section-head>button{min-height:36px}
+.textbook-lifecycle .textbook-data-table{width:100%;border-collapse:collapse;min-width:740px}
+.textbook-lifecycle .textbook-data-table th{background:#23475c;color:white;border:1px solid #496d81;font-size:12px;font-weight:750;text-align:left;white-space:nowrap;padding:10px 12px}
+.textbook-lifecycle .textbook-data-table td{border:1px solid #c2d0d9;color:#153145;padding:10px 12px;vertical-align:top;font-size:13px}
+.textbook-lifecycle .textbook-data-table tbody tr:nth-child(odd){background:#f1f6fa}
+.textbook-lifecycle .textbook-data-table tbody tr:nth-child(even){background:#fff}
+.textbook-lifecycle .textbook-data-table tbody tr:hover{background:#e5f0f7}
+.textbook-lifecycle .textbook-row-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.textbook-lifecycle .textbook-row-actions button{min-height:34px;font-size:12px;white-space:normal;padding:6px 10px}
+.textbook-lifecycle-form{display:grid;gap:13px;min-width:0}
+.textbook-lifecycle-form .field{display:grid;gap:4px;min-width:0}
+.textbook-lifecycle-form .field>span{color:#25465e;font-weight:700;font-size:12px}
+.textbook-lifecycle-form input,.textbook-lifecycle-form select,.textbook-lifecycle-form textarea{box-sizing:border-box;width:100%;max-width:100%;min-height:38px;border:1px solid #a4bacb;background:white;color:#173146;border-radius:7px;padding:8px 10px;font:inherit}
+.textbook-lifecycle-form textarea{min-height:90px;resize:vertical}
+.textbook-lifecycle-form>div:not(.textbook-row-actions){display:grid;gap:11px}
+.textbook-lifecycle-form .textbook-row-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;padding-top:13px;border-top:1px solid #ccd8df}
+.textbook-lifecycle-form .body-muted{margin:3px 0;line-height:1.5}
+.textbook-report-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:11px;margin:12px 0 20px}
+.textbook-report-stat{border:1px solid #b8cbd6;background:#f3f8fa;border-radius:9px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.textbook-report-stat span{font-size:12px;line-height:1.35;color:#496277;font-weight:650}
+.textbook-report-stat strong{font-size:22px;color:#17475e;font-variant-numeric:tabular-nums}
+.textbook-report-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+.textbook-report-controls .field{flex:1 1 250px;max-width:410px;display:grid;gap:4px}
+.textbook-report-controls select{min-height:37px;border:1px solid #93aebb;border-radius:7px}
+.textbook-report-controls button{min-height:37px}
+@media(max-width:650px){
+ .textbook-lifecycle .section-head>button{flex:1 1 auto}
+ .textbook-lifecycle .textbook-data-table{min-width:690px}
+ .textbook-report-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .textbook-report-stat{padding:10px}
+ .textbook-report-stat strong{font-size:19px}
+ .textbook-report-controls .field{max-width:none;flex-basis:100%}
+ .textbook-lifecycle-form .textbook-row-actions button{flex:1 1 150px}
+}

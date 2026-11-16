@@ -1,0 +1,114 @@
+/* IPDAMS v0.2.133 — login, shared application chrome, settings and Dashboard branding.
+   Only application UI; no document print output, numbering, or approval logic. */
+:root{--ipdams-brand-blue:#135385;--ipdams-brand-green:#218d65}
+/* Shared navigation header used by every signed-in workspace page. */
+.shell .topbar{height:auto;min-height:88px;gap:12px;justify-content:space-between;padding-top:10px;padding-bottom:10px}
+.shell .ipdams-header-logo{display:flex;flex:0 1 300px;width:clamp(205px,22vw,330px);max-width:330px;min-height:67px;max-height:none;padding:5px 8px;background:#fff;border:1px solid #deebee;border-radius:10px;box-shadow:0 2px 12px rgba(19,67,88,.07)}
+.shell .ipdams-header-logo img{display:block;width:100%;max-height:70px;height:auto;object-fit:contain}
+.shell .topbar-school{flex:1 1 245px;min-width:0}
+.shell .topbar-school select{min-width:175px;max-width:min(400px,100%);width:100%}
+.shell .topbar-right{flex:0 0 auto}
+/* Clarify the title hierarchy throughout IPDAMS without changing page functionality. */
+.shell .content-header{padding:0 0 15px;border-bottom:1px solid #dce8ed}
+.shell .content-header h1{font-size:clamp(25px,2.1vw,33px);font-weight:850;letter-spacing:-.7px}
+.shell .content-header .eyebrow{color:#147e70;font-weight:900}
+/* Dashboard deserves a distinct emphasis beyond the shared workspace header. */
+.ipdams-dashboard-page>.content-header{background:linear-gradient(107deg,#f5fbff 0%,#fff 58%,#eef9f4 100%);border:1px solid #d2e5eb;border-left:6px solid #1689a6;border-radius:14px;padding:21px 25px;box-shadow:0 4px 17px rgba(16,54,79,.045);min-height:128px}
+.ipdams-dashboard-page>.content-header h1{font-size:clamp(33px,3vw,43px);font-weight:900;letter-spacing:-1.1px;color:#123b5a;margin:8px 0 7px}
+.ipdams-dashboard-page>.content-header .eyebrow{color:#117d70;font-weight:900;letter-spacing:1.5px}
+.ipdams-dashboard-page>.content-header .outline{border-color:#9ecfd1;color:#124e6a;font-weight:750}
+/* Login: render the owner-selected header and icon, not the obsolete placeholder I. */
+.login-side{background:linear-gradient(135deg,#0c2b47 0%,#0c5960 72%,#16734f 100%)}
+.ipdams-login-banner{max-width:min(510px,100%);padding:12px 16px;margin:0 0 24px;background:white;border:1px solid rgba(255,255,255,.75);border-radius:15px;box-shadow:0 12px 35px rgba(4,25,37,.18)}
+.ipdams-login-banner img{display:block;width:100%;height:auto;object-fit:contain}
+.ipdams-login-card-brand{display:flex;align-items:center;gap:11px;margin:0 0 20px;font-size:11px;letter-spacing:.65px;font-weight:850;color:#145572}
+.ipdams-login-card-brand img{display:block;width:46px;height:46px;object-fit:contain;flex:none;border:1px solid #dbe8ef;border-radius:11px;background:white}
+.login-card h2{margin-top:6px}
+/* Loading/organization setup also display the configurable application icon. */
+.setup-shell::before{content:'';display:block;width:54px;height:54px;margin-bottom:14px;background:#fff url('../api/branding.php?kind=icon') center/contain no-repeat;border-radius:12px;border:1px solid #dce9ef}
+/* Settings is its own PHP shell: keep navigation unchanged, brand the content. */
+.ipdams-settings-banner{display:flex;align-items:center;gap:23px;margin-bottom:18px;padding:13px 18px;border:1px solid #d5e7e9;border-left:5px solid #198ca2;border-radius:12px;background:linear-gradient(120deg,#f5fbff,#f3fbf5)}
+.ipdams-settings-banner img{display:block;width:clamp(175px,23vw,295px);max-height:85px;object-fit:contain;padding:6px;background:white;border:1px solid #dce9ed;border-radius:8px}
+.ipdams-settings-banner h1{margin:5px 0;font-size:clamp(24px,2.5vw,34px);color:#133c5c}
+.ipdams-settings-banner .lead{margin:0}
+@media(max-width:1300px){.shell .topbar-right .secure{display:none}.shell .ipdams-header-logo{flex-basis:250px;width:250px}.shell .topbar{gap:11px}}
+@media(max-width:1020px){.shell .ipdams-header-logo{width:205px;flex-basis:205px;min-height:52px}.shell .ipdams-header-logo img{max-height:55px}.shell .topbar{min-height:70px}.shell .topbar-school{flex-basis:185px}}
+@media(max-width:750px){
+ .shell .topbar{min-height:0;padding:9px 13px;flex-wrap:wrap;gap:7px}
+ .shell .mobile-brand{display:none}
+ .shell .ipdams-header-logo{display:flex;width:158px;flex:0 0 158px;min-height:41px;padding:3px 5px}
+ .shell .ipdams-header-logo img{max-height:43px}
+ .shell .topbar-school{flex:1 1 190px}
+ .shell .topbar-school select{min-width:0}
+ .shell .topbar-right{display:none}
+ .ipdams-dashboard-page>.content-header{padding:16px;min-height:0;gap:10px;align-items:flex-start;flex-wrap:wrap}
+ .ipdams-dashboard-page>.content-header h1{font-size:33px}
+ .login-side{padding:28px 24px;min-height:0}
+ .ipdams-login-banner{max-width:300px;margin-bottom:15px;padding:7px 10px}
+ .ipdams-settings-banner{flex-direction:column;align-items:flex-start;gap:9px}
+ .ipdams-settings-banner img{width:min(100%,260px)}
+}
+@media(max-width:450px){.shell .topbar-school{flex-basis:100%;width:100%}.shell .ipdams-header-logo{width:174px;flex-basis:174px}.shell .topbar-school select{width:100%}}
+
+/* IPDAMS v0.2.135 — screenshot-inspired login and school dashboard, no mock transaction data. */
+.ipdams-login-v135{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);min-height:100vh}
+.ipdams-login-v135 .login-side{padding:clamp(28px,5vw,76px);justify-content:space-between;gap:26px;overflow:hidden;isolation:isolate;background:linear-gradient(135deg,#073363 0%,#05546a 53%,#04945d 100%)}
+.ipdams-login-v135 .login-side::before{content:'';position:absolute;inset:12% -20% -28% 28%;border:45px solid rgba(255,255,255,.035);border-radius:50%;z-index:-1;transform:rotate(-24deg);pointer-events:none}
+.ipdams-login-v135 .ipdams-login-banner{width:min(100%,720px);max-width:720px;margin:0;padding:13px 16px;border-radius:18px;box-shadow:0 10px 34px rgba(0,29,51,.24)}
+.ipdams-login-v135 .ipdams-login-banner img{width:100%;height:auto;max-height:170px;object-fit:contain}
+.ipdams-login-v135 .ipdams-login-story{max-width:670px}
+.ipdams-login-v135 .ipdams-login-story h1{margin:0 0 22px;font-size:clamp(39px,4.4vw,72px);line-height:1.07;letter-spacing:-2px;font-weight:900;color:#fff;text-shadow:0 3px 7px rgba(0,20,40,.08)}
+.ipdams-login-v135 .ipdams-login-story>p{max-width:650px;margin:0 0 26px;font-size:clamp(15px,1.35vw,20px);line-height:1.55;color:#ebf7fd}
+.ipdams-login-v135 .ipdams-login-features{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ipdams-login-v135 .ipdams-login-feature{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px;padding:15px 5px 13px;text-align:center;gap:9px;background:linear-gradient(160deg,#fff,#eaf7f7);color:#0c3b68;border-radius:13px;box-shadow:0 7px 21px rgba(4,25,49,.12);font-size:clamp(10px,1vw,13px);font-weight:800}
+.ipdams-login-v135 .ipdams-feature-mark{font-size:38px;line-height:1;color:#1265ad;font-weight:900}
+.ipdams-login-v135 .ipdams-login-feature:nth-child(n+3) .ipdams-feature-mark{color:#11845d}
+.ipdams-login-v135 .login-footer{position:static;font-size:12px;color:#d3eaf6;margin:0;max-width:680px}
+.ipdams-login-v135 .login-main{padding:clamp(20px,4vw,55px);background:radial-gradient(circle at 95% 0%,#dfecfa,#f9fcff 55%,#f4f9fb)}
+.ipdams-login-v135 .login-card{width:min(565px,100%);padding:clamp(24px,3.3vw,45px);border-radius:25px;box-shadow:0 16px 70px rgba(20,52,82,.06);border:1px solid #e4edf3}
+.ipdams-login-v135 .ipdams-login-card-brand{display:grid;grid-template-columns:74px minmax(0,1fr);align-items:center;gap:12px;margin-bottom:30px}
+.ipdams-login-v135 .ipdams-login-card-brand .ipdams-login-card-icon{width:74px;height:74px;object-fit:contain;border-radius:15px}
+.ipdams-login-v135 .ipdams-login-card-brand .ipdams-login-card-header{display:block;width:100%;height:auto;max-height:95px;object-fit:contain;border:0;border-radius:0}
+.ipdams-login-v135 .login-card h2{font-size:clamp(34px,3vw,46px);font-weight:900;letter-spacing:-1px;color:#092b52;margin:0 0 6px}
+.ipdams-login-v135 .login-card>p{font-size:15px;color:#587593;margin:0 0 30px}
+.ipdams-login-v135 .login-card .field{margin-bottom:17px}
+.ipdams-login-v135 .login-card .field>span{font-size:13px;color:#16365c;font-weight:800}
+.ipdams-login-v135 .login-card .field input{min-height:49px;padding:12px 14px;border-color:#bfd5e3;border-radius:9px;font-size:14px}
+.ipdams-login-v135 .login-card .primary.full{margin:10px 0 20px;min-height:52px;background:linear-gradient(110deg,#10b882,#079a9e);border:0;font-weight:850;font-size:15px;border-radius:9px;box-shadow:0 6px 17px rgba(3,143,119,.16)}
+.ipdams-login-v135 .login-card small{font-size:12px;line-height:1.5;color:#7690ad}
+.ipdams-login-v135 .ipdams-password-wrap{position:relative}
+.ipdams-login-v135 .ipdams-password-wrap input{padding-right:70px;width:100%}
+.ipdams-login-v135 .ipdams-password-visibility{position:absolute;top:50%;right:7px;transform:translateY(-50%);background:transparent;border:0;border-radius:7px;padding:9px 10px;color:#255b7d;font-size:12px;font-weight:750}
+.ipdams-login-v135 .ipdams-password-visibility:focus-visible{outline:3px solid #219e91;outline-offset:1px}
+.ipdams-dashboard-page{display:flex;flex-direction:column;gap:16px}
+.ipdams-dashboard-page .ipdams-school-banner{display:grid;grid-template-columns:100px minmax(0,1fr) minmax(170px, .42fr);gap:20px;align-items:center;border-radius:17px;padding:25px 30px;min-height:170px;border:1px solid #c4e3ee;background:linear-gradient(111deg,#e3f4ff 0%,#f5fbff 53%,#bfe6f7 72%,#0c8f77 100%);box-shadow:0 4px 22px rgba(13,77,110,.08);overflow:hidden}
+.ipdams-dashboard-page .ipdams-school-banner-icon{width:96px;height:96px;object-fit:contain;padding:6px;border-radius:18px;background:#fff;border:1px solid #c4e5ea}
+.ipdams-dashboard-page .ipdams-school-banner-kicker{display:block;text-transform:uppercase;color:#0d7993;font-size:11px;letter-spacing:1.2px;font-weight:900}
+.ipdams-dashboard-page .ipdams-school-banner h1{font-size:clamp(23px,2.25vw,37px);letter-spacing:-.8px;color:#11315a;margin:8px 0}
+.ipdams-dashboard-page .ipdams-school-banner p{font-size:12px;color:#2d5b78;line-height:1.5;margin:0}
+.ipdams-dashboard-page .ipdams-school-banner-motto{font-size:clamp(17px,1.8vw,27px);line-height:1.18;font-weight:900;color:#fff;text-align:right;text-shadow:0 2px 4px rgba(3,57,83,.28)}
+.ipdams-dashboard-page .ipdams-dashboard-welcome{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-top:3px}
+.ipdams-dashboard-page .ipdams-dashboard-welcome h2{font-size:clamp(26px,2.65vw,38px);line-height:1.15;letter-spacing:-1px;color:#102f56;margin:0 0 5px;font-weight:900}
+.ipdams-dashboard-page .ipdams-dashboard-welcome p{margin:0;color:#66849c;font-size:13px}
+.ipdams-dashboard-page .ipdams-dashboard-welcome time{color:#40627f;font-weight:750;font-size:12px;white-space:nowrap}
+.ipdams-dashboard-page .ipdams-dashboard-areas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.ipdams-dashboard-page .ipdams-dashboard-area{display:flex;align-items:center;gap:12px;min-height:84px;padding:13px;border:1px solid #d8e6f1;border-radius:14px;background:#fff;text-align:left;box-shadow:0 4px 15px rgba(25,75,112,.05);color:#163a66}
+.ipdams-dashboard-page .ipdams-dashboard-area:hover{border-color:#25a6a1;box-shadow:0 6px 22px rgba(14,104,130,.1)}
+.ipdams-dashboard-page .ipdams-dashboard-area:focus-visible{outline:3px solid #138d91;outline-offset:1px}
+.ipdams-dashboard-page .ipdams-dashboard-area-icon{display:grid;place-items:center;width:46px;height:48px;flex-shrink:0;border-radius:10px;background:#e5f2ff;font-size:27px;color:#1165b1;font-weight:850}
+.ipdams-dashboard-page .ipdams-dashboard-area:nth-child(n+3) .ipdams-dashboard-area-icon{background:#e3f6e9;color:#0e8e59}
+.ipdams-dashboard-page .ipdams-dashboard-area strong{font-size:14px;flex:1}
+.ipdams-dashboard-page .ipdams-dashboard-area>span:last-child{font-size:23px;color:#7398ad}
+.ipdams-dashboard-page .ipdams-dashboard-kpi-title{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:10px 0 -5px}
+.ipdams-dashboard-page .ipdams-dashboard-kpi-title h2{color:#173859;font-size:17px;margin:0}
+.ipdams-dashboard-page .ipdams-dashboard-kpi-title span{color:#6c879c;font-size:12px}
+.ipdams-dashboard-page .stat-grid{grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:5px}
+.ipdams-dashboard-page .stat{border-color:#d9e7f0;box-shadow:0 3px 13px rgba(19,78,102,.05)}
+@media(max-width:1100px){.ipdams-login-v135 .ipdams-login-features{gap:8px}.ipdams-login-v135 .ipdams-login-feature{min-height:88px}.ipdams-dashboard-page .ipdams-school-banner{grid-template-columns:75px minmax(0,1fr)}.ipdams-dashboard-page .ipdams-school-banner-icon{width:75px;height:75px}.ipdams-dashboard-page .ipdams-school-banner-motto{display:none}.ipdams-dashboard-page .ipdams-dashboard-areas{grid-template-columns:repeat(2,minmax(0,1fr))}.ipdams-dashboard-page .stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.ipdams-login-v135{grid-template-columns:1fr}.ipdams-login-v135 .login-side{gap:15px;padding:25px 18px 23px;min-height:0}.ipdams-login-v135 .ipdams-login-banner{width:min(360px,100%);padding:7px 9px;border-radius:12px}.ipdams-login-v135 .ipdams-login-story h1{font-size:clamp(29px,7vw,38px);letter-spacing:-.7px;line-height:1.13;margin:0 0 9px}.ipdams-login-v135 .ipdams-login-story>p{font-size:13px;margin:0 0 12px}.ipdams-login-v135 .ipdams-login-features{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.ipdams-login-v135 .ipdams-login-feature{min-height:65px;padding:8px 3px;gap:4px;border-radius:9px;font-size:9px}.ipdams-login-v135 .ipdams-feature-mark{font-size:24px}.ipdams-login-v135 .login-footer{display:none}.ipdams-login-v135 .login-main{padding:18px}.ipdams-login-v135 .login-card{max-width:470px;padding:23px 21px}.ipdams-login-v135 .ipdams-login-card-brand{grid-template-columns:50px minmax(0,1fr);gap:9px;margin-bottom:13px}.ipdams-login-v135 .ipdams-login-card-brand .ipdams-login-card-icon{width:50px;height:50px}.ipdams-login-v135 .login-card h2{font-size:29px}.ipdams-login-v135 .login-card>p{margin-bottom:19px}.ipdams-dashboard-page .ipdams-school-banner{padding:15px 14px;gap:12px;min-height:0;grid-template-columns:56px minmax(0,1fr)}.ipdams-dashboard-page .ipdams-school-banner-icon{width:56px;height:56px;padding:3px}.ipdams-dashboard-page .ipdams-school-banner h1{font-size:20px}.ipdams-dashboard-page .ipdams-school-banner p{font-size:10px}.ipdams-dashboard-page .ipdams-dashboard-welcome{align-items:flex-start;flex-direction:column;gap:5px}.ipdams-dashboard-page .ipdams-dashboard-welcome h2{font-size:25px}.ipdams-dashboard-page .ipdams-dashboard-area{min-height:65px;padding:9px;gap:7px}.ipdams-dashboard-page .ipdams-dashboard-area-icon{width:37px;height:40px;font-size:24px}.ipdams-dashboard-page .ipdams-dashboard-area strong{font-size:12px}.ipdams-dashboard-page .ipdams-dashboard-kpi-title{flex-wrap:wrap;gap:4px}.ipdams-dashboard-page .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:390px){.ipdams-login-v135 .login-side{padding:18px 13px}.ipdams-login-v135 .ipdams-login-feature strong{font-size:8px}.ipdams-dashboard-page .ipdams-dashboard-areas{grid-template-columns:1fr 1fr}}
+
+.ipdams-dashboard-page .ipdams-dashboard-welcome-actions{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.ipdams-dashboard-page .ipdams-dashboard-new-pr{padding:10px 14px;background:linear-gradient(110deg,#0c719d,#118c73);color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:850}
+.ipdams-dashboard-page .ipdams-dashboard-new-pr:focus-visible{outline:3px solid #21a18a;outline-offset:2px}
+@media(max-width:760px){.ipdams-dashboard-page .ipdams-dashboard-welcome-actions{align-items:flex-start;gap:7px}}

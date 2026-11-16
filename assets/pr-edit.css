@@ -1,0 +1,57 @@
+/* v0.2.27: Compact, accessible draft PR editing and asynchronous catalog search. */
+.pr-edit-modal{width:min(1060px,100%);}
+.pr-edit-form{min-height:0;display:flex;flex-direction:column;flex:1;overflow:hidden;}
+.pr-edit-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 12px;}
+.pr-edit-wide{grid-column:1/-1;}
+.pr-edit-fields .field,.pr-edit-line .field{min-width:0;}
+.pr-edit-fields textarea{resize:vertical;min-height:52px;}
+.pr-edit-line{display:grid;grid-template-columns:minmax(220px,1fr) minmax(85px,110px) minmax(110px,150px) auto;align-items:end;gap:8px;background:#f7fafb;border:1px solid #e0e8ed;border-radius:8px;padding:9px;margin:7px 0;}
+.pr-edit-line .field input{width:100%;min-width:0;box-sizing:border-box;}
+.pr-edit-remove{min-height:32px;margin-bottom:1px;white-space:nowrap;}
+.pr-edit-estimate{display:flex;gap:9px;justify-content:flex-end;align-items:center;font-size:12px;margin:11px 0;color:#425d6d;}
+.pr-edit-estimate strong{font-size:16px;color:#0e746c;}
+.pr-edit-error{border:1px solid #e6a8a4;background:#fff2ef;color:#a3322c;border-radius:7px;padding:9px 12px;font-size:12px;}
+.pr-picker{position:relative;min-width:0;}
+.pr-picker>label{display:block;font-size:11px;font-weight:750;color:#3c6071;margin-bottom:4px;}
+.pr-picker>input[type=search]{width:100%;min-width:0;box-sizing:border-box;border-radius:6px;}
+.pr-picker-options{position:absolute;z-index:110;top:100%;left:0;right:0;background:#fff;box-shadow:0 10px 25px #102c3c25;border:1px solid #c9dce3;border-radius:8px;max-height:230px;overflow-y:auto;overscroll-behavior:contain;}
+.pr-picker-option{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;padding:8px 10px;border:0;border-bottom:1px solid #edf2f5;background:white;text-align:left;cursor:pointer;}
+.pr-picker-option:hover,.pr-picker-option.chosen{background:#e8f6f3;}
+.pr-picker-option strong{font-size:12px;color:#214a5b;white-space:normal;overflow-wrap:anywhere;}
+.pr-picker-option small{font-size:10px;color:#608092;}
+.pr-picker-hint{font-size:11px;color:#607b8b;margin:0;padding:10px;}
+.pr-picker-error{color:#b02e2b;}
+.pr-item-selected{display:block;font-size:10px;color:#0d8276;margin-top:3px;}
+@media(max-width:710px){
+  .pr-edit-fields{grid-template-columns:1fr;}
+  .pr-edit-wide{grid-column:1;}
+  .pr-edit-line{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  .pr-edit-line .pr-picker{grid-column:1/-1;}
+  .pr-edit-remove{grid-column:1/-1;justify-self:end;}
+  .pr-picker-options{max-height:190px;}
+}
+
+/* IPDAMS 0.2.37 | Clearer draft PR edit selection and focus.
+   Catalog search and saving logic are unchanged. */
+.pr-edit-fields, .pr-edit-line, .pr-picker { min-width:0; }
+.pr-edit-line:focus-within { border-color:#8acdc1; box-shadow:0 0 0 1px #d8f1eb; }
+.pr-edit-estimate { flex-wrap:wrap; font-variant-numeric:tabular-nums; }
+.pr-picker-option { min-height:42px; line-height:1.4; }
+.pr-picker-option:focus-visible,
+.pr-picker > input[type=search]:focus-visible,
+.pr-edit-line :is(input,button):focus-visible,
+.pr-edit-fields :is(input,select,textarea):focus-visible {
+  outline:3px solid #168d80;
+  outline-offset:2px;
+}
+.pr-picker-option:focus-visible { position:relative; z-index:1; outline-offset:-3px; }
+.pr-picker-option[aria-selected="true"], .pr-picker-option.chosen { background:#e8f6f3; }
+.pr-picker-options { scrollbar-width:thin; }
+.pr-edit-line .field input[type=number] { font-variant-numeric:tabular-nums; }
+.pr-edit-error { overflow-wrap:anywhere; }
+@media(max-width:710px) {
+  .pr-edit-line { gap:9px; padding:11px; }
+  .pr-edit-line .pr-picker { min-width:0; }
+  .pr-edit-remove { min-height:40px; }
+  .pr-picker-options { max-height:min(220px,40dvh); }
+}

@@ -1,0 +1,10 @@
+/* v0.2.316 · Appendix 47 evidence checklist, scoped to certificate dialog */
+.travel-316-evidence-fieldset{border:1px solid #d4e4e8;border-radius:10px;padding:12px 14px;margin:0;min-width:0}
+.travel-316-evidence-fieldset legend{font-weight:700;padding:0 7px;color:#173a4d}
+.travel-316-evidence-fieldset>.hint{margin:0 0 9px;font-size:12px}
+.travel-316-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:12px}
+.travel-316-evidence-option{display:flex;gap:10px;align-items:flex-start;border:1px solid #dce6ed;background:#f8fbfc;border-radius:7px;padding:9px 10px;min-width:0;cursor:pointer}
+.travel-316-evidence-option input[type=checkbox]{flex:0 0 auto;inline-size:17px;block-size:17px;margin:2px 0 0;accent-color:#087f73}
+.travel-316-evidence-option span{font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+.travel-316-evidence-fieldset .field{margin:0}
+@media(max-width:620px){.travel-316-evidence-grid{grid-template-columns:1fr}}

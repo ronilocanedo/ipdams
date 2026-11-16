@@ -1,0 +1,5 @@
+/* v0.2.370: Division source/tax-treatment setup visibility only. */
+.fund-policy-needs-setup td{background:#fffaf0}
+.fund-policy-setup-btn{white-space:normal;text-align:center;min-width:132px}
+.fund-policy-ready{color:#327064;font-size:12px;font-weight:600}
+@media(max-width:760px){.fund-policy-setup-btn{min-width:0;font-size:12px;padding:6px 8px}}

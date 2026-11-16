@@ -1,0 +1,97 @@
+/* IPDAMS v0.2.372 — accessible, responsive Division fund-policy editor.
+   Scoped to this modal; does not alter fund/tax/accounting behavior. */
+.fund-policy-overlay-372{
+  box-sizing:border-box;
+  padding:12px;
+  overflow-x:hidden;
+  overflow-y:auto;
+}
+.fund-policy-dialog-372{
+  box-sizing:border-box!important;
+  width:min(850px,calc(100vw - 24px))!important;
+  max-width:100%!important;
+  min-width:0!important;
+  max-height:calc(100dvh - 24px)!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  padding:clamp(14px,2.4vw,26px)!important;
+  scrollbar-gutter:stable;
+}
+.fund-policy-dialog-372 > h3,
+.fund-policy-dialog-372 > .hint{overflow-wrap:anywhere;max-width:100%;}
+.fund-policy-form-wrap-372,
+.fund-policy-form-372{
+  box-sizing:border-box;
+  min-width:0;
+  width:100%;
+  max-width:100%;
+}
+/* The legacy form-grid has three columns, which caused the accounting card
+   to become a narrow third column and to force horizontal scrolling. */
+.fund-policy-dialog-372 .fund-policy-form-372{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:start;
+  gap:14px 16px;
+}
+.fund-policy-form-372 > .field{
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  margin:0;
+}
+.fund-policy-form-372 .field > span{display:block;overflow-wrap:anywhere;}
+.fund-policy-form-372 .field :is(input,select,textarea){
+  display:block;
+  box-sizing:border-box;
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  margin-top:5px;
+}
+.fund-policy-form-372 .field textarea{min-height:90px;resize:vertical;}
+/* Account allocation is one coherent full-width section with two UACS fields. */
+.fund-policy-form-372 > .fund-accounting-371{
+  box-sizing:border-box;
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px 14px;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  margin:0;
+  padding:14px;
+}
+.fund-policy-form-372 > .fund-accounting-371 > strong,
+.fund-policy-form-372 > .fund-accounting-371 > .hint{grid-column:1/-1;min-width:0;margin:0;overflow-wrap:anywhere;}
+.fund-policy-form-372 > .fund-accounting-371 > .field{min-width:0;margin:0;}
+.fund-policy-form-372 > .fund-policy-reason-372{grid-column:1/-1;}
+.fund-policy-form-wrap-372 > .hint{overflow-wrap:anywhere;}
+.fund-policy-actions-372{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+  gap:10px;
+  margin-top:16px;
+}
+.fund-policy-actions-372 > button{min-width:125px;max-width:100%;}
+@media(max-width:720px){
+  .fund-policy-overlay-372{padding:8px;align-items:flex-start;}
+  .fund-policy-dialog-372{
+    width:calc(100vw - 16px)!important;
+    max-height:calc(100dvh - 16px)!important;
+    padding:16px!important;
+    scrollbar-gutter:auto;
+  }
+  .fund-policy-dialog-372 .fund-policy-form-372,
+  .fund-policy-form-372 > .fund-accounting-371{grid-template-columns:minmax(0,1fr)!important;}
+  .fund-policy-form-372 > .fund-accounting-371{padding:12px;}
+  .fund-policy-actions-372{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  .fund-policy-actions-372 > button{min-width:0;width:100%;}
+}
+@media(max-width:370px){
+  .fund-policy-actions-372{grid-template-columns:1fr;}
+}

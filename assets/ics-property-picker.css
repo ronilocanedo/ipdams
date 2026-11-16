@@ -1,0 +1,32 @@
+/* ICS/PAR issuance picker only. Deliberately scoped to prevent generic .field/input
+   rules from stretching native checkboxes and separating them from their labels. */
+.ics-selection-group { min-width:0; margin:14px 0 12px; }
+.ics-selection-heading { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 14px; margin-bottom:9px; }
+.ics-selection-heading strong { color:#253d50; font-size:14px; line-height:1.4; }
+.ics-selection-heading small { font-size:12px; color:#607b8d; font-weight:400; }
+.ics-selection-list { overflow:visible; border:1px solid #d5e1e7; border-radius:10px; background:#fff; }
+.ics-selection-row { box-sizing:border-box; display:grid !important; grid-template-columns:18px minmax(0,1fr); column-gap:12px !important; align-items:center !important; width:100%; padding:11px 13px !important; margin:0 !important; min-height:58px; background:#fff; color:#264255; cursor:pointer; line-height:1.4; }
+.ics-selection-row + .ics-selection-row { border-top:1px solid #eaf0f3; }
+.ics-selection-row:hover:not(.is-disabled) { background:#f4fbf9; }
+.ics-selection-row.is-selected { background:#eaf9f5; }
+.ics-selection-row.is-disabled { color:#697f8d; background:#f9fbfc; cursor:not-allowed; }
+.ics-selection-row > input[type=checkbox].ics-selection-check { appearance:auto; box-sizing:border-box; display:block; width:17px !important; height:17px !important; min-width:17px !important; max-width:17px !important; min-height:17px !important; max-height:17px !important; margin:0 !important; padding:0 !important; flex:0 0 17px !important; justify-self:start; border-radius:4px; accent-color:#008f81; cursor:inherit; }
+.ics-selection-row > input[type=checkbox].ics-selection-check:focus-visible { outline:2px solid #007e77; outline-offset:3px; }
+.ics-selection-details { display:flex; flex-direction:column; align-items:flex-start; gap:4px; min-width:0; overflow-wrap:anywhere; }
+.ics-selection-title { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 10px; min-width:0; font-size:13px; }
+.ics-selection-tag { font-variant-numeric:tabular-nums; color:inherit; font-weight:750; white-space:normal; }
+.ics-selection-name { color:inherit; font-weight:500; }
+.ics-selection-meta { display:flex; flex-wrap:wrap; gap:6px 9px; align-items:center; font-size:11px; }
+.ics-selection-type { background:#e9f0f4; color:#38576a; padding:2px 7px; border-radius:5px; font-weight:700; }
+.ics-selection-status { color:#497766; font-weight:600; }
+.ics-selection-status.is-issued, .ics-selection-row.is-disabled .ics-selection-status { color:#8a6571; }
+.ics-selection-empty { padding:16px 13px; color:#728694; font-size:13px; margin:0; }
+@media(max-width:620px) { .ics-selection-row { padding:10px 9px !important; column-gap:10px !important; } .ics-selection-title { font-size:12px; } .ics-selection-heading small { flex-basis:100%; } }
+
+/* v0.2.253: recipient first, long unassigned picker uses page scroll, never an inner box scrollbar. */
+.ics-custodian-first { margin-bottom:14px; }
+.ics-selection-totals { display:flex; align-items:center; flex-wrap:wrap; gap:6px 11px; }
+.ics-selection-totals small { color:#617b8c; font-weight:500; }
+.ics-selection-heading .ics-selected-count { display:inline-flex; border-radius:7px; background:#e6f7f2; color:#087e72; padding:5px 9px; font-size:13px; font-weight:750; font-variant-numeric:tabular-nums; }
+.ics-selection-summary { display:block; margin:9px 0 14px; border-left:3px solid #20ad9a; border-radius:5px; padding:10px 12px; color:#315b6b; background:#f0f8f7; font-size:13px; }
+@media(max-width:620px) { .ics-selection-totals { width:100%; justify-content:flex-start; } }

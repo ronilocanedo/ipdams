@@ -1,0 +1,1 @@
+{"name":"ipdams-frontend","version":"0.1.0","private":true,"description":"Offline development TypeScript/React static assets; refer to frontend/README.md for production upgrade","scripts":{"build":"tsc --project tsconfig.json"},"devDependencies":{"typescript":"^5.8.3"}}

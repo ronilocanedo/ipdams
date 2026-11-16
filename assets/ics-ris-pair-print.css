@@ -1,0 +1,141 @@
+/* IPDAMS v0.2.292: paper-first Appendix 63 RIS and Appendix 59 ICS.
+ * External stylesheet is deliberately used instead of inline CSS, because
+ * a print popup may inherit a restrictive Content-Security-Policy.
+ * Short combined RIS + ICS pairs share a page; longer pairs retain separate A4 sheets.
+ */
+@page { size: A4 portrait; margin: 10mm 11mm 11mm; }
+*, *::before, *::after { box-sizing: border-box; }
+html { background: #edf1f5; color: #111; }
+body { margin: 0; font-family: 'Bookman Old Style', 'Palatino Linotype', Georgia, serif; font-size: 9pt; line-height: 1.25; }
+.print-toolbar { display: flex; gap: 12px; align-items: center; max-width: 190mm; margin: 13px auto;
+  padding: 12px; border: 1px solid #bfcdd9; background: #f0f6fb; border-radius: 4px;
+  font: 12px Arial, sans-serif; color: #384758; }
+.print-toolbar button { padding: 8px 16px; color: #fff; background: #155883; border: 0; border-radius: 4px; font: bold 12px Arial, sans-serif; cursor: pointer; }
+.print-toolbar button:focus-visible { outline: 3px solid #10a390; outline-offset: 2px; }
+.print-pages { margin: 0 auto 20px; }
+.form-sheet { width: 210mm; min-height: 297mm; padding: 10mm 11mm 11mm; margin: 0 auto 16px; background: white;
+  box-shadow: 0 3px 16px rgba(28,48,72,.16); color: black; }
+.appendix { font-style: italic; text-align: right; font-size: 9pt; margin: 0 0 18mm; }
+.form-heading { text-align: center; font-size: 13.5pt; font-weight: bold; margin: 0 0 9mm; line-height: 1.3; }
+.form-head { display: grid; grid-template-columns: 1fr 1fr; column-gap: 7mm; row-gap: 3mm; margin-bottom: 3mm; }
+.form-head .head-pair { display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 6px; }
+.form-head .head-pair.align-right { justify-self: end; }
+.form-head .head-pair strong { font-weight: bold; min-height: 1em; }
+.head-record-number { text-align: right; white-space: nowrap; }
+.form-sheet table { border-collapse: collapse; border-spacing: 0; table-layout: fixed; width: 100%; color: #000; }
+.form-sheet th, .form-sheet td { border: 1px solid black; padding: 3px 4px; vertical-align: middle; overflow-wrap: anywhere; }
+.form-sheet th { font-weight: bold; text-align: center; line-height: 1.2; }
+.form-sheet .center { text-align: center; }
+.form-sheet .money { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.form-sheet tr { break-inside: avoid; page-break-inside: avoid; }
+.form-sheet thead { display: table-header-group; }
+.form-sheet .blank-row td { height: 20px; }
+.form-sheet .nothing-follows { font-weight: bold; font-size: 8pt; text-align: center; }
+.ris-meta td { padding: 4px 6px; }
+.ris-meta .label { display: inline-block; min-width: 28mm; margin-right: 4mm; }
+.ris-meta .meta-strong { font-weight: bold; }
+.ris-meta .row-caption { min-height: 16px; display: inline-block; }
+.ris-table { font-size: 8.2pt; }
+.ris-table .item-row td { height: 24px; }
+.ris-table col.ris-stock { width: 6%; }
+.ris-table col.ris-unit { width: 9%; }
+.ris-table col.ris-description { width: 27%; }
+.ris-table col.ris-quantity { width: 9%; }
+.ris-table col.ris-yes, .ris-table col.ris-no { width: 7%; }
+.ris-table col.ris-issue { width: 9%; }
+.ris-table col.ris-remarks { width: 26%; }
+.ris-purpose { border: 1.5px solid #000; border-top: none; padding: 4px 7px; min-height: 21px; }
+.ris-purpose strong { margin-right: 11px; }
+.ris-signatures { margin-top: 4px; font-size: 8pt; }
+.ris-signatures col.ris-sig-label { width: 14%; }
+.ris-signatures col.ris-sig-person { width: 21.5%; }
+.ris-signatures .role-head { text-align: center; font-weight: bold; height: 24px; }
+.ris-signatures td, .ris-signatures th { padding: 2px 3px; }
+.ris-signatures .row-title { text-align: left; }
+.ris-signatures .sign-space { height: 35px; }
+.ris-signatures .sig-name { height: 31px; font-weight: bold; text-align: center; text-decoration: underline; }
+.ris-signatures .sig-position { height: 25px; text-align: center; }
+.ris-signatures .sig-date { height: 22px; text-align: center; }
+.ics-title { margin-bottom: 10mm; }
+.ics-head { margin-bottom: 6mm; }
+.ics-head .head-record-number { grid-column: 2; grid-row: 2; text-align: right; }
+.ics-table { border: 2px solid #000; font-size: 8.3pt; }
+.ics-table th, .ics-table td { border: 1px solid #000; }
+.ics-table th { font-size: 7.5pt; }
+.ics-table .item-row td { height: 27px; }
+.ics-table .blank-row td { height: 22px; }
+.ics-table col.ics-qty { width: 9%; }
+.ics-table col.ics-unit { width: 8%; }
+.ics-table col.ics-cost { width: 13%; }
+.ics-table col.ics-total { width: 13%; }
+.ics-table col.ics-description { width: 29%; }
+.ics-table col.ics-tag { width: 18%; }
+.ics-table col.ics-life { width: 10%; }
+.ics-signatures { border: 2px solid #000; border-top: none; display: grid; grid-template-columns: 1fr 1fr; min-height: 115px; }
+.ics-signatures .sign-party { padding: 7px 7px 8px; text-align: center; }
+.ics-signatures .sign-party + .sign-party { border-left: 1.5px solid #000; }
+.ics-signatures .sign-label { text-align: left; margin-bottom: 21px; }
+.ics-signatures .sign-name { min-height: 17px; text-decoration: underline; font-weight: bold; }
+.ics-signatures .sign-caption { font-size: 7.3pt; font-style: italic; margin: 2px auto 5px; }
+.ics-signatures .sign-designation { min-height: 17px; font-weight: bold; }
+.ics-signatures .sign-date { display: inline-block; min-width: 30mm; border-bottom: 1px solid #000; min-height: 15px; }
+.ics-signatures .date-caption { margin-top: 2px; font-size: 7.5pt; font-style: italic; }
+/* Standalone authenticated API prints use the same formal tables. */
+.form-sheet .document-note { margin-top: 12px; font-size: 8pt; color: #3b3b3b; }
+@media print {
+ html { background: white; }
+ body { margin: 0; color: #000; font-size: 8.8pt; }
+ .print-toolbar { display: none !important; }
+ .print-pages { margin: 0; }
+ .form-sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+ .form-sheet + .form-sheet { break-before: page; page-break-before: always; }
+ .appendix { margin-bottom: 16mm; }
+ .form-heading { margin-bottom: 8mm; }
+ .ris-signatures, .ics-signatures { break-inside: avoid; page-break-inside: avoid; }
+ .ris-purpose { break-inside: avoid; page-break-inside: avoid; }
+}
+@media screen and (max-width: 850px) {
+ .print-toolbar { margin: 0 0 10px; max-width: none; border-radius: 0; flex-wrap: wrap; }
+ .print-pages { overflow-x: auto; }
+ .form-sheet { margin: 0 auto 12px; }
+}
+
+/* Short RIS + ICS paper pair: a single A4 page with both complete signature
+ * sections, not a scaled-down screenshot. Normal-length outputs keep separate pages.
+ * Only dynamically padded blank rows are omitted; NOTHING FOLLOWS remains. */
+.pair-compact .print-pages { width:210mm; min-height:297mm; margin:0 auto 16px; padding:9mm 11mm 11mm; background:#fff;
+  box-shadow:0 3px 16px rgba(28,48,72,.16); }
+.pair-compact .form-sheet { width:auto; min-height:0; margin:0; padding:0; box-shadow:none; }
+.pair-compact .form-sheet + .form-sheet { margin-top:4mm; }
+.pair-compact .appendix { margin-bottom:2mm; font-size:8pt; }
+.pair-compact .form-heading { font-size:11pt; margin-bottom:3mm; line-height:1.15; }
+.pair-compact .form-head { row-gap:1mm; margin-bottom:2mm; font-size:8pt; }
+.pair-compact .ris-meta td { padding:2px 4px; }
+.pair-compact .form-sheet th,.pair-compact .form-sheet td { padding:2px 3px; }
+.pair-compact .ris-table .item-row td,.pair-compact .ics-table .item-row td { height:0; }
+.pair-compact .ris-table .blank-row td { height:14px; }
+.pair-compact .pad-row { display:none; }
+.pair-compact .ris-purpose { min-height:15px; padding:2px 5px; }
+.pair-compact .ris-signatures { margin-top:2px; }
+.pair-compact .ris-signatures .role-head { height:17px; }
+.pair-compact .ris-signatures .sign-space { height:27px; }
+.pair-compact .ris-signatures .sig-name { height:20px; }
+.pair-compact .ris-signatures .sig-position { height:18px; }
+.pair-compact .ris-signatures .sig-date { height:18px; }
+.pair-compact .ics-title { margin-bottom:3mm; }
+.pair-compact .ics-head { margin-bottom:3mm; }
+.pair-compact .ics-signatures { min-height:90px; }
+.pair-compact .ics-signatures .sign-label { margin-bottom:16px; }
+.pair-compact .ics-signatures .sign-party { padding:5px; }
+/* Preserve the primary name's size, with optional identifiers beneath. */
+.item-primary { font-weight:normal; }
+.item-identifiers { margin-top:2px; font-size:7pt; line-height:1.15; font-style:italic; font-weight:normal;
+  overflow-wrap:anywhere; }
+.item-identifiers span { white-space:normal; }
+@media print {
+  .pair-compact .print-pages { width:auto; min-height:0; padding:0; margin:0; box-shadow:none; background:#fff; }
+  .pair-compact .form-sheet + .form-sheet { break-before:auto; page-break-before:auto; }
+  .pair-compact .ics-sheet { break-inside:avoid; page-break-inside:avoid; }
+  .pair-compact .appendix { margin-bottom:2mm; }
+  .pair-compact .form-heading { margin-bottom:3mm; }
+}

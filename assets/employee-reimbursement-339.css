@@ -1,0 +1,18 @@
+/* IPDAMS v0.2.339: compact, evidence-first employee outlay intake, no payment controls */
+.employee-claim-panel{border:1px solid #d3e3e8;border-radius:9px;padding:14px 15px;margin:10px 0 15px;background:#f7fbfd;}
+.employee-claim-panel h3{font-size:1rem;margin:0 0 8px;color:#183c4b;}
+.employee-claim-panel .hint{font-size:.82rem;margin:6px 0 10px;}
+.employee-claim-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;align-items:start;}
+.employee-claim-grid .field{min-width:0;display:flex;flex-direction:column;gap:4px;margin:0;font-size:.84rem;font-weight:600;}
+.employee-claim-grid .field input,.employee-claim-grid .field select{min-width:0;width:100%;max-width:100%;height:37px;box-sizing:border-box;border:1px solid #cedde4;border-radius:6px;padding:6px 9px;font:inherit;font-weight:400;background:white;color:#24394b;}
+.employee-claim-attest{display:flex;gap:8px;align-items:flex-start;font-size:.83rem;line-height:1.45;margin:12px 0;max-width:100%;cursor:pointer;}
+.employee-claim-attest input{width:17px!important;height:17px!important;min-width:17px;flex:none;margin:2px 0 0;accent-color:#009c88;}
+.employee-claim-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+.employee-claim-panel .primary,.employee-claim-panel .outline{min-height:33px;}
+@media(max-width:700px){.employee-claim-panel{padding:11px}.employee-claim-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* v0.2.341 -- employee first, then documentary PR/PO evidence. */
+.employee-claim-group td{background:#eaf5f5!important;color:#126960;font-weight:700!important;font-size:.84rem;padding:9px 12px!important;}
+.employee-claim-additional-section{margin-top:17px!important;}
+.employee-claim-additional-section>h3{margin-bottom:7px;}
+.employee-claim-additional-section>button{margin-bottom:6px;}

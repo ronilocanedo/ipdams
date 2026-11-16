@@ -1,0 +1,11 @@
+/* IPDAMS v0.2.313 - paper-document compliance cards; no upload controls. */
+.travel-311-workspace .travel-313-check-card{cursor:pointer;display:flex;flex-direction:column;gap:8px;background:#fff;min-height:118px}
+.travel-311-workspace .travel-313-check-card:has(input:checked){background:#f0faf7;border-color:#9bd2c2}
+.travel-313-check-row{display:flex;align-items:flex-start;gap:12px}
+.travel-313-check-row input[type=checkbox]{width:21px;height:21px;flex:0 0 21px;margin:2px 0 0;accent-color:#137b70}
+.travel-313-check-row strong{line-height:1.42}
+.travel-313-check-hint{display:block;color:#55747b;font-size:12px}
+.travel-313-legacy-proof{display:block;font-size:11px;color:#607582}
+.travel-313-check-footer{margin:16px 0;padding:14px;background:#f6faf9;border-radius:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1px solid #d6e7e3}
+.travel-313-check-footer .hint{max-width:550px}
+@media(max-width:600px){.travel-313-check-footer{align-items:stretch}.travel-313-check-footer button{width:100%}}

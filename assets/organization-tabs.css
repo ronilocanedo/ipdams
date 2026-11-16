@@ -1,0 +1,13 @@
+/* IPDAMS v0.2.4: organization management tabs */
+.org-tabbar{display:flex;gap:6px;border-bottom:1px solid #dce6ea;margin:4px 0 4px;overflow-x:auto;scrollbar-width:thin}
+.org-tab{appearance:none;background:transparent;border:0;border-bottom:3px solid transparent;border-radius:5px 5px 0 0;color:#546d80;cursor:pointer;font-size:13px;font-weight:750;padding:13px 16px;white-space:nowrap;flex-shrink:0}
+.org-tab:hover{background:#f0f8f7;color:#176f64}
+.org-tab.is-active{border-bottom-color:#0e9f8b;background:#eef9f6;color:#086c60}
+.org-tab:focus-visible{outline:2px solid #118a80;outline-offset:-3px}
+.org-tab-panel{display:grid;gap:18px;min-width:0}
+.org-tab-panel .surface{margin:0}
+.org-summary{font-size:12px;color:#5f7b87;margin:9px 0 0}
+.org-profile-readonly{display:grid;grid-template-columns:1fr 1fr;gap:7px 20px;margin:16px 0;font-size:12px;color:#37566b}
+@media(max-width:760px){.org-tabbar{margin-left:-5px;margin-right:-5px}.org-tab{font-size:12px;padding:12px 10px}.org-profile-readonly{grid-template-columns:1fr}}
+
+.org-build-marker{font-size:11px;color:#577484;margin:-6px 0 0;letter-spacing:.02em}

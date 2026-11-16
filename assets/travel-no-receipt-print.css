@@ -1,0 +1,7 @@
+/* Scoped to the separate read-only no-official-receipt report print window. */
+@page{size:A4 landscape;margin:9mm}
+body.travel-no-receipt-print{font:10pt 'Bookman Old Style',Georgia,serif;color:#111;padding:0;margin:0}
+.travel-no-receipt-print h1{text-align:center;font-size:14pt}.travel-no-receipt-print table{border-collapse:collapse;width:100%;font-size:7pt}
+.travel-no-receipt-print th,.travel-no-receipt-print td{border:1px solid #444;padding:4px;overflow-wrap:anywhere;vertical-align:top}
+.travel-no-receipt-print thead{display:table-header-group}.travel-no-receipt-print tr{break-inside:avoid}
+.travel-report-warning{font-size:8pt;font-style:italic}

@@ -1,0 +1,56 @@
+/* v0.2.299 — non-posting pre-trip plans and chronological accounting review */
+.travel-stage-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
+.travel-299-plan,.travel-299-review{display:grid;gap:12px}
+.travel-299-plan h4,.travel-299-review h4{margin:4px 0 6px;color:#113754}
+.travel-plan-register{display:grid;gap:7px;padding:10px;border:1px solid #c7d8e4;border-radius:9px;background:#f7fafd}
+.travel-plan-record{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #d8e3ec;padding:7px 0}
+.travel-plan-form{display:grid;gap:15px;min-width:0}
+.travel-plan-leg{min-width:0;padding:12px;border:1px solid #bbcedd;background:#fff;border-radius:10px}
+.travel-plan-leg legend{font-weight:700;color:#163e5e;padding:0 5px}
+.travel-plan-fields{display:grid;grid-template-columns:135px minmax(200px,2fr) 115px 115px minmax(155px,1fr);gap:9px}
+.travel-plan-costs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0}
+.travel-plan-cost{min-width:0;border:1px solid #d4e1ec;border-radius:9px;padding:10px;background:#f6fafc}
+.travel-plan-cost-details{display:grid;gap:8px;margin-top:8px}
+.travel-plan-schedule{border:1px solid #bdcfda;padding:12px;border-radius:9px;background:#f7fafc;display:grid;gap:10px}
+.travel-plan-session{border:1px solid #d5e1e8;padding:10px;border-radius:8px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;background:#fff;align-items:end}
+.travel-plan-totals{background:#f6fafc;border:1px solid #abc5d9;padding:14px;border-radius:10px}
+.travel-plan-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.travel-plan-metrics p{display:flex;justify-content:space-between;gap:10px;padding:8px;border:1px solid #d6e3eb;border-radius:6px;margin:0;background:white;font-size:12px}
+.travel-plan-grand{font-weight:800;color:#14527e;font-size:16px;margin:12px 0 0}
+.travel-plan-history{display:grid;gap:10px}
+.travel-plan-scroll{max-width:100%;overflow-x:auto}
+.travel-plan-history-table{border-collapse:collapse;width:100%;min-width:840px}
+.travel-plan-history-table th,.travel-plan-history-table td{border:1px solid #c4d7e3;padding:7px;text-align:left;font-size:12px}
+.travel-plan-history-table th{background:#eaf3f9}
+.travel-299-review{padding:14px;border:1px solid #b5cad9;background:#fbfdff;border-radius:10px;margin-top:15px}
+.travel-review-totals{display:flex;flex-wrap:wrap;gap:14px;font-weight:700;border-bottom:1px solid #cad9e6;padding-bottom:10px}
+.travel-review-timeline{display:grid;gap:12px}
+.travel-review-event{padding:12px;border:1px solid #bbcddc;border-radius:8px;background:white;min-width:0}
+.travel-review-event legend{font-weight:700;color:#15445f;padding:0 6px}
+.travel-review-event-head{display:flex;justify-content:space-between;gap:15px}
+.travel-review-flag{border-left:5px solid #a8671e;background:#fffaf2}
+.travel-review-risk{color:#7a420f;font-weight:650;line-height:1.5}
+.travel-review-decision-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.travel-review-note{grid-column:1/-1}
+@media(max-width:1060px){.travel-plan-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.travel-plan-route{grid-column:1/-1}.travel-plan-costs{grid-template-columns:1fr}.travel-plan-session{grid-template-columns:repeat(2,minmax(0,1fr))}.travel-review-decision-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.travel-stage-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.travel-plan-metrics{grid-template-columns:1fr}.travel-review-decision-grid{grid-template-columns:1fr}.travel-plan-session{grid-template-columns:1fr}.travel-plan-record,.travel-review-event-head{flex-direction:column}.travel-plan-fields{grid-template-columns:1fr}.travel-plan-route{grid-column:auto}}
+
+/* v0.2.301 — non-posting DTE destination/rate and meal-evidence worksheet */
+.travel-dte-editor { border:1px solid #cbdde6; border-radius:9px; padding:14px; margin:12px 0 18px; background:#fafcfe; }
+.travel-dte-editor .travel-dte-rate { background:#e8f6f1; border-left:3px solid #009579; padding:10px 12px; font-weight:650; }
+.travel-dte-editor .travel-dte-day { border:1px solid #c4d4dd; border-radius:7px; margin:12px 0; padding:10px; }
+.travel-dte-editor .travel-dte-meal { display:flex; flex-wrap:wrap; align-items:flex-start; gap:12px; border-top:1px dotted #cfdae2; padding:8px 0; }
+.travel-dte-editor .travel-dte-meal > strong { min-width:75px; font-size:.8rem; padding-top:7px; }
+.travel-dte-editor .travel-dte-meal .form-grid { flex:1 1 100%; }
+.travel-dte-editor .field { min-width:0; }
+@media(max-width:750px) { .travel-dte-editor {padding:9px;} .travel-dte-editor .travel-dte-meal{display:block;} }
+
+/* v0.2.302: minimal planning editor; details retain evidence without crowding the form */
+.travel-plan-advanced{border:1px solid var(--border-color,#d6dee5);border-radius:8px;padding:10px;margin:9px 0;background:transparent}
+.travel-plan-advanced>summary,.travel-plan-cost-details>summary{cursor:pointer;font-weight:600;color:inherit;line-height:1.6}
+.travel-plan-advanced[open]{padding-bottom:14px}
+.travel-dte-simple{grid-template-columns:repeat(auto-fit,minmax(205px,1fr))}
+.travel-plan-cost-details{padding:5px;margin-top:4px;border:1px dashed #b6c6d4;border-radius:7px}
+.travel-plan-cost-details>.field{margin-top:8px}
+.travel-plan-session,.travel-dte-meal{margin-top:7px}
+@media(max-width:680px){.travel-dte-simple{grid-template-columns:1fr}.travel-plan-advanced{padding:8px}}

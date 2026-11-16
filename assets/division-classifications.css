@@ -1,0 +1,6 @@
+/* IPDAMS v0.2.18: compact Division Classification maintenance */
+.division-class-editor{border-top:1px solid #dce7ea;margin-top:15px;padding-top:12px}
+.division-class-editor h3{font-size:14px;margin:0 0 10px}
+.division-class-editor .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px}
+.division-class-editor .hint{margin:9px 0 0}
+@media(max-width:750px){.division-class-editor .form-grid{grid-template-columns:1fr}}
