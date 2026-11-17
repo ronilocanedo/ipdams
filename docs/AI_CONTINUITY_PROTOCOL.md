@@ -1,6 +1,6 @@
 # IPDAMS — Continuity protocol for ChatGPT and all AI developers
 
-**Status:** Proposed permanent operating protocol; prepared 2026-11-17, Asia/Manila. Existing owner-approved project safeguards take precedence. This file is not a production change.
+**Status:** ACTIVE continuity protocol, published to the private GitHub development branch on 2026-11-17 (Asia/Manila) and independently verified. Existing owner-approved project safeguards take precedence. This is documentation only, not a production change.
 
 ## Purpose
 
@@ -45,4 +45,4 @@ A change of chat session, model, AI developer or tool must **not reset IPDAMS de
 
 > Continue IPDAMS from the **current verified checkpoint**, not a new plan. Repository: private `ronilocanedo/ipdams`, development baseline `develop/hostinger-v0.2.375`. First read `AGENTS.md`, `docs/AI_CONTINUITY_PROTOCOL.md`, `docs/DECISION_REGISTER.md`, and `docs/CURRENT_STATE.md`; inspect actual current GitHub/Hostinger/Drive evidence before changing anything. Respect every ACCEPTED decision, current blockers, synthetic-only tests and explicit owner-approval gates. Do not repeat completed QA without a reason. Explain any new evidence before proposing to change a decision. Continue the NEXT ACTION in `docs/CURRENT_STATE.md`.
 
-**Limit:** This protocol becomes available to future AI agents through GitHub **only after an owner-approved commit and push**. Until then, attach or paste this packet in the next conversation. No AI can guarantee universal automatic recall across systems that do not load these files.
+**Limit:** This protocol is now available in the private GitHub branch after the owner's approved commits and push. Future AI agents must actually open these files (or receive their contents); no AI can guarantee automatic recall across systems that do not load them. The source/QA review package remains local-only until separately approved and pushed.
