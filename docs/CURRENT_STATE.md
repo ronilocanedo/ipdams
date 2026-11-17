@@ -1,6 +1,6 @@
 # IPDAMS — Current development state / active handoff
 
-**As of:** 2026-11-17, 13:17 PHT (Asia/Manila)
+**As of:** 2026-11-17, updated after verified continuity-only GitHub push (Asia/Manila)
 **Prepared from:** connected GitHub source, read-only Hostinger file listings, Drive QA source/evidence, and owner-shared local PowerShell output.
 **Status:** REVIEW / SOURCE RECONCILIATION — **not yet synchronized across all three environments**.
 
@@ -12,8 +12,8 @@ Follow root `AGENTS.md`, `docs/AI_CONTINUITY_PROTOCOL.md`, `docs/DECISION_REGIST
 
 | Location | Verified or reported state | Confidence |
 | --- | --- | --- |
-| GitHub repository | PRIVATE `ronilocanedo/ipdams`; `main` documentation/history; application branch `develop/hostinger-v0.2.375` contains imported source; no new synchronization push confirmed | Verified by connected GitHub 2026-11-17 |
-| Owner's local GitHub Desktop | `C:\Users\rbcan\OneDrive\Documents\GitHub\ipdams`, branch `develop/hostinger-v0.2.375` tracks origin; **13 local review-package files copied**, not committed/pushed | Owner's PowerShell 2026-11-17 |
+| GitHub repository | PRIVATE `ronilocanedo/ipdams`; `main` documentation/history; application branch `develop/hostinger-v0.2.375` contains imported source; continuity documentation is now pushed and independently verified, while application source candidates remain unpushed | Verified by connected GitHub 2026-11-17 |
+| Owner's local GitHub Desktop | `C:\Users\rbcan\OneDrive\Documents\GitHub\ipdams`, branch `develop/hostinger-v0.2.375` tracks origin; **13 local review-package files copied**, still uncommitted/unpushed; the 4 continuity-document paths were separately committed and pushed | Owner's PowerShell 2026-11-17 |
 | Hostinger production | `ipdams.depedtagb.online`; v0.2.375 verified 2026-11-13. Later v0.2.378 is owner-reported; **today's exact installed version is NOT independently verified** | Mixed historical direct + later owner report |
 | Google Drive official | Folder `IPDAMS Development`, approved references and long-lived QA artifacts, `IPDAMS-DV-Local-QA` synthetic test evidence | Connected Drive reviewed |
 
@@ -49,16 +49,16 @@ Follow root `AGENTS.md`, `docs/AI_CONTINUITY_PROTOCOL.md`, `docs/DECISION_REGIST
 
 ## NEXT ACTION — continue this, not a brand-new plan
 
-1. **Do not commit the 13 local files yet** merely to make GitHub Desktop appear synchronized. They can remain a reversible local review delta with existing backups.
+1. **Preserve the 13 uncommitted local source/QA review paths**; the continuity-only documents are already committed/pushed and independently verified. Do not commit the remaining application candidates merely to make GitHub Desktop appear synchronized. They can remain a reversible local review delta with existing backups.
 2. **Get a code-only, read-only Hostinger SHA-256 manifest** for the allowlisted application files (no private `.env`, installed-version private metadata, database, uploads, backups or secrets). Compare filenames/hashes to the current GitHub baseline and owner QA candidate; mark extra, missing, changed. Use a verified Hostinger read-only mechanism or owner-assisted hPanel/SSH export; never use production for experiments.
 3. Resolve `app.html`, branding script, mobile CSS, `settings_smoke.php`, and any other actual hash deltas. If Hostinger source cannot be read, preserve the explicit blocker rather than substituting equal byte lengths as evidence.
 4. Prepare a reviewed, versioned source update in local VS Code. Apply focused isolated, synthetic regression checks for affected behavior. A release-grade finance test is needed before future payment implementation, not for a docs-only checkpoint.
-5. After explicit owner approval, **commit and push** the reviewed development code and continuity docs to private GitHub; verify remote commit SHA, then **Fetch/Pull** in GitHub Desktop. This makes continuity records available across chats and AI agents.
+5. **Continuity documents were pushed and verified on private GitHub on 2026-11-17.** After byte-level Hostinger reconciliation, targeted QA and separate owner approval, commit/push the *remaining reviewed application source*; verify remote commit SHA and reconcile GitHub Desktop. Do not infer production parity from the documentation push.
 6. Continue the reimbursement/DV accounting contract work: inspect `dv.finalize` request shape read-only and identify policy decisions before implementing any positive DV settlement.
 
 ## Hard blocks and non-actions
 
-- **No commit, GitHub push, Hostinger deployment, SQL migration, production DB tests, new payment/check, tax posting, or backup mutation** has been carried out in this continuity effort.
+- **Two owner-made continuity documentation commits were pushed and their four resulting files verified on private GitHub.** No *application-source* commit/push, Hostinger deployment, SQL migration, production DB tests, new payment/check, tax posting or backup mutation was performed in this continuity effort.
 - Do not auto-run old `.spec.cjs.txt` tests. React 16 legacy/runtime remains as captured; security upgrade is a separate proposal.
 - Do not treat 2026-10-26 or 2026-11-11 historical notes as the present installed release.
 - Need current Hostinger source hash evidence, verified production version and accounting-policy signoff to claim parity/release readiness.
@@ -66,3 +66,9 @@ Follow root `AGENTS.md`, `docs/AI_CONTINUITY_PROTOCOL.md`, `docs/DECISION_REGIST
 ## At end of each work session
 
 Update this file with date/time, verified production & GitHub/local state, source hashes, actions actually executed, QA PASS/FAIL/SKIPPED/BLOCKED/NOT TESTED, explicit owner approvals, unresolved issues, and exactly one next milestone. Avoid rephrasing old unverified claims as current facts. Keep Git history for every updated checkpoint.
+
+## Verified continuity publication — 2026-11-17 (PHT)
+
+- Owner committed and pushed two documentation-only checkpoints on `develop/hostinger-v0.2.375`. Independently read back `AGENTS.md`, `docs/AI_CONTINUITY_PROTOCOL.md`, `docs/CURRENT_STATE.md`, `docs/DECISION_REGISTER.md` from remote GitHub.
+- Application source `app.html` and `assets/property-workspace-navigation.css` still matched their pre-sync remote blob SHAs (`fb509e263e1bcd209c1a9eeadb37e6fb1608d229`, `23cbd5280a6a0982edb0ab03c1e95aeedd1c54ca`). `assets/branding-missing-display-377.js` remained absent remotely. The source/QA synchronization candidates remain local-only.
+- Version and byte-level Hostinger parity remain unverified. The **NEXT ACTION remains a read-only code-only Hostinger SHA-256 manifest**, followed by selective source reconciliation and synthetic targeted QA. This status update neither authorizes nor performs a production deployment.
