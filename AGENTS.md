@@ -1,5 +1,17 @@
 # IPDAMS — OpenCode and AI coding agent instructions
 
+## Mandatory development continuity
+
+Before beginning IPDAMS work, read:
+
+- docs/AI_CONTINUITY_PROTOCOL.md
+- docs/DECISION_REGISTER.md
+- docs/CURRENT_STATE.md
+
+Continue the recorded NEXT ACTION.
+Never silently change an accepted project decision.
+Verify current source and QA evidence before proposing changes.
+
 ## Verified development baseline (2026-11-13, Asia/Manila)
 
 - Work in **this repository's `develop/hostinger-v0.2.375` branch**, or a dedicated `feature/*` branch created from it. The default `main` branch is historical coordination documentation and is not the complete application code.
