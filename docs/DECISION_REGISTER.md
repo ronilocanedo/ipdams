@@ -1,6 +1,6 @@
 # IPDAMS — Canonical decision register
 
-**Prepared:** 2026-11-17 (PHT). **Status:** Draft compilation of earlier owner directives and verified GitHub project rules; review before the first commit. *A proposed item is not a previously approved decision.*
+**Prepared:** 2026-11-17 (PHT). **Status:** Active register published to the private GitHub development branch following owner approval. Entries marked PROPOSED remain proposals, not approved actions.
 
 | ID | Status | Decision and reason | Evidence / authority |
 | --- | --- | --- | --- |
@@ -17,7 +17,7 @@
 | D-011 | ACCEPTED | ChatGPT and owner lead design/review; Playwright performs browser tests; GitHub stores code; Drive stores official docs; Hostinger hosts production. OpenCode and FreeLLMAPI are not routine tools without specific owner authorization. | Standing project instructions. |
 | D-012 | ACCEPTED | GitHub Desktop and VS Code are the owner's local working tools. Local uncommitted code is **not automatically in GitHub**. | Owner-confirmed setup, 2026-11-17 read-only branch and Git status. |
 | D-013 | CURRENT PLAN | Reconcile existing production source against baseline before claiming GitHub/local/Hostinger parity; do not blindly overwrite production with the historical branch. | Owner's 2026-11-17 agreement to source reconciliation; unverified Hostinger content hashes remain a blocker. |
-| D-014 | PROPOSED | Persist this protocol, the decision register, and one current handoff file in the repo; new AI reads them before proposing changes. Accepted decisions require evidence and owner approval to amend where applicable. | Owner's 2026-11-17 request for continuity; this packet is review-only until approved and pushed. |
+| D-014 | ACCEPTED | Persist this protocol, the decision register and one current handoff file in private GitHub; every new AI reads them before proposing changes. Accepted decisions require evidence and owner approval to amend where applicable. | Owner's 2026-11-17 approval and verified GitHub readback of all four continuity files on `develop/hostinger-v0.2.375`. |
 | D-015 | PROPOSED | After byte-level source reconciliation, adopt a clearly named updated source branch or verified checkpoint, retaining `develop/hostinger-v0.2.375` and its history. Do not rename or merge branches just to improve appearances. | Synchronization design proposal; owner approval still required for branch/commit/push. |
 
 ## Non-decisions (do not infer authorization)
@@ -34,6 +34,7 @@
 | 2026-11-13 | GitHub verified integrated source v0.2.375; Hostinger installed version checked at that date | Historical verified checkpoint |
 | 2026-11-16 | Local QA evidence: 162 PASS, 0 FAIL, 8 SKIPPED; financial positive finalization still blocked | Historical QA checkpoint |
 | 2026-11-17 | Owner local GitHub Desktop source/QA review package copied, 13 paths, **no commit/push** | Current local checkout status |
-| 2026-11-17 | Continuity protocol and decision record drafted in response to owner concern | Proposed for owner review |
+| 2026-11-17 | Continuity protocol and decision record drafted in response to owner concern | Historical draft checkpoint |
+| 2026-11-17 | Owner committed/pushed continuity-only documents; remote GitHub content and AGENTS.md references independently verified | D-014 ACCEPTED; application source sync still pending |
 
 For future updates, append the decision ID, status transition, evidence, owner approval and relevant commit SHA. Do not erase the earlier record.
