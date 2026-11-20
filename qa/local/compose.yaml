@@ -1,0 +1,75 @@
+# IPDAMS isolated local QA ONLY; do not deploy this file to Hostinger.
+name: ipdams-local-qa
+services:
+  db:
+    image: mariadb:10.11
+    restart: 'no'
+    environment:
+      MARIADB_DATABASE: ipdams_qa
+      MARIADB_USER: ipdams_qa
+      MARIADB_PASSWORD: ${QA_DB_PASSWORD:?Create qa/local/.env.qa using init.ps1}
+      MARIADB_ROOT_PASSWORD: ${QA_DB_ROOT_PASSWORD:?Create qa/local/.env.qa using init.ps1}
+    volumes:
+      - qa_db:/var/lib/mysql
+      # Historical baseline schema only. It is NOT the complete current application schema.
+      - ../../private/db/migrations/001_initial.sql:/docker-entrypoint-initdb.d/001_initial.sql:ro
+      - ../../private/db/migrations/002_manual_signature_records.sql:/docker-entrypoint-initdb.d/002_manual_signature_records.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 35s
+    networks: [qa_isolated]
+
+  web:
+    build:
+      context: ../..
+      dockerfile: qa/local/Dockerfile
+    restart: 'no'
+    environment:
+      APP_ENV: test
+      DB_HOST: db
+      DB_PORT: '3306'
+      DB_NAME: ipdams_qa
+      DB_USER: ipdams_qa
+      DB_PASSWORD: ${QA_DB_PASSWORD:?Create qa/local/.env.qa using init.ps1}
+      INSTALL_SETUP_TOKEN: ${QA_SETUP_TOKEN:?Create qa/local/.env.qa using init.ps1}
+      ALLOW_ADMIN_SQL_WRITE: '0'
+      IPDAMS_PUBLIC_DIR: /var/www/html
+    ports:
+      - '127.0.0.1:${QA_HTTP_PORT:-8877}:80'
+    volumes:
+      - qa_storage:/var/www/html/private/storage
+      - qa_uploads:/var/www/html/private/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [qa_isolated]
+
+  playwright:
+    profiles: [qa]
+    build:
+      context: ../..
+      dockerfile: qa/local/Dockerfile.playwright
+    init: true
+    environment:
+      PLAYWRIGHT_BASE_URL: http://web
+      CI: '1'
+    depends_on:
+      web:
+        condition: service_started
+    volumes:
+      - ../../qa/playwright/test-results:/work/test-results
+      - ../../qa/playwright/playwright-report:/work/playwright-report
+    networks: [qa_isolated]
+
+networks:
+  qa_isolated:
+    internal: true
+    driver: bridge
+
+volumes:
+  qa_db:
+  qa_storage:
+  qa_uploads:

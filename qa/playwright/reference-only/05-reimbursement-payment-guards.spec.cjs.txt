@@ -1,0 +1,115 @@
+'use strict';
+/**
+ * QA ONLY: negative financial lifecycle tests for already-created fictional DV 13.
+ * No accepted DV finalization or bank/check transaction is permitted.
+ * Requests target only the disposable 127.0.0.1:8767 environment.
+ */
+const {test, expect}=require('@playwright/test');
+const {randomUUID}=require('node:crypto');
+const {local,login,fence}=require('./_sim-support.cjs');
+const DV_ID=13;
+const SOURCE_IDS=[128,131];
+const EXPECTED_TOTAL='359.75';
+const makeKey=()=>`sim-negative-${randomUUID()}`;
+
+async function fixture(context,baseURL){
+  local(baseURL);
+  const auth=await login(context,'SCHOOL');
+  const org=Number(auth.org);
+  expect(org,'Fictional school organization').toBeGreaterThan(0);
+  const response=await context.request.get(`/api/index.php?route=detail&type=DV&organization_id=${org}&id=${DV_ID}`);
+  expect(response.status(),'Existing draft DV must be available').toBe(200);
+  const detail=(await response.json()).data;
+  const dv=detail.record;
+  expect(Number(dv.id)).toBe(DV_ID);
+  expect(Number(dv.organization_id)).toBe(org);
+  expect(dv.status,'Stop: positive test DV must remain unfinalized').toBe('DRAFT');
+  expect(dv.dv_type).toBe('TRAVEL_REIMBURSEMENT');
+  expect(dv.display_number??null).toBeFalsy();
+  expect(dv.gross).toBe(EXPECTED_TOTAL);
+  expect(dv.net).toBe(EXPECTED_TOTAL);
+  expect(detail.linked_checks).toEqual([]);
+  expect(detail.other_employee_claims.map(x=>Number(x.claim_id)).sort((a,b)=>a-b)).toEqual(SOURCE_IDS);
+  expect(Number(dv.fund_id)).toBeGreaterThan(0);
+  return {auth,org,dv,detail};
+}
+
+async function rejected(context,auth,route,data,status,text){
+  const response=await context.request.post(`/api/index.php?route=${route}`,{
+    headers:{'X-CSRF-Token':auth.csrf,'X-Idempotency-Key':makeKey()},
+    data,
+  });
+  const raw=await response.text();
+  expect(response.status(),`${route}: HTTP ${response.status()}, ${raw.slice(0,400)}`).toBe(status);
+  const parsed=JSON.parse(raw);
+  expect(typeof parsed.error,`Rejected ${route} needs actionable explanation`).toBe('string');
+  expect(parsed.error.length).toBeGreaterThan(0);
+  if(text) expect(parsed.error).toContain(text);
+}
+
+test('Source claims remain reserved in exactly one unpaid, unnumbered DV',async({context,baseURL})=>{
+  const {org,detail}=await fixture(context,baseURL);
+  expect(detail.lines).toHaveLength(2);
+  const get=await context.request.get(`/api/employee_reimbursements.php?organization_id=${org}`);
+  expect(get.status()).toBe(200);
+  const listed=(await get.json()).data;
+  for(const id of SOURCE_IDS){
+    const claim=listed.claims.find(x=>Number(x.claim_id)===id);
+    expect(claim,`Claim ${id} found`).toBeTruthy();
+    expect(claim.ready_for_dv,`Claim ${id} not selectable again`).toBe(false);
+    expect(Number(claim.active_dv_id)).toBe(DV_ID);
+  }
+});
+
+test('DV finalization rejects missing reimbursement financial attestation',async({context,baseURL})=>{
+  const {auth,org}=await fixture(context,baseURL);
+  await rejected(context,auth,'dv.finalize',
+    {organization_id:org,dv_id:DV_ID,reimbursement_payment_verified:false},
+    409,'Confirm actual employee-paid receipts');
+});
+
+test('DV finalization rejects a non-accountable short payment authority',async({context,baseURL})=>{
+  const {auth,org}=await fixture(context,baseURL);
+  // This deliberately invalid authority is rejected before any numbering or cash step.
+  await rejected(context,auth,'dv.finalize',
+    {organization_id:org,dv_id:DV_ID,reimbursement_payment_verified:true,
+      reimbursement_payment_authority:'QA'},
+    409,'at least 8 characters');
+});
+
+test('A second reimbursement DV cannot reserve claims 128 and 131 again',async({context,baseURL})=>{
+  const {auth,org,dv}=await fixture(context,baseURL);
+  await rejected(context,auth,'dv.create',
+    {organization_id:org,dv_type:'TRAVEL_REIMBURSEMENT',fund_id:Number(dv.fund_id),
+      claim_ids:[],other_claim_ids:SOURCE_IDS},
+    409,'already reserved');
+});
+
+test('A physical check cannot be assigned to the unfinalized reimbursement DV',async({context,baseURL})=>{
+  const {auth,org}=await fixture(context,baseURL);
+  // No bank, serial or fund data provided. Even if the validation order changes,
+  // the request must never issue a physical payment document.
+  await rejected(context,auth,'check.create',
+    {organization_id:org,dv_id:DV_ID},
+    422,'Finalized DV needed');
+});
+
+test('Division oversight cannot finalize a School reimbursement DV',async({context,baseURL})=>{
+  local(baseURL);
+  const auth=await login(context,'DIVISION');
+  const schoolOrg=Number(process.env.IPDAMS_QA_SCHOOL_ORG);
+  expect(schoolOrg).toBeGreaterThan(0);
+  await rejected(context,auth,'dv.finalize',
+    {organization_id:schoolOrg,dv_id:DV_ID,reimbursement_payment_verified:false},
+    403,'');
+});
+
+test('Saved draft continues to render on desktop/mobile without unintended browser writes',async({context,page,baseURL})=>{
+  await fixture(context,baseURL);
+  const blocked=await fence(page);
+  await page.goto('/?section=Disbursements',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#root')).toBeVisible();
+  await expect(page.getByText('Unable to restore your workspace')).toHaveCount(0);
+  expect((await page.locator('#root').innerText()).length).toBeGreaterThan(20);
+  expect(blocked).toEqual([]);
+});

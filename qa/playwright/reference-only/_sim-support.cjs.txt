@@ -1,0 +1,46 @@
+'use strict';
+const { expect } = require('@playwright/test');
+const BASE='http://127.0.0.1:8767';
+const QA={
+  SCHOOL:{email:process.env.IPDAMS_QA_EMAIL||'',password:process.env.IPDAMS_QA_PASSWORD||'',org:process.env.IPDAMS_QA_SCHOOL_ORG||''},
+  DIVISION:{email:process.env.IPDAMS_QA_DIV_EMAIL||'',password:process.env.IPDAMS_QA_DIV_PASSWORD||'',org:process.env.IPDAMS_QA_DIV_ORG||''},
+};
+function local(baseURL) {expect(baseURL,'STOP: sim tests must target only localhost:8767').toBe(BASE);}
+async function fence(page) {
+  const rejected=[];
+  await page.route('**/*',route=>{
+    const url=new URL(route.request().url());
+    if(url.origin!==BASE){rejected.push(url.origin);return route.abort();}
+    if(!['GET','HEAD'].includes(route.request().method())){
+      rejected.push('unexpected-browser-write:'+route.request().method());return route.abort();
+    }
+    return route.continue();
+  });
+  return rejected;
+}
+async function login(context,role) {
+  const acct=QA[role];
+  expect(acct?.email).toBeTruthy();expect(acct?.password).toBeTruthy();
+  const sess=await context.request.get('/api/index.php?route=auth.session');
+  expect(sess.status()).toBe(200);
+  const init=await sess.json();
+  expect(init.data?.csrf?.length).toBeGreaterThan(12);
+  const response=await context.request.post('/api/index.php?route=auth.login',{
+    headers:{'X-CSRF-Token':init.data.csrf}, data:{email:acct.email,password:acct.password}
+  });
+  expect(response.status(),'Cloned fictional QA account login must succeed').toBe(200);
+  const current=await context.request.get('/api/index.php?route=auth.session');
+  expect(current.status()).toBe(200);
+  const auth=await current.json();
+  expect(auth.data?.user?.role).toBe(role);
+  return {user:auth.data.user,csrf:auth.data.csrf,org:Number(acct.org)};
+}
+let seq=0;
+async function attempt(context,auth,route,body,{key=true,csrf=true}={}) {
+  const headers={'X-CSRF-Token':csrf?auth.csrf:'incorrect-csrf'};
+  if(key) headers['X-Idempotency-Key']=`simqa-20261116-${++seq}-${route.replace(/[^a-z0-9]/gi,'-')}`;
+  return context.request.post('/api/index.php?route='+encodeURIComponent(route),{
+    headers,data:body,
+  });
+}
+module.exports={BASE,QA,local,fence,login,attempt};

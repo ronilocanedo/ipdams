@@ -1,0 +1,61 @@
+'use strict';
+// Explicitly checks all finalized SCHOOL DVs from the read-only financial audit,
+// including travel DVs; intentionally detects historical print blockers.
+const fs=require('fs');const path=require('path');
+const {test,expect}=require('@playwright/test');
+const {assertQaURL,assertSessionEnvelope,fence}=require('./_qa-support.cjs');
+const reportPath=path.resolve(__dirname,'../../restore/dv-tax-readonly-report.json');
+const readAudit=()=>{
+  if(!fs.existsSync(reportPath))return null;
+  const obj=JSON.parse(fs.readFileSync(reportPath,'utf8'));
+  if(obj.contract!=='IPDAMS_DV_TAX_READONLY_QA_V1')throw Error('Unexpected QA financial report contract');
+  return obj;
+};
+const email=process.env.IPDAMS_QA_EMAIL||'';
+const password=process.env.IPDAMS_QA_PASSWORD||'';
+async function login(context){
+ const r=await context.request.get('/api/index.php?route=auth.session');
+ expect(r.status()).toBe(200);const s=await r.json();assertSessionEnvelope(s);
+ const p=await context.request.post('/api/index.php?route=auth.login',{
+   headers:{'X-CSRF-Token':s.data.csrf},data:{email,password},
+ });
+ expect(p.status()).toBe(200);
+}
+const printedUrl=(rec)=>`/api/print.php?type=DV&id=${encodeURIComponent(rec.id)}&organization_id=${encodeURIComponent(rec.organization_id)}`;
+
+test('Each finalized fictional School DV, including travel, renders an official Appendix 32 page',async ({context,page,baseURL})=>{
+ assertQaURL(baseURL);
+ const audit=readAudit();
+ test.skip(!email||!password||!audit,'SKIPPED: Generate the local read-only audit report first.');
+ const refs=audit.fixtures?.finalized_school_dvs||[];
+ expect(refs.length,'A real finalized School DV fixture is required').toBeGreaterThan(0);
+ const offsite=await fence(page);
+ await login(context);
+ const faults=[];page.on('pageerror',e=>faults.push(e.name));
+ for(const rec of refs){
+   expect(Number.isSafeInteger(rec.id) && rec.id>0).toBe(true);
+   expect(Number.isSafeInteger(rec.organization_id) && rec.organization_id>0).toBe(true);
+   const response=await page.goto(printedUrl(rec),{waitUntil:'domcontentloaded'});
+   expect(response.status(),`Finalized DV #${rec.id} must print`).toBe(200);
+   expect(response.headers()['content-type']).toMatch(/text\/html/i);
+   await expect(page.locator('body')).toContainText(/DISBURSEMENT\s+VOUCHER|Appendix\s*32/i);
+   const hasStyles=await page.evaluate(()=>Array.from(document.querySelectorAll('style'))
+     .some(s=>/@media\s+print|@page\b/.test(s.textContent||'')));
+   expect(hasStyles,`Finalized DV #${rec.id} has print styles`).toBe(true);
+ }
+ expect(faults).toEqual([]);
+ expect(offsite).toEqual([]);
+});
+
+test('Cancelled fictional School DV is not printable as finalized Appendix 32',async ({context,baseURL})=>{
+ assertQaURL(baseURL);
+ const audit=readAudit();
+ test.skip(!email||!password||!audit,'SKIPPED: Generate the local read-only audit report first.');
+ const refs=audit.fixtures?.cancelled_school_dvs||[];
+ test.skip(!refs.length,'SKIPPED: No cancelled School DV exists in restored sample.');
+ await login(context);
+ for(const rec of refs){
+   const response=await context.request.get(printedUrl(rec));
+   expect([403,404],`Cancelled DV #${rec.id} must be inaccessible for official printing`).toContain(response.status());
+ }
+});

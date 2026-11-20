@@ -1,0 +1,161 @@
+'use strict';
+// Read-only SPA navigation sweep. Network writes from the browser are blocked.
+// API login is the one intentional POST, performed before installing the write fence.
+const { test, expect } = require('@playwright/test');
+const { assertQaURL, assertSessionEnvelope, assertWorkspaceHealthy, fence } = require('./_qa-support.cjs');
+
+const ROLE_FIXTURES = [
+  { label: 'School', role: 'SCHOOL', email: 'IPDAMS_QA_EMAIL', password: 'IPDAMS_QA_PASSWORD' },
+  { label: 'Division', role: 'DIVISION', email: 'IPDAMS_QA_DIV_EMAIL', password: 'IPDAMS_QA_DIV_PASSWORD' },
+];
+const REQUIRED = [
+  'Dashboard', 'Action Center', 'Procurement', 'Disbursements', 'Travel & Training',
+  'Fund Management', 'Cash & Bank', 'Inventory Management', 'Property Accountability',
+  'Reference Data', 'Reports', 'Organization', 'Administration',
+];
+const OPTIONAL = ['Textbooks', 'Division Consolidation'];
+const SETTLE_MS = 350;
+
+async function signIn(context, fixture) {
+  const first = await context.request.get('/api/index.php?route=auth.session');
+  expect(first.status()).toBe(200);
+  const session = await first.json();
+  assertSessionEnvelope(session);
+  const login = await context.request.post('/api/index.php?route=auth.login', {
+    headers: { 'X-CSRF-Token': session.data.csrf },
+    data: {
+      email: process.env[fixture.email],
+      password: process.env[fixture.password],
+    },
+  });
+  expect(login.status(), `${fixture.label} fictional login must succeed`).toBe(200);
+  const verify = await context.request.get('/api/index.php?route=auth.session');
+  expect(verify.status()).toBe(200);
+  const current = await verify.json();
+  assertSessionEnvelope(current);
+  expect(current.data.user?.role).toBe(fixture.role);
+}
+
+function safeIssue(error) {
+  // Do not leak response bodies, cookies, credentials or document details into reports.
+  return String(error && error.message ? error.message : error).slice(0, 300);
+}
+
+async function addWriteFence(page, blockedWrites) {
+  await page.route('**/*', route => {
+    const request = route.request();
+    if (!['GET', 'HEAD'].includes(request.method())) {
+      const url = new URL(request.url());
+      blockedWrites.push(`${request.method()} ${url.pathname}`);
+      return route.abort('blockedbyclient');
+    }
+    return route.fallback();
+  });
+}
+
+for (const fixture of ROLE_FIXTURES) {
+  test(`${fixture.label}: all applicable sidebar sections load without blank screens, JS crashes or server 5xx`,
+    async ({ page, context, baseURL }) => {
+      assertQaURL(baseURL);
+      test.skip(!process.env[fixture.email] || !process.env[fixture.password],
+        'SKIPPED: dedicated QA account credentials not installed.');
+      const offsite = await fence(page);
+      await signIn(context, fixture);
+      const blockedWrites = [];
+      await addWriteFence(page, blockedWrites);
+      const jsErrors = [];
+      const serverErrors = [];
+      page.on('pageerror', e => jsErrors.push(safeIssue(e)));
+      page.on('response', response => {
+        if (response.status() < 500) return;
+        const url = new URL(response.url());
+        if (url.origin === 'http://127.0.0.1:8766') {
+          serverErrors.push(`${response.status()} ${url.pathname}`);
+        }
+      });
+      await page.goto('/', { waitUntil: 'domcontentloaded' });
+      await assertWorkspaceHealthy(page);
+      // A session-ready API can precede the React sidebar's first paint.
+      // Wait for the actual navigation before reporting every tab MISSING.
+      await expect.poll(async () => page.locator('.sidebar nav .navitem').count(),
+        { timeout: 15000, message: 'Authenticated sidebar must render' }).toBeGreaterThan(0);
+      const all = [...REQUIRED, ...OPTIONAL];
+      const findings = [];
+      for (const label of all) {
+        const match = page.locator('button.navitem').filter({ hasText: label }).first();
+        const available = await match.count();
+        if (!available) {
+          findings.push({ section: label, status: REQUIRED.includes(label) ? 'MISSING' : 'NOT_APPLICABLE' });
+          continue;
+        }
+        const errorCountBefore = jsErrors.length;
+        const serverCountBefore = serverErrors.length;
+        try {
+          // Clicking sidebar is the preferred path. A mobile sidebar rendered off-screen
+          // is covered by the application's documented deep-link navigation fallback.
+          const clicked = await match.isVisible();
+          if (clicked) {
+            await match.click({ timeout: 5000 });
+          } else {
+            const url = label === 'Dashboard' ? '/' : `/?section=${encodeURIComponent(label)}`;
+            await page.goto(url, { waitUntil: 'domcontentloaded' });
+          }
+          await expect.poll(() => new URL(page.url()).searchParams.get('section'),
+            { timeout: 5000 }).toBe(label === 'Dashboard' ? null : label);
+          await page.waitForTimeout(SETTLE_MS);
+          await assertWorkspaceHealthy(page);
+          const size = await page.evaluate(() => ({
+            viewport: document.documentElement.clientWidth,
+            document: document.documentElement.scrollWidth,
+          }));
+          if (size.document > size.viewport + 4) {
+            // Structural diagnostics ONLY: never record field values, record
+            // text, URLs, credentials or financial document content.
+            const offenders = await page.evaluate(() => {
+              const viewport = document.documentElement.clientWidth;
+              return Array.from(document.body.querySelectorAll('*'))
+                .map(el => {
+                  const r = el.getBoundingClientRect();
+                  return {
+                    tag: el.tagName.toLowerCase(),
+                    id: String(el.id || '').slice(0, 50),
+                    classes: typeof el.className === 'string'
+                      ? el.className.split(/\s+/).slice(0, 4).join(' ').slice(0, 110) : '',
+                    right: Math.round(r.right), width: Math.round(r.width),
+                    ownScrollWidth: el.scrollWidth, clientWidth: el.clientWidth,
+                  };
+                })
+                .filter(x => x.right > viewport + 4 && x.width > 0)
+                .slice(0, 24);
+            });
+            await test.info().attach(`layout-overflow-${fixture.role}-${label.replace(/[^A-Za-z]+/g, '-')}.json`, {
+              body: Buffer.from(JSON.stringify({ viewport: size.viewport, document: size.document, offenders }, null, 2)),
+              contentType: 'application/json',
+            });
+            throw new Error(`Document horizontal overflow ${size.document} > ${size.viewport}`);
+          }
+          if (jsErrors.length !== errorCountBefore) throw new Error(`JavaScript error: ${jsErrors[jsErrors.length - 1]}`);
+          if (serverErrors.length !== serverCountBefore) throw new Error(`Server 5xx: ${serverErrors[serverErrors.length - 1]}`);
+          findings.push({ section: label, status: 'PASS', mode: clicked ? 'SIDEBAR_CLICK' : 'MOBILE_DEEP_LINK' });
+        } catch (err) {
+          findings.push({ section: label, status: 'FAIL', problem: safeIssue(err) });
+          try {
+            await test.info().attach(`sidebar-${fixture.role}-${label.replace(/[^A-Za-z]+/g, '-')}.png`, {
+              body: await page.screenshot({ timeout: 5000, fullPage: false }),
+              contentType: 'image/png',
+            });
+          } catch (_) { /* Keep investigating other sections even if screenshot fails. */ }
+          // Recover the page for the next section rather than hiding other failures.
+          try { await page.goto('/', { waitUntil: 'domcontentloaded' }); } catch (_) { /* final report captures blocker */ }
+        }
+      }
+      await test.info().attach(`${fixture.role.toLowerCase()}-sidebar-results.json`, {
+        body: Buffer.from(JSON.stringify({ contract: 'IPDAMS_QA_NAVIGATION_V1', role: fixture.role, findings }, null, 2)),
+        contentType: 'application/json',
+      });
+      const failures = findings.filter(f => f.status === 'FAIL' || f.status === 'MISSING');
+      if (blockedWrites.length) failures.push({ section: 'READ_ONLY_GUARD', status: 'FAIL', problem: blockedWrites.join(', ') });
+      if (offsite.length) failures.push({ section: 'NETWORK_FENCE', status: 'FAIL', problem: offsite.join(', ') });
+      expect(failures, `${fixture.role} sidebar failures (details in attached JSON report)`).toEqual([]);
+    });
+}

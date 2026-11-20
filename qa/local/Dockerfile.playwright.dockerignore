@@ -1,0 +1,7 @@
+**
+!qa/
+!qa/playwright/
+!qa/playwright/package.json
+!qa/playwright/playwright.config.cjs
+!qa/playwright/tests/
+!qa/playwright/tests/**

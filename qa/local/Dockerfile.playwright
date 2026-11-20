@@ -1,0 +1,8 @@
+# Pinned Playwright image and JS test package must have the same version.
+FROM mcr.microsoft.com/playwright:v1.64.1-noble
+WORKDIR /work
+COPY qa/playwright/package.json /work/package.json
+RUN npm install --no-audit --no-fund --ignore-scripts --package-lock=false
+COPY qa/playwright/playwright.config.cjs /work/playwright.config.cjs
+COPY qa/playwright/tests/ /work/tests/
+ENTRYPOINT ["npx", "playwright", "test"]

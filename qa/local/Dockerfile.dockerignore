@@ -1,0 +1,32 @@
+# Deny by default. Only verified application source and QA scaffolding go to the build daemon.
+**
+!.htaccess
+!app.html
+!index.php
+!settings.php
+!setup.php
+!version.php
+!api/
+!api/**
+!assets/
+!assets/**
+!private/
+!private/app/
+!private/app/**
+!private/tests/
+!private/tests/**
+!qa/
+!qa/local/
+!qa/local/apache-ipdams-qa.conf
+!qa/local/check_schema.php
+# Never include untracked secrets or financial records.
+**/.env
+**/.env.*
+**/*.sql
+**/*.dump
+**/*.bak
+**/*.backup
+**/*.zip
+**/*.log
+**/*credentials*
+**/*secret*

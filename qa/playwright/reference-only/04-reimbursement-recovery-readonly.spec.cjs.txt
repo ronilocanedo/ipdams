@@ -1,0 +1,76 @@
+'use strict';
+/**
+ * One-time recovery verification after the positive write test unexpectedly
+ * asserted 200 instead of valid 201. NO business writes; auth.login only.
+ * Run against ONLY the third fictional disposable QA on 127.0.0.1:8767.
+ */
+const {test, expect}=require('@playwright/test');
+const {local, fence, login}=require('./_sim-support.cjs');
+
+// Exact stable IDs are from the owner's observed successful 201 Created receipt.
+const DV_ID=13;
+const SOURCES=[{id:128,amount:'125.50'},{id:131,amount:'234.25'}];
+const TOTAL='359.75';
+const cents=(value)=>{
+  const s=String(value);
+  expect(s, 'Expected fixed precision money').toMatch(/^\d+\.\d{2}$/);
+  const [whole,part]=s.split('.');
+  return Number(whole)*100+Number(part);
+};
+
+test('Existing synthetic DV 13 contains claims 128 and 131 in ONE unnumbered, unpaid draft',async({context,page,baseURL})=>{
+  local(baseURL);
+  const auth=await login(context,'SCHOOL');
+  const org=Number(auth.org);
+  expect(org,'Fictional School organization must be configured').toBeGreaterThan(0);
+
+  const dvResponse=await context.request.get(`/api/index.php?route=detail&type=DV&organization_id=${org}&id=${DV_ID}`);
+  expect(dvResponse.status(),'Read-only DV detail').toBe(200);
+  const detail=(await dvResponse.json()).data;
+  expect(detail).toBeTruthy();
+  const dv=detail.record||detail.document||detail.dv||detail;
+  expect(Number(dv.id)).toBe(DV_ID);
+  expect(Number(dv.organization_id)).toBe(org);
+  expect(dv.dv_type).toBe('TRAVEL_REIMBURSEMENT');
+  expect(dv.status).toBe('DRAFT');
+  expect(dv.display_number??null,'No accountable DV number before authorization').toBeFalsy();
+  expect(dv.gross).toBe(TOTAL);
+  expect(dv.net).toBe(TOTAL);
+  expect(cents(dv.deductions)).toBe(0);
+  expect(detail.linked_checks,'No physical checks assigned').toEqual([]);
+  expect(detail.lines,'Two source-level DV allocation lines').toHaveLength(2);
+  expect(detail.lines.reduce((sum,line)=>sum+cents(line.amount),0)).toBe(cents(TOTAL));
+
+  const claims=detail.other_employee_claims;
+  expect(claims,'Both source claim links must have been persisted').toHaveLength(2);
+  expect(claims.map(x=>Number(x.claim_id)).sort((a,b)=>a-b)).toEqual(SOURCES.map(x=>x.id));
+  expect(claims.reduce((sum,x)=>sum+cents(x.allowed_amount),0)).toBe(cents(TOTAL));
+  for(const source of SOURCES){
+    const item=claims.find(x=>Number(x.claim_id)===source.id);
+    expect(item,`Claim ${source.id} must be linked`).toBeTruthy();
+    expect(item.allowed_amount).toBe(source.amount);
+    expect(item.claimed_amount).toBe(source.amount);
+    expect(item.finalized_reference,`Claim ${source.id} source finalization`).toBeTruthy();
+    expect(Number(item.allocation_line_id)).toBeGreaterThan(0);
+    expect(item.debit_items,`Claim ${source.id} itemized evidence`).toHaveLength(1);
+  }
+
+  const claimsResponse=await context.request.get(`/api/employee_reimbursements.php?organization_id=${org}`);
+  expect(claimsResponse.status(),'Read-only reimbursement listing').toBe(200);
+  const listing=(await claimsResponse.json()).data;
+  for(const source of SOURCES){
+    const item=listing.claims?.find(x=>Number(x.claim_id)===source.id);
+    expect(item,`Claim ${source.id} should appear on School reimbursement register`).toBeTruthy();
+    expect(Number(item.active_dv_id),`Claim ${source.id} must already be reserved`).toBe(DV_ID);
+    expect(item.ready_for_dv,`Claim ${source.id} cannot be selected again`).toBe(false);
+  }
+
+  // Login occurred above through the session API. From here the browser is
+  // strictly read-only and cannot contact any external origin.
+  const violations=await fence(page);
+  await page.goto('/?section=Disbursements',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#root')).toBeVisible();
+  await expect(page.getByText('Unable to restore your workspace')).toHaveCount(0);
+  expect((await page.locator('#root').innerText()).length).toBeGreaterThan(20);
+  expect(violations,'No unexpected browser writes or offsite traffic').toEqual([]);
+});
