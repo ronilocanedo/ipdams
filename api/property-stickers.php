@@ -2,17 +2,19 @@
 declare(strict_types=1);
 require_once dirname(__DIR__).'/private/app/bootstrap.php';
 require_once dirname(__DIR__).'/private/app/PropertyStickerTemplates.php';
+require_once dirname(__DIR__).'/private/app/PropertyQrVerification.php';
 ini_set('session.use_strict_mode','1');ini_set('session.cookie_httponly','1');
 ini_set('session.cookie_samesite','Lax');
 session_name('IPDAMSSESSID');session_start();
 header('Cache-Control: no-store');header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');header('Referrer-Policy: no-referrer');
-header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; connect-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
+$mode=(string)($_GET['mode']??'page');
+$embedded=$mode==='page' && (string)($_GET['embedded']??'')==='1';
+header('X-Frame-Options: '.($embedded?'SAMEORIGIN':'DENY'));header('Referrer-Policy: no-referrer');
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; connect-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'; frame-ancestors ".($embedded?"'self'":"'none'"));
 try {
     $db=database();$user=currentUser($db);
     $orgId=idOf($_GET+$_POST,'organization_id');
     $org=PropertyStickerTemplates::context($db,$user,$orgId);
-    $mode=(string)($_GET['mode']??'page');
     if($_SERVER['REQUEST_METHOD']==='POST'){
         demand(in_array($mode,['template.upload','template.reset'],true),'Unsupported property sticker action',405);
         csrfCheck();
@@ -21,8 +23,14 @@ try {
         jsonOut($result);
     }
     demand($_SERVER['REQUEST_METHOD']==='GET','Unsupported method',405);
-    if($mode==='data')jsonOut(['organization'=>$org,'template'=>PropertyStickerTemplates::effective($db,$user,$org),
-        'page'=>PropertyStickerTemplates::search($db,$org,$_GET)]);
+    if($mode==='data'){
+        $page=PropertyStickerTemplates::search($db,$org,$_GET);
+        foreach($page['rows'] as &$record) {
+            $record['verification_url']=PropertyQrVerification::url((int)$record['id']);
+        }
+        unset($record);
+        jsonOut(['organization'=>$org,'template'=>PropertyStickerTemplates::effective($db,$user,$org),'page'=>$page]);
+    }
     if($mode==='image'){
         $img=PropertyStickerTemplates::image($db,$user,$org);
         header('Content-Type: '.$img['mime']);header('ETag: "'.$img['sha256'].'"');
@@ -41,11 +49,12 @@ try {
 header('Content-Type: text/html; charset=utf-8');
 ?><!doctype html><html lang="en"><head><base href="../"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>IPDAMS · Property Sticker Printing</title>
-<link rel="stylesheet" href="assets/property-stickers-400.css">
+<link rel="stylesheet" href="assets/property-stickers-400.css?v=0410"><link rel="stylesheet" href="assets/maintenance-406.css?v=0406">
+<script src="assets/maintenance-406.js?v=0406" defer></script>
 <script src="assets/property-sticker-qr-383.js" defer></script>
-<script src="assets/property-stickers-400.js" defer></script></head>
+<script src="assets/property-stickers-400.js?v=0410" defer></script></head>
 <body data-org="<?= (int)$orgId ?>" data-orgcode="<?= htmlspecialchars((string)$org['code'],ENT_QUOTES,'UTF-8') ?>">
-<header class="bar"><h1>Property Sticker Printing</h1><a href="index.php">← Back to IPDAMS</a></header>
+<?php if(!$embedded): ?><header class="bar"><h1>Property Sticker Printing</h1><a href="index.php">← Back to IPDAMS</a></header><?php endif; ?>
 <main><p class="hint">Select recorded assets, review sticker details, and print nine portrait stickers per 8.5 × 13-inch sheet. Printing never changes property records.</p>
 <section class="controls"><h2>Registered property</h2><label>Search property / description / serial / custodian <input id="search" maxlength="100" placeholder="Search current property"></label>
 <button id="load" type="button">Search</button><button id="more" type="button" hidden>Load more</button>
@@ -60,5 +69,5 @@ header('Content-Type: text/html; charset=utf-8');
 <button id="preview" type="button">Preview selected stickers</button><button id="print" type="button" disabled>Print 8.5 × 13 in</button>
 <p id="message" role="status" aria-live="polite"></p></section>
 <div id="sheets" aria-label="Print sticker pages"></div>
-</main><footer class="hint">Property sticker printing is a working identification aid; it does not issue or amend ICS/PAR documents.</footer>
+</main><?php if(!$embedded): ?><footer class="hint">Property sticker printing is a working identification aid; it does not issue or amend ICS/PAR documents.</footer><?php endif; ?>
 </body></html>

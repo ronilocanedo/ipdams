@@ -6,6 +6,7 @@ declare(strict_types=1);
  */
 require_once __DIR__.'/PropertyTransferWorkflow.php';
 require_once __DIR__.'/PropertyTransferAcceptance.php';
+require_once __DIR__.'/PropertyScanAssessment.php';
 require_once __DIR__.'/TextbookTransferWorkflow.php';
 final class ActionCenterWorkflow {
     public function __construct(private PDO $db,private array $user) {}
@@ -74,12 +75,24 @@ final class ActionCenterWorkflow {
         // Derive unconfirmed withholding from finalized vouchers; no parallel
         // notification table, state change or new spending authority. REMIT
         // and SCHOOL_UTILIZATION have distinct completion requirements.
-        $taxCount=(int)one($this->db,"SELECT COUNT(*) AS n FROM withholding_components w
+        $taxSummary=one($this->db,"SELECT COUNT(*) AS n,
+                COUNT(DISTINCT d.id,w.disposition,f.source_code) AS action_groups
+            FROM withholding_components w
             JOIN disbursement_vouchers d ON d.id=w.dv_id
+            JOIN funds f ON f.id=d.fund_id AND f.organization_id=d.organization_id
             WHERE d.organization_id=? AND d.status='FINALIZED'
               AND NOT EXISTS (SELECT 1 FROM tax_disposition_events e
-                WHERE e.component_id=w.id AND e.state IN ('CONFIRMED_CREDIT','REMITTED'))",
-            [$organizationId])['n'];
+                WHERE e.component_id=w.id AND e.state IN ('CONFIRMED_CREDIT','REMITTED'))
+              -- A school remittance already reserved in a noncancelled transfer
+              -- has a different next action. Do not duplicate it as unstarted tax.
+              AND (w.disposition<>'REMIT' OR NOT EXISTS (
+                SELECT 1 FROM school_tax_transfer_components tc
+                JOIN school_tax_transfers t ON t.id=tc.transfer_id
+                WHERE tc.component_id=w.id AND t.organization_id=d.organization_id
+                  AND t.status<>'CANCELLED'))",
+            [$organizationId]);
+        $taxCount=(int)($taxSummary['n']??0);
+        $taxGroupCount=(int)($taxSummary['action_groups']??0);
         $taxRows=q($this->db,"SELECT w.id,w.amount,w.atc_code,w.disposition,
                 d.id AS dv_id,d.display_number AS dv_number,d.document_date,
                 f.source_code AS fund_code,f.fiscal_year
@@ -89,6 +102,13 @@ final class ActionCenterWorkflow {
             WHERE d.organization_id=? AND d.status='FINALIZED'
               AND NOT EXISTS (SELECT 1 FROM tax_disposition_events e
                 WHERE e.component_id=w.id AND e.state IN ('CONFIRMED_CREDIT','REMITTED'))
+              -- A school remittance already reserved in a noncancelled transfer
+              -- has a different next action. Do not duplicate it as unstarted tax.
+              AND (w.disposition<>'REMIT' OR NOT EXISTS (
+                SELECT 1 FROM school_tax_transfer_components tc
+                JOIN school_tax_transfers t ON t.id=tc.transfer_id
+                WHERE tc.component_id=w.id AND t.organization_id=d.organization_id
+                  AND t.status<>'CANCELLED'))
             ORDER BY d.id DESC,w.id DESC LIMIT 75",[$organizationId])->fetchAll();
         $taxActions=array_map(static fn($v)=>[
             'component_id'=>(int)$v['id'],'amount'=>(string)$v['amount'],
@@ -98,6 +118,32 @@ final class ActionCenterWorkflow {
             'fiscal_year'=>(int)$v['fiscal_year'],
             'task'=>$v['disposition']==='SCHOOL_UTILIZATION'?'CONFIRM_WITHHOLDING':'REMIT_TAX',
         ],$taxRows);
+        // School tax transfers are tracked by transfer DV (one queue item per
+        // consolidated DV), never by re-showing its original withholding rows.
+        // Only DRAFT / CHECK_ASSIGNED require school action; released checks are
+        // informational here and are actionable in the Division receiving queue.
+        $schoolTransferActions=[];$schoolTransferAwaitingDivision=[];
+        $schoolTransferActionCount=0;$schoolTransferAwaitingCount=0;
+        if($org['kind']==='SCHOOL'){
+            $schoolTransferActionCount=(int)one($this->db,"SELECT COUNT(*) n FROM school_tax_transfers
+                WHERE organization_id=? AND status IN ('DRAFT','CHECK_ASSIGNED')",[$organizationId])['n'];
+            $schoolTransferAwaitingCount=(int)one($this->db,"SELECT COUNT(*) n FROM school_tax_transfers
+                WHERE organization_id=? AND status='CHECK_RELEASED'",[$organizationId])['n'];
+            $transferRows=q($this->db,"SELECT t.id transfer_id,t.dv_id,t.status,v.display_number dv_number,
+                    v.gross,v.document_date,f.source_code fund_code,
+                    (SELECT COUNT(*) FROM school_tax_transfer_components tc WHERE tc.transfer_id=t.id) component_count,
+                    (SELECT c.check_number FROM checks c WHERE c.dv_id=t.dv_id
+                        AND c.organization_id=t.organization_id ORDER BY c.id DESC LIMIT 1) check_number
+                FROM school_tax_transfers t
+                JOIN disbursement_vouchers v ON v.id=t.dv_id AND v.organization_id=t.organization_id
+                JOIN funds f ON f.id=t.fund_id AND f.organization_id=t.organization_id
+                WHERE t.organization_id=? AND t.status IN ('DRAFT','CHECK_ASSIGNED','CHECK_RELEASED')
+                ORDER BY t.id DESC LIMIT 150",[$organizationId])->fetchAll();
+            foreach($transferRows as $transfer){
+                if($transfer['status']==='CHECK_RELEASED')$schoolTransferAwaitingDivision[]=$transfer;
+                else $schoolTransferActions[]=$transfer;
+            }
+        }
         // v0.2.400 Division-only incoming school remittance queue.
         // Source status is the authoritative tax-transfer record: no parallel
         // notification rows, no implicit bank receipt, no auto-confirmation.
@@ -118,12 +164,22 @@ final class ActionCenterWorkflow {
                 WHERE t.division_id=? AND t.status='CHECK_RELEASED'
                 ORDER BY t.id DESC LIMIT 75",[$organizationId])->fetchAll();
         }
+        // QR-triggered physical inspections are proposals, not official updates.
+        // The authorized reviewer receives a one-item-per-property work queue.
+        $scanQueue=(new PropertyScanAssessment($this->db,$this->user))->pending($organizationId);
         return ['organization_id'=>$organizationId,'kind'=>$org['kind'],
-            'pending_count'=>count($pending)+count($textbookActions)+$taxCount+$incomingTaxCount,'incoming_transfers'=>$pending,
+            'pending_count'=>count($pending)+(int)$scanQueue['count']+count($textbookActions)+$taxGroupCount+$schoolTransferActionCount+$incomingTaxCount,'incoming_transfers'=>$pending,
             'textbook_actions'=>$textbookActions,'pending_tax_actions'=>$taxActions,
             'incoming_tax_remittances'=>$incomingTax,'incoming_tax_remittance_count'=>$incomingTaxCount,
-            'pending_tax_count'=>$taxCount,'pending_tax_truncated'=>$taxCount>count($taxActions),
-            'property_pending_count'=>count($pending),
+            'pending_tax_count'=>$taxCount,'pending_tax_group_count'=>$taxGroupCount,'pending_tax_truncated'=>$taxCount>count($taxActions),
+            'school_tax_transfer_actions'=>$schoolTransferActions,
+            'school_tax_transfer_action_count'=>$schoolTransferActionCount,
+            'school_tax_transfers_awaiting_division'=>$schoolTransferAwaitingDivision,
+            'school_tax_transfers_awaiting_division_count'=>$schoolTransferAwaitingCount,
+            'property_pending_count'=>count($pending)+(int)$scanQueue['count'],
+            'property_scan_assessments'=>$scanQueue['rows'],
+            'property_scan_actionable_count'=>(int)$scanQueue['count'],
+            'property_scan_pending_count'=>(int)$scanQueue['pending_count'],
             'checked_at'=>(new DateTimeImmutable('now',new DateTimeZone('Asia/Manila')))->format(DATE_ATOM)];
     }
 }

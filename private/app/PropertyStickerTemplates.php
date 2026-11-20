@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 /** IPDAMS v0.2.383: property sticker templates. No asset/accounting mutations. */
+require_once __DIR__.'/PropertyStickerRegistry.php';
 final class PropertyStickerTemplates {
     public static function context(PDO $db,array $user,int $org): array {
         demand($org>0,'Select an organization',422);
@@ -138,7 +139,8 @@ final class PropertyStickerTemplates {
             $like='%'.addcslashes($term,'%_\\').'%';$args=array_merge($args,[$like,$like,$like,$like]);
         }
         if($before!==''){$where[]='a.id<?';$args[]=(int)$before;}
-        $sql="SELECT a.id,a.property_tag,a.acquired_on,a.acquisition_cost,a.serial_number,a.custodian,a.property_profile,a.status,i.name AS item_name,
+        $sql="SELECT a.id,a.item_id,a.property_tag,a.acquired_on,a.acquisition_cost,a.serial_number,a.custodian,a.property_profile,a.status,i.name AS item_name,
+            i.category AS catalog_category,i.owner_organization_id AS catalog_owner,
             (SELECT ad.display_number FROM accountability_documents ad
               WHERE ad.asset_id=a.id AND ad.organization_id=a.organization_id AND ad.status='FINALIZED'
               ORDER BY ad.id DESC LIMIT 1) AS accountability_number
@@ -146,12 +148,13 @@ final class PropertyStickerTemplates {
             WHERE ".implode(' AND ',$where).' ORDER BY a.id DESC LIMIT 51';
         $all=q($db,$sql,$args)->fetchAll();$more=count($all)>50;
         $rows=array_slice($all,0,50);
+        PropertyStickerRegistry::addCodes($db,$org,$rows);
         foreach($rows as &$row){
             $profile=json_decode((string)($row['property_profile']??''),true);
             $row['brand']=is_array($profile)?(string)($profile['shared']['brand']??($profile['brand']??'')):'';
             $row['model']=is_array($profile)?(string)($profile['shared']['model']??($profile['model']??'')):'';
             $row['school']=$org['name'];
-            unset($row['property_profile']);
+            unset($row['property_profile'],$row['catalog_owner'],$row['catalog_category'],$row['item_id']);
         }unset($row);
         return ['rows'=>$rows,'has_more'=>$more,'next_before_id'=>$more?(int)end($rows)['id']:null];
     }

@@ -1,7 +1,7 @@
 /* IPDAMS v0.2.383 — read-only bulk property sticker printing */
 'use strict';
 (() => {
- const $=id=>document.getElementById(id), org=document.body.dataset.org, code=document.body.dataset.orgcode;
+ const $=id=>document.getElementById(id), org=document.body.dataset.org;
  const selected=new Map();let all=[],cursor=null,hasMore=false,busy=false,csrf='',template={};
  const referenceBackground='assets/deped-property-sticker-background-400.jpg';
  const status=(s,error=false)=>{$('message').textContent=s;$('message').className=error?'error':'hint';};
@@ -41,7 +41,7 @@
  }
  function qrSvg(payload){const matrix=window.IPDAMSStickerQR(payload),n=matrix.length,pad=4;
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('viewBox',`0 0 ${n+pad*2} ${n+pad*2}`);svg.setAttribute('role','img');svg.setAttribute('aria-label','Property number QR code');
+  svg.setAttribute('viewBox',`0 0 ${n+pad*2} ${n+pad*2}`);svg.setAttribute('role','img');svg.setAttribute('aria-label','Scan to verify registered property in IPDAMS');
   svg.setAttribute('shape-rendering','crispEdges');
   const bg=document.createElementNS(svg.namespaceURI,'rect');bg.setAttribute('width',n+pad*2);bg.setAttribute('height',n+pad*2);bg.setAttribute('fill','#fff');svg.append(bg);
   for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(matrix[y][x]){
@@ -56,7 +56,9 @@
   card.style.backgroundImage=`url("${useOffice?apiUrl('image','&v='+encodeURIComponent(template.image_sha256)):referenceBackground}")`;
   const school=document.createElement('div');school.className='sticker-school';school.textContent='School: '+(str(a.school)||'—');
   const contents=document.createElement('div');contents.className='sticker-content';
+  card.classList.add('sticker-registry');
   line(contents,'Property No.',a.property_tag);
+  line(contents,'Division Registry',a.division_registry_code);
   line(contents,'PAR / ICS No.',a.accountability_number);
   line(contents,'Date Acquired',a.acquired_on);
   line(contents,'Property Description',a.item_name);
@@ -72,8 +74,16 @@
   }
   if(extras)card.classList.add('sticker-extra-'+extras);
   const qr=document.createElement('div');qr.className='sticker-qr';
-  qr.append(qrSvg('IPDAMS|'+code+'|'+str(a.property_tag)));
-  const corner=document.createElement('div');corner.className='sticker-qr-note';corner.textContent='SCAN PROPERTY ID';
+  let qrLink;
+  try{qrLink=new URL(str(a.verification_url));}catch(e){throw Error('Verified QR link unavailable. Reload the property list before printing.');}
+  const local=(qrLink.hostname==='localhost'||qrLink.hostname==='127.0.0.1');
+  if(!((qrLink.protocol==='https:')||(qrLink.protocol==='http:'&&local)) ||
+     !qrLink.pathname.endsWith('/api/property-verify.php') ||
+     !/^[1-9][0-9]*$/.test(qrLink.searchParams.get('p')||'') ||
+     !/^[A-Za-z0-9_-]{22}$/.test(qrLink.searchParams.get('s')||''))
+     throw Error('Verified QR link unavailable. Reload the property list before printing.');
+  qr.append(qrSvg(str(a.verification_url)));
+  const corner=document.createElement('div');corner.className='sticker-qr-note';corner.textContent='SCAN TO VERIFY';
   card.append(school,contents,qr,corner);return card;
  }
  function preview(){const records=Array.from(selected.values());if(!records.length){status('Select at least one property.',true);return;}

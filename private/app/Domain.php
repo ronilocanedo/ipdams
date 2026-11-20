@@ -4757,9 +4757,12 @@ final class Domain {
         $policy=$this->regularDvTaxPolicy($org,(int)$transfer['fund_id'],true,$lock);
         demand($policy['mode']==='REMIT_TO_DIVISION' && $policy['school_classification']==='NON_IUS',
             'Current Division source policy must explicitly authorize Non-IUS remittance to Division.',409);
-        $bank=one($this->db,"SELECT id,organization_id,account_label FROM bank_accounts WHERE id=? AND organization_id=?",
-            [$transfer['division_bank_account_id'],$transfer['division_id']]);
-        demand($bank!==null,'Approved Division receiving bank is no longer available; Finance review required.',409);
+        $legacyBankId=($transfer['division_bank_account_id']===null?null:(int)$transfer['division_bank_account_id']);
+        $bank=$legacyBankId===null?null:one($this->db,
+            'SELECT id,organization_id,account_label FROM bank_accounts WHERE id=? AND organization_id=?',
+            [$legacyBankId,$transfer['division_id']]);
+        if($legacyBankId!==null)
+            demand($bank!==null,'Original Division receiving bank for legacy transfer is unavailable; Finance review required.',409);
         $created=one($this->db,"SELECT details FROM audit_events WHERE organization_id=? AND event_type='TAX_TRANSFER_DRAFT_CREATED'
             AND entity_type='DV' AND entity_id=? ORDER BY id DESC LIMIT 1",[$org,$dv['id']]);
         $createDetails=$created?json_decode((string)$created['details'],true):[];
@@ -4768,6 +4771,7 @@ final class Domain {
             demand($dv['payee']===$payeeSnapshot,'Original remittance check payee snapshot changed; Finance review required.',409);
         }else{
             // Legacy transfers created before a Division-configurable check payee.
+            demand($bank!==null,'A bank-free transfer must have an immutable check-payee snapshot.',409);
             demand($bank['account_label']===$dv['payee'],
                 'Legacy Division receiving account/payee changed; Finance review required.',409);
         }
@@ -4791,11 +4795,10 @@ final class Domain {
                 (SELECT COUNT(*) FROM school_tax_transfer_components x WHERE x.transfer_id=t.id) component_count
                 FROM school_tax_transfers t JOIN disbursement_vouchers v ON v.id=t.dv_id
                 JOIN organizations school ON school.id=t.organization_id
-                JOIN bank_accounts b ON b.id=t.division_bank_account_id
+                LEFT JOIN bank_accounts b ON b.id=t.division_bank_account_id
                 WHERE t.division_id=? ORDER BY t.id DESC LIMIT 150",[$org])->fetchAll();
             return ['office_kind'=>'DIVISION','rows'=>$rows,'eligible'=>[],'receiving_banks'=>[]];
         }
-        $banks=q($this->db,'SELECT id,bank_name,account_label,masked_account FROM bank_accounts WHERE organization_id=? ORDER BY id',[$division])->fetchAll();
         $eligible=q($this->db,"SELECT w.id,w.atc_code,w.amount,v.id source_dv_id,v.display_number,
                 v.document_date,v.fund_id,f.name fund_name,f.source_code
             FROM withholding_components w JOIN disbursement_vouchers v ON v.id=w.dv_id
@@ -4835,9 +4838,9 @@ final class Domain {
             (SELECT GROUP_CONCAT(c.check_number ORDER BY c.id SEPARATOR ', ') FROM checks c WHERE c.dv_id=t.dv_id AND c.organization_id=t.organization_id) check_numbers,
             (SELECT COUNT(*) FROM school_tax_transfer_components x WHERE x.transfer_id=t.id) component_count
             FROM school_tax_transfers t JOIN disbursement_vouchers v ON v.id=t.dv_id
-            JOIN bank_accounts b ON b.id=t.division_bank_account_id
+            LEFT JOIN bank_accounts b ON b.id=t.division_bank_account_id
             WHERE t.organization_id=? ORDER BY t.id DESC LIMIT 150",[$org])->fetchAll();
-        return ['office_kind'=>'SCHOOL','rows'=>$rows,'eligible'=>$eligible,'ineligible'=>$excluded,'ineligible_truncated'=>$excludedLimited,'eligible_truncated'=>count($eligible)===150,'receiving_banks'=>$banks];
+        return ['office_kind'=>'SCHOOL','rows'=>$rows,'eligible'=>$eligible,'ineligible'=>$excluded,'ineligible_truncated'=>$excludedLimited,'eligible_truncated'=>count($eligible)===150,'receiving_banks'=>[]];
     }
     public function createTaxTransferDV(array $d): array {
         $org=$this->org($d);$this->operationalWriteAllowed($org);
@@ -4853,8 +4856,12 @@ final class Domain {
             $id=(int)$value;demand($id>0&&!isset($ids[$id]),'Duplicate component ID.',422);$ids[$id]=true;
         }
         $ids=array_keys($ids);sort($ids,SORT_NUMERIC);
-        $fundId=idOf($d,'fund_id');$bankId=idOf($d,'division_bank_account_id');
-        return $this->tx(function()use($org,$fundId,$bankId,$ids,$d){
+        // Division determines deposit destination after acknowledging actual receipt.
+        // The school is never asked to choose or invent a receiving bank account.
+        demand(!isset($d['division_bank_account_id'])&&!isset($d['confirmed_receiving_account']),
+            'Do not provide a Division bank for new tax-remittance DVs.',422);
+        $fundId=idOf($d,'fund_id');
+        return $this->tx(function()use($org,$fundId,$ids,$d){
             $fund=$this->record('funds',$fundId,$org,true);
             $school=one($this->db,"SELECT id,kind,parent_division_id FROM organizations WHERE id=? AND active=1 FOR UPDATE",[$org]);
             demand($school && $school['kind']==='SCHOOL' && (int)$school['parent_division_id']>0,
@@ -4863,11 +4870,6 @@ final class Domain {
             $policy=$this->regularDvTaxPolicy($org,$fundId,true,true);
             demand($policy['mode']==='REMIT_TO_DIVISION' && $policy['school_classification']==='NON_IUS',
                 'Division must authorize REMIT_TO_DIVISION for this Non-IUS fund before preparing a tax-transfer DV.',409);
-            demand(($d['confirmed_receiving_account']??false)===true,
-                'Confirm this is the correct Division bank/check payee for the actual fund and withholding transfer.',409);
-            $payee=one($this->db,'SELECT id,account_label FROM bank_accounts WHERE id=? AND organization_id=?',[$bankId,$division]);
-            demand($payee!==null && trim((string)$payee['account_label'])!=='' && mbSafeLen($payee['account_label'])<=180,
-                'Select the verified Division receiving account/payee (e.g., DepEd MOOE Trust Fund) from the Division bank directory.',409);
             $payeeSettings=$this->taxCheckPayeeConfig($division,(string)$fund['source_code']);
             demand($payeeSettings['payee']!=='',
                 'Division must configure the official check payee under Fund Configuration for this fund source before a new tax-remittance DV is prepared.',409);
@@ -4885,20 +4887,25 @@ final class Domain {
             demand(count($rows)===count($ids),'Some source tax components are missing.',409);
             $sum=TaxTransferRules::validateSources($rows,$org,$fundId);
             $remark=trim((string)($d['reference']??''));
-            demand($remark!=='' && mbSafeLen($remark)<=255,'Enter the actual tax-remittance supporting reference.',422);
+            demand(mbSafeLen($remark)<=255,'Optional school cover note is too long.',422);
             $dv=$this->insert('disbursement_vouchers',['organization_id'=>$org,'fund_id'=>$fundId,'dv_type'=>'DIRECT',
                 'payee'=>$checkPayee,'gross'=>$sum,'deductions'=>'0.00','net'=>$sum,
-                'bill_reference'=>$remark,'particulars'=>'Remittance of previously withheld taxes to Division; not another expense or new withholding',
+                'bill_reference'=>'PENDING-TAX-TRANSFER','particulars'=>'Remittance of previously withheld taxes to Division; not another expense or new withholding',
                 'created_by'=>$this->user['id']]);
+            $batchReference='TAX-REMIT-'.$org.'-'.$dv;
+            q($this->db,'UPDATE disbursement_vouchers SET bill_reference=? WHERE id=? AND organization_id=?',
+                [$batchReference,$dv,$org]);
             $this->insert('dv_allocation_lines',['dv_id'=>$dv,'amount'=>$sum]);
             $id=$this->insert('school_tax_transfers',['organization_id'=>$org,'division_id'=>$division,'fund_id'=>$fundId,
-                'dv_id'=>$dv,'division_bank_account_id'=>$bankId,'status'=>'DRAFT','created_by'=>$this->user['id']]);
+                'dv_id'=>$dv,'division_bank_account_id'=>null,'status'=>'DRAFT','created_by'=>$this->user['id']]);
             foreach($rows as $row){
                 $this->insert('school_tax_transfer_components',['transfer_id'=>$id,'component_id'=>$row['id'],'amount'=>$row['amount']]);
                 $this->link($org,'DV',(int)$row['source_dv_id'],'DV',$dv);
             }
             $this->audit($org,'TAX_TRANSFER_DRAFT_CREATED','DV',$dv,['transfer_id'=>$id,'amount'=>$sum,
-                'component_ids'=>$ids,'division_id'=>$division,'division_bank_account_id'=>$bankId,'officer_verified_receiving_account'=>true,
+                'component_ids'=>$ids,'division_id'=>$division,'division_bank_account_id'=>null,
+                'internal_batch_reference'=>$batchReference,'school_cover_note'=>$remark,
+                'division_receipt_not_yet_issued'=>true,
                 'policy_version'=>$policy['version_id'],'check_payee_snapshot'=>$checkPayee,
                 'check_payee_config_version'=>$payeeSettings['version_id']]);
             return ['id'=>$dv,'transfer_id'=>$id,'status'=>'DRAFT','gross'=>$sum,'net'=>$sum,'source_count'=>count($rows)];
@@ -4914,11 +4921,19 @@ final class Domain {
             demand($transfer!==null,'Transfer not assigned to the current Division.',404);
             demand($transfer['status']==='CHECK_RELEASED','Only a released school payment may be acknowledged once.',409);
             $evidence=requiredString($d,'receipt_reference',255);
+            // Distinguish an actual Division OR/transaction reference from the school's
+            // internal draft batch code. The acknowledgement itself is the receipt event.
+            demand(one($this->db,"SELECT id FROM school_tax_transfers
+                WHERE division_id=? AND receipt_reference=? AND status IN ('DO_ACCOUNTING_PENDING','RECONCILED') LIMIT 1",
+                [$org,$evidence])===null,'This Division OR / transaction reference is already used.',409);
             $date=self::transactionDocumentDate(requiredString($d,'received_at',10),'Division receipt date');
             $dv=one($this->db,'SELECT id,gross,status,document_date FROM disbursement_vouchers WHERE id=? AND organization_id=?',
                 [$transfer['dv_id'],$transfer['organization_id']]);
             demand($dv && $dv['status']==='FINALIZED' && $date>=$dv['document_date'],
                 'Division receipt cannot precede the finalized school DV.',409);
+            $receivedAmount=requiredString($d,'received_amount',32);
+            demand(moneyCents($receivedAmount)===moneyCents((string)$dv['gross']),
+                'Division receipt amount must match the exact school remittance; report a discrepancy instead.',409);
             $latest=one($this->db,"SELECT id,check_number,status FROM checks WHERE dv_id=? AND organization_id=? ORDER BY id DESC LIMIT 1 FOR UPDATE",
                 [$dv['id'],$transfer['organization_id']]);
             demand($latest && in_array($latest['status'],['RELEASED','CLEARED'],true),
@@ -4946,7 +4961,8 @@ final class Domain {
                 [$this->user['id'],$date,$evidence,$transfer['id']]);
             $this->audit($org,'TAX_TRANSFER_RECEIVED_PENDING_ACCOUNTING','DV',(int)$dv['id'],[
                 'transfer_id'=>$transfer['id'],'school_id'=>$transfer['organization_id'],'check_number'=>$latest['check_number'],
-                'receipt_reference'=>$evidence,'received_at'=>$date,'amount'=>$dv['gross']]);
+                'receipt_reference'=>$evidence,'received_at'=>$date,'amount'=>$dv['gross'],
+                'amount_confirmed_by_receiver'=>true,'no_division_bank_deposit_posted'=>true]);
             return ['transfer_id'=>(int)$transfer['id'],'status'=>'DO_ACCOUNTING_PENDING','receipt_reference'=>$evidence];
         });
     }
@@ -6204,7 +6220,7 @@ final class Domain {
             'withholding_transfer'=>$taxTransfer===null?null:[
                 'transfer_id'=>(int)$taxTransfer['id'],
                 'division_id'=>(int)$taxTransfer['division_id'],
-                'division_bank_account_id'=>(int)$taxTransfer['division_bank_account_id'],
+                'division_bank_account_id'=>$taxTransfer['division_bank_account_id']===null?null:(int)$taxTransfer['division_bank_account_id'],
                 'source_component_ids'=>array_map(static fn($r)=>(int)$r['id'],$transferSource['source_rows'])],
             'accounting_workpaper'=>['treatment'=>$workpaper['treatment'],'stage'=>'DOCUMENT_WORKPAPER_NOT_BANK_POSTING',
                 'system_generated'=>$workpaper['applicable'],
@@ -7397,7 +7413,7 @@ final class Domain {
                 :$this->advanceLiquidationWorkpaper($org,$rec,$result['withholding']);
             if($transfer!==null){
                 $result['tax_transfer']=['id'=>(int)$transfer['id'],'status'=>$transfer['status'],
-                    'division_bank_account_id'=>(int)$transfer['division_bank_account_id'],
+                    'division_bank_account_id'=>$transfer['division_bank_account_id']===null?null:(int)$transfer['division_bank_account_id'],
                     'source_components'=>q($this->db,'SELECT component_id,amount FROM school_tax_transfer_components WHERE transfer_id=? ORDER BY component_id',[$transfer['id']])->fetchAll()];
             }
             $result['advance_liquidation']=$workpaper;

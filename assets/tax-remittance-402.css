@@ -1,0 +1,8 @@
+/* IPDAMS v0.2.402 — Division's tax-remittance receipt dialog (not a bank deposit). */
+.ipdams-tax-receipt-overlay{position:fixed;z-index:1500;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(11,25,46,.62)}
+.ipdams-tax-receipt-dialog{background:#fff;width:min(650px,100%);max-height:min(88vh,900px);overflow-y:auto;border-radius:14px;box-shadow:0 16px 54px rgba(0,0,0,.28);padding:24px;color:#15304a}
+.ipdams-tax-receipt-dialog h3{margin-top:0;font-size:1.25rem}
+.ipdams-tax-receipt-dialog .field{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.ipdams-tax-receipt-dialog .field input{width:100%;min-height:42px}
+.ipdams-tax-receipt-buttons{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:20px}
+@media(max-width:600px){.ipdams-tax-receipt-dialog{padding:17px}.ipdams-tax-receipt-overlay{padding:9px}}

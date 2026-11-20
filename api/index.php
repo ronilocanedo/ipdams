@@ -56,6 +56,18 @@ function ipdamsRequestFingerprint(string $route,array $body): string {
 
 $_SESSION['csrf']??=bin2hex(random_bytes(24));
 $route=(string)($_GET['route']??'auth.session');$method=$_SERVER['REQUEST_METHOD']??'GET';
+if($route==='maintenance.status' && $method==='GET'){
+    $public=maintenancePublicState();$owner=false;
+    if(isset($_SESSION['uid'])){
+        try{
+            $checkDb=database();$account=one($checkDb,'SELECT id,role,active,password_hash FROM users WHERE id=?',[(int)$_SESSION['uid']]);
+            if($account && (int)$account['active']===1 && is_string($_SESSION['credential_stamp']??null)
+                && hash_equals(ipdamsCredentialStamp((string)$account['password_hash']),$_SESSION['credential_stamp']))
+                $owner=maintenanceIsOwner($checkDb,$account);
+        }catch(Throwable $ignored){ /* Status must remain available during a DB outage. */ }
+    }
+    $public['owner_session']=$owner;jsonOut($public);
+}
 try {
     $db=database();
     if($route==='auth.login'&&$method==='POST'){
@@ -63,6 +75,7 @@ try {
         $attempts=(int)($_SESSION['login_attempts']??0);demand($attempts<8,'Too many attempts this session. Retry in a new session.',429);
         $user=one($db,'SELECT * FROM users WHERE email=?',[strtolower(requiredString($body,'email',190))]);
         if(!$user||!(bool)$user['active']||!password_verify((string)($body['password']??''),$user['password_hash'])){$_SESSION['login_attempts']=$attempts+1;throw new DomainError('Invalid credentials',401);}
+        maintenanceGuard($db,$user); // Refuse non-owner logins after activation.
         session_regenerate_id(true);$_SESSION['uid']=(int)$user['id'];$_SESSION['credential_stamp']=ipdamsCredentialStamp((string)$user['password_hash']);$_SESSION['login_attempts']=0;$_SESSION['csrf']=bin2hex(random_bytes(24));jsonOut(['user'=>['id'=>(int)$user['id'],'name'=>$user['full_name'],'role'=>$user['role']],'csrf'=>$_SESSION['csrf']]);
     }
     if($route==='auth.session'&&$method==='GET'){
@@ -77,9 +90,14 @@ try {
                 }else{
                     $orgs=$u['role']==='SUPER_ADMIN'?q($db,"SELECT id,code,name,kind,address FROM organizations WHERE active=1 ORDER BY CASE WHEN kind='DIVISION' THEN 0 ELSE 1 END,name")->fetchAll():q($db,"SELECT o.id,o.code,o.name,o.kind,o.address FROM organizations o JOIN user_organization_scopes s ON s.organization_id=o.id WHERE s.user_id=? AND o.active=1 ORDER BY CASE WHEN o.kind='DIVISION' THEN 0 ELSE 1 END,o.name",[$u['id']])->fetchAll();
                 }
-            }catch(DomainError $e){unset($_SESSION['uid']);}
+            }catch(DomainError $e){
+                // An active maintenance lock is NOT a revoked credential.
+                // Retain the session so normal work can resume after unlock.
+                if($e->status!==503)unset($_SESSION['uid']);
+            }
         }
-        jsonOut(['user'=>$user,'organizations'=>$orgs,'csrf'=>$_SESSION['csrf']]);
+        jsonOut(['user'=>$user,'organizations'=>$orgs,'csrf'=>$_SESSION['csrf'],
+            'maintenance'=>maintenancePublicState()]);
     }
     if($route==='auth.logout'&&$method==='POST'){csrfCheck();$_SESSION=[];session_regenerate_id(true);jsonOut(['ok'=>true]);}
     $user=currentUser($db);$domain=new Domain($db,$user);
