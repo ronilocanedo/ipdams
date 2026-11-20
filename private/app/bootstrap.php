@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/MaintenanceService.php';
 const IPDAMS_ROOT = __DIR__ . '/..';
 date_default_timezone_set('Asia/Manila');
 function loadEnv(string $path): void {
@@ -79,6 +80,7 @@ function currentUser(PDO $db): array {
         hash_equals($expected,$_SESSION['credential_stamp']),
         'Session expired. Please sign in again.',401);
     unset($u['password_hash']); // Never include credential hashes in API/domain user payloads.
+    maintenanceGuard($db,$u); // Global lock: all entrypoints using currentUser(), not UI-only.
     return $u;
 }
 /** School-scoped Division MOOE viewer scope is derived on EVERY request from the

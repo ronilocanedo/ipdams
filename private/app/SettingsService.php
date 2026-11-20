@@ -307,6 +307,47 @@ function settingsVerifyTaxTransferMigration(PDO $db,string $id): void {
         'Approved tax-transfer foreign keys are missing. Do not use this schema.',409);
 }
 
+/** v0.2.401: one explicitly approved existing-column nullability relaxation.
+ * No bank is fabricated: old bank IDs remain unchanged; new transfers may have NULL.
+ * Because MariaDB DDL is not transactional, schema evidence and a full SQL backup
+ * are mandatory before v0.2.402 is approved. */
+function settingsTaxTransferOptionalBankDdl(): string {
+    return 'ALTER TABLE school_tax_transfers DROP FOREIGN KEY fk_stt_div_bank, MODIFY COLUMN division_bank_account_id BIGINT UNSIGNED NULL DEFAULT NULL, ADD CONSTRAINT fk_stt_div_bank_v0402 FOREIGN KEY (division_bank_account_id) REFERENCES bank_accounts(id), ADD UNIQUE KEY uq_stt_division_receipt (division_id, receipt_reference)';
+}
+function settingsVerifyOptionalBankColumn(PDO $db,bool $after): void {
+    $stmt=$db->prepare("SELECT COLUMN_TYPE,IS_NULLABLE,COLUMN_DEFAULT FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='school_tax_transfers' AND COLUMN_NAME='division_bank_account_id'");
+    $stmt->execute();$column=$stmt->fetch(PDO::FETCH_ASSOC);
+    $columnType=strtolower(preg_replace('/\([0-9]+\)/','',(string)($column['COLUMN_TYPE']??'')));
+    demand($column && $columnType==='bigint unsigned' &&
+        ($column['IS_NULLABLE']===($after?'YES':'NO')) &&
+        ($column['COLUMN_DEFAULT']===null || strtoupper((string)$column['COLUMN_DEFAULT'])==='NULL'),
+        'Tax-transfer bank column schema mismatch. Stop and request technical review.',409);
+    $foreignKeys=$db->query("SELECT CONSTRAINT_NAME,REFERENCED_COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
+        WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='school_tax_transfers'
+        AND COLUMN_NAME='division_bank_account_id' AND REFERENCED_TABLE_NAME='bank_accounts'")->fetchAll(PDO::FETCH_ASSOC);
+    $requiredFk=$after?'fk_stt_div_bank_v0402':'fk_stt_div_bank';
+    demand(count($foreignKeys)===1 &&
+        ($foreignKeys[0]['CONSTRAINT_NAME']??'')===$requiredFk &&
+        ($foreignKeys[0]['REFERENCED_COLUMN_NAME']??'')==='id',
+        'Expected Division-bank foreign key name and reference must be preserved.',409);
+    $indexes=$db->query("SELECT COLUMN_NAME,SEQ_IN_INDEX,NON_UNIQUE FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='school_tax_transfers'
+        AND INDEX_NAME='uq_stt_division_receipt' ORDER BY SEQ_IN_INDEX")->fetchAll(PDO::FETCH_ASSOC);
+    if($after){
+        demand(count($indexes)===2 && $indexes[0]['COLUMN_NAME']==='division_id'
+            && $indexes[1]['COLUMN_NAME']==='receipt_reference'
+            && (int)$indexes[0]['NON_UNIQUE']===0 && (int)$indexes[1]['NON_UNIQUE']===0,
+            'Division receipt reference unique index must be preserved.',409);
+    }else{
+        demand(count($indexes)===0,'Unexpected existing Division receipt index; review before migration.',409);
+        $duplicates=$db->query("SELECT COUNT(*) FROM
+            (SELECT division_id,receipt_reference FROM school_tax_transfers
+            WHERE receipt_reference IS NOT NULL
+            GROUP BY division_id,receipt_reference HAVING COUNT(*)>1) repeated")->fetchColumn();
+        demand((int)$duplicates===0,'Duplicate historical Division receipt references require accounting review before migration.',409);
+    }
+}
 /** Only curated, additive statements may run from update ZIPs. Never accept DROP, UPDATE or DELETE. */
 function settingsMigrationPath(string $path): bool {
     return (bool)preg_match('#^migrations/[0-9]{8}_[a-z0-9_]{3,60}\.sql$#',$path);
@@ -335,12 +376,16 @@ function settingsMigrationSql(string $content): string {
     $approvedTravelTimeline=in_array(preg_replace('/\s+/',' ',trim($statement)),settingsTravelTimelineMigrationStatements(),true);
     $approvedTravelDv=in_array(preg_replace('/\s+/',' ',trim($statement)),settingsTravelDvMigrationStatements(),true);
     $approvedTaxTransfer=in_array(preg_replace('/\s+/',' ',trim($statement)),settingsTaxTransferMigrationStatements(),true);
-    demand($addColumn||$insertUacs||$createCheckStock||$approvedPropertyLink||$approvedTravelTimeline||$approvedTravelDv||$approvedTaxTransfer,
-        'Only approved additive migrations (including exact tax-transfer, property-link, travel timeline and travel DV DDL) are supported');
+    $approvedNullableBank=hash_equals(settingsTaxTransferOptionalBankDdl(),preg_replace('/\s+/',' ',trim($statement)));
+    demand($addColumn||$insertUacs||$createCheckStock||$approvedPropertyLink||$approvedTravelTimeline||$approvedTravelDv||$approvedTaxTransfer||$approvedNullableBank,
+        'Only allowlisted migrations, including the exact v0.2.402 tax-transfer bank nullability amendment, are supported');
     return $statement;
 }
 function settingsMigrationVerifyResult(PDO $db,string $sql): void {
     $normalized=preg_replace('/\s+/',' ',trim($sql));
+    if(hash_equals(settingsTaxTransferOptionalBankDdl(),$normalized)){
+        settingsVerifyOptionalBankColumn($db,true);return;
+    }
     foreach(settingsPropertyLinkMigrationStatements() as $migrationKey=>$approved){
         if(hash_equals($approved,$normalized)){
             settingsVerifyPropertyLinkMigration($db,$migrationKey);return;
@@ -410,6 +455,8 @@ function settingsApplyMigrations(PDO $db,ZipArchive $zip,array $manifest,int $ui
             }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
         }else{
             // DDL auto-commits in MariaDB. Never claim that file rollback reverses it.
+            if(hash_equals(settingsTaxTransferOptionalBankDdl(),preg_replace('/\s+/',' ',trim($statement))))
+                settingsVerifyOptionalBankColumn($db,false);
             $db->exec($statement);
             $insert=$db->prepare('INSERT INTO ipdams_schema_migrations (migration_id,checksum,release_version) VALUES (?,?,?)');
             $insert->execute([$id,$entry['sha256'],$manifest['version']]);

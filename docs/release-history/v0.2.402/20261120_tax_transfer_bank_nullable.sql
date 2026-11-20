@@ -1,0 +1,1 @@
+ALTER TABLE school_tax_transfers DROP FOREIGN KEY fk_stt_div_bank, MODIFY COLUMN division_bank_account_id BIGINT UNSIGNED NULL DEFAULT NULL, ADD CONSTRAINT fk_stt_div_bank_v0402 FOREIGN KEY (division_bank_account_id) REFERENCES bank_accounts(id), ADD UNIQUE KEY uq_stt_division_receipt (division_id, receipt_reference)

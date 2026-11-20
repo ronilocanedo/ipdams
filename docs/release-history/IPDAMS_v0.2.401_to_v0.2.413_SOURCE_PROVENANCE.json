@@ -1,0 +1,448 @@
+{
+  "name": "IPDAMS source checkpoint v0.2.413",
+  "baseline_git_commit": "8a1f8eb04980c1887525b9a6d83a05b4b095eaf1",
+  "baseline_branch": "review/v0.2.400-source-reconciliation-20261120",
+  "releases": [
+    {
+      "version": "0.2.401",
+      "from_version": "0.2.400",
+      "title": "Approved schema-preflight support and translucent property stickers",
+      "installer_sha256": "d3931f5e4cd44b0bc10702b46a24878e2341dc742f4dbc28f5faffce094f6756",
+      "source_files": [
+        {
+          "path": "private/app/SettingsService.php",
+          "sha256": "07cfcc35d4e0942d64db16403ddc07c8e63783a5d412b96d8d6e30152e30f031",
+          "size": 70780
+        },
+        {
+          "path": "assets/property-stickers-400.css",
+          "sha256": "af712d07897004e1d045b12cef6938eba4718ec8732d09a1ad3e6efca9e35de5",
+          "size": 4479
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.402",
+      "from_version": "0.2.401",
+      "title": "Consolidated tax transfer to Division, receipt acknowledgement and accounting followup",
+      "installer_sha256": "d1df313207d7862417eec977189015821442ac96e4cc581479a9062488de031c",
+      "source_files": [
+        {
+          "path": "private/app/Domain.php",
+          "sha256": "03100f37e855c247b2377b48c72562eef2cb40772e7c2e9b9fe8e410c53cc001",
+          "size": 635480
+        },
+        {
+          "path": "assets/app.js",
+          "sha256": "b400bf34c291ee6655dafb82523e2a20b430bcdef68c77250a877bb237f98ed5",
+          "size": 1529801
+        },
+        {
+          "path": "app.html",
+          "sha256": "8e700c318004550ca6d7550f5d9d20e8d265c8d6a8cb7d55910f37ca0994c0d5",
+          "size": 6763
+        },
+        {
+          "path": "assets/tax-remittance-402.css",
+          "sha256": "ef0256cf020d85812b8f1b167c837ccea2223cf88125dfcd463956c6e9995b12",
+          "size": 881
+        }
+      ],
+      "migration_count": 1
+    },
+    {
+      "version": "0.2.403",
+      "from_version": "0.2.402",
+      "title": "Stage-aware withholding follow-up and tax transfer Action Center",
+      "installer_sha256": "3e1e26455923159af45f2cde2dd7d6076151d6849e5631917823760a0e4f3f08",
+      "source_files": [
+        {
+          "path": "private/app/ActionCenterWorkflow.php",
+          "sha256": "d9e306130b0f16ce016eef87b63a8ccb6f986c794e9aaf0a49800bf56ede3e8e",
+          "size": 11955
+        },
+        {
+          "path": "assets/app.js",
+          "sha256": "c47e5565e438e5c24b3f4a61559bd371d30039e731f0cce00ed207b5ff9129e2",
+          "size": 1534002
+        },
+        {
+          "path": "app.html",
+          "sha256": "0d4e8539165cf6b5a6058175feb53da20e754352c3db8a9e28e42fc9fef109c4",
+          "size": 6764
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.404",
+      "from_version": "0.2.403",
+      "title": "Action Center category tabs and Property Sticker workflow tab",
+      "installer_sha256": "9450c47e91bef6f55a633a1e7d1882dedc04e2035a9b90a018ca479f3822422d",
+      "source_files": [
+        {
+          "path": "private/app/ActionCenterWorkflow.php",
+          "sha256": "489545f1286ac66f74d8e40f9464aaae554a3a6626512205006d327aaf3925cf",
+          "size": 12281
+        },
+        {
+          "path": "api/property-stickers.php",
+          "sha256": "bb51f73de660b519c543ecd0adfc5bf7125d69ba6b09bb63d9e16a11be9072d3",
+          "size": 5752
+        },
+        {
+          "path": "assets/action-center-404.css",
+          "sha256": "a8f0931c7e6040af2a384f6bf5a099bb97efd8e21fc67d37a9200318a3378426",
+          "size": 2425
+        },
+        {
+          "path": "assets/app.js",
+          "sha256": "655f38fd2a09e034edb750ae032a08feb7d90f9ed362631f7575fdc877b211bf",
+          "size": 1538716
+        },
+        {
+          "path": "app.html",
+          "sha256": "4001f2709edb722fa66ff45c3b9749f137af48dc2038ca5dbe3c91d4aee1801a",
+          "size": 6872
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.405",
+      "from_version": "0.2.404",
+      "title": "Compact horizontal Action Center tabs",
+      "installer_sha256": "b447b2abc6e4f9b9ce1554a52990b005f16568a224be4f41b70f1e67ee494a89",
+      "source_files": [
+        {
+          "path": "assets/action-center-405.css",
+          "sha256": "3ad7b072d55ccc3f052c3d5b3c9ad64794480ab50e70b4ac9171c81a178b0ef5",
+          "size": 1880
+        },
+        {
+          "path": "app.html",
+          "sha256": "4597392e6e4de75c669430bc18e7472e6640c88ac8f6e93921f1a93ab8b53f21",
+          "size": 6970
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.406",
+      "from_version": "0.2.405",
+      "title": "Owner-only global maintenance countdown and system lock",
+      "installer_sha256": "d6d76f92bff9cda7ac5cebf6a9053a2a714b51a7539fd5b78f6d1fbe6387964a",
+      "source_files": [
+        {
+          "path": "private/app/MaintenanceService.php",
+          "sha256": "c562458135800e66374cb26c2b6c6bc65f57b3706d21ab89a9ff8d7ad3abf738",
+          "size": 11686
+        },
+        {
+          "path": "private/app/bootstrap.php",
+          "sha256": "3c15f29d0e28804a3355c5558d649d580fa6e41e0e5d51055dd4b1d4d60dcccb",
+          "size": 10656
+        },
+        {
+          "path": "api/index.php",
+          "sha256": "579099e789e45cb197119f0b6c78bed199e1c0914a1f069d8479c4c25e98a413",
+          "size": 41479
+        },
+        {
+          "path": "api/property-stickers.php",
+          "sha256": "2b52e31ca1cb76ba265055ca3127aa713e667237e8f08d2efab0fd6141764fd4",
+          "size": 5879
+        },
+        {
+          "path": "settings.php",
+          "sha256": "555a1e4b3f98b90c26fa0e94ac8f831abf274062870c9e368634800da9e5cb4a",
+          "size": 75274
+        },
+        {
+          "path": "app.html",
+          "sha256": "20269409b75b486e89a2aa5cb0f67f3cc2933fc9108348c88e63f6100f45150c",
+          "size": 7161
+        },
+        {
+          "path": "assets/maintenance-406.css",
+          "sha256": "dd875770ba8f8b4fdc9d8058c08577209776affab24520d5e6eb9893b99e8265",
+          "size": 4299
+        },
+        {
+          "path": "assets/maintenance-406.js",
+          "sha256": "f5e6c10f0252845279d4cfa1752e74f9903b36cbc6b09508c8e57c4556b2ad88",
+          "size": 8294
+        },
+        {
+          "path": "assets/maintenance-406-settings.js",
+          "sha256": "53168fa52961fbd8b9a41b669986c5cccd3f004aef2f6e4074fbdcb6dc31c245",
+          "size": 1187
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.407",
+      "from_version": "0.2.406",
+      "title": "Flexible maintenance announcement lead time and calendar recurrence",
+      "installer_sha256": "33b438acf3cb54ff79b363dec15af55d148451777e200fa28f5c0afb29f19871",
+      "source_files": [
+        {
+          "path": "private/app/MaintenanceService.php",
+          "sha256": "d6bc7612df8b28c10c29ba5602c07fc3803a135a7614ce0b2d03167bf8576e27",
+          "size": 14800
+        },
+        {
+          "path": "settings.php",
+          "sha256": "dd755a30299c0979b361af799a4f4cfefb80eceb70668817e34944171d668e8d",
+          "size": 76361
+        },
+        {
+          "path": "assets/maintenance-406-settings.js",
+          "sha256": "b4521b6ae1a43b8e7fad735adca14665223c2217c296e32a6431130bf8fd95c4",
+          "size": 1507
+        },
+        {
+          "path": "app.html",
+          "sha256": "e0a12856d032fcf28eb1abd70e640ff961f908ba71e9bb85d63d86b7f2267038",
+          "size": 7161
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.408",
+      "from_version": "0.2.407",
+      "title": "Compact owner Maintenance Control interface",
+      "installer_sha256": "689d76d6a0583dcc86e0810d934e63a0e2dffc81d83a0d0b366c589e121ff99a",
+      "source_files": [
+        {
+          "path": "settings.php",
+          "sha256": "687a8a8fe50f84cb228d6774205493f60d43e14ae4b9b076be21d7ec9cb00572",
+          "size": 79496
+        },
+        {
+          "path": "assets/maintenance-408.css",
+          "sha256": "afaddab5b5c36b079338a96435966c58e9a31eac0f530a226a12a8b356f107d6",
+          "size": 10578
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.409",
+      "from_version": "0.2.408",
+      "title": "Public property sticker QR verification",
+      "installer_sha256": "7acf0b03df417b54271a80e35e0953e82e15322b0c68a91c674081076ad45d59",
+      "source_files": [
+        {
+          "path": "private/app/PropertyQrVerification.php",
+          "sha256": "07bf0185a6b9816a11ba036e1b6d2af7c6c29f8e7fe854d55db96f4bfb508057",
+          "size": 5732
+        },
+        {
+          "path": "api/property-stickers.php",
+          "sha256": "d2d1ba48b3934849da76a2114a41eea4c54e3c9607f70cc28ef7594794ba4a05",
+          "size": 6155
+        },
+        {
+          "path": "api/property-verify.php",
+          "sha256": "5a48444d5d187b8e96392591ebe07f088a5a023b458a1cf64955c4c2e85c5eea",
+          "size": 3923
+        },
+        {
+          "path": "assets/property-stickers-400.js",
+          "sha256": "d76569b310d279e72881353ab55be23dc72b99d80aa3368cc69851dcc1c3e24d",
+          "size": 9601
+        },
+        {
+          "path": "assets/property-verify-409.css",
+          "sha256": "0b1e6f85aded697e2cfac3065ca0f70f24ba36bd9b6ea8c6298d4bf7d2a5af4c",
+          "size": 2035
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.410",
+      "from_version": "0.2.409",
+      "title": "Property QR verification branding and Division Registry sticker detail",
+      "installer_sha256": "819b6817827cd16a370056a5a6a66566caa24a41acb1c5d2f8b4673f480d5676",
+      "source_files": [
+        {
+          "path": "private/app/PropertyStickerRegistry.php",
+          "sha256": "dfc2a2aaf5817c60367e14b773a94a86ad2915cffba5aa96653fc3d86b0710df",
+          "size": 4857
+        },
+        {
+          "path": "private/app/PropertyStickerTemplates.php",
+          "sha256": "603d93769e625857114cfd9aed6f04027a078395de32a19cc4a73ad0065940e8",
+          "size": 10690
+        },
+        {
+          "path": "api/property-stickers.php",
+          "sha256": "d0db997e47fdfeeb00ed99e46d9df54cd5d04ec3af811d6c658ad749a723ae0b",
+          "size": 6162
+        },
+        {
+          "path": "api/property-verify.php",
+          "sha256": "e9f21afeb4bf40e1d7f514043e7a413c332d9ea8350ed2e61f4b4350820c829c",
+          "size": 4009
+        },
+        {
+          "path": "assets/property-stickers-400.css",
+          "sha256": "fc03253aa13bde67f04be54cb0743f4d73f33cab83940fdf8849aa19a8932b18",
+          "size": 5023
+        },
+        {
+          "path": "assets/property-stickers-400.js",
+          "sha256": "897d9c7bb2f2f436b3fa1685c7da7356bd7c1f87ad19b9e9044db93aa243265a",
+          "size": 9706
+        },
+        {
+          "path": "assets/property-verify-409.css",
+          "sha256": "09e2700fa5eaa23736ae09c7f5be278fdfb036712560364079f65257a7a3a5fe",
+          "size": 2339
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.411",
+      "from_version": "0.2.410",
+      "title": "QR property inspection with same-assessor Action Center confirmation",
+      "installer_sha256": "2759a7e8ef6e631e2bc3293459d72b23f792e1d41313a98077c502efd81e3e71",
+      "source_files": [
+        {
+          "path": "private/app/PropertyScanAssessment.php",
+          "sha256": "59e2221b3ce305201179494d9d55d53f0656aae2f8cca1fff17942add6fb0302",
+          "size": 17788
+        },
+        {
+          "path": "private/app/ActionCenterWorkflow.php",
+          "sha256": "512d36a874d9451ccfcc57b8b26d3d3e7165891f853451f36a0508032c2a4a83",
+          "size": 12853
+        },
+        {
+          "path": "api/property-scan.php",
+          "sha256": "9bba895d8b2dcd7224e0204f82b173fcced14477e0676fc9b99105bb95815e24",
+          "size": 8584
+        },
+        {
+          "path": "api/property-verify.php",
+          "sha256": "b21cdcb6c7daaeb3f0a8529ba31de34af2cf975e4c9c8e4b74c01de2024629f5",
+          "size": 4472
+        },
+        {
+          "path": "assets/property-scan-411.css",
+          "sha256": "4a349654220031bde8ea455414f6ed1a30ee3b3d5b4012b10b94de11eabe6939",
+          "size": 2705
+        },
+        {
+          "path": "assets/property-scan-411.js",
+          "sha256": "e39d3156fb7c9a1a3d5de99aa88ad13969021576097aa20f2a261c330eb71c56",
+          "size": 3375
+        },
+        {
+          "path": "assets/app.js",
+          "sha256": "e0705759821b834108a5ad2b35d363b731acb6543fc44b1618d64d67643e6e08",
+          "size": 1540417
+        },
+        {
+          "path": "app.html",
+          "sha256": "febc7fd09275cc6ea59b9a974576c8d2e6ca12c4c0abeec7cc4e2c6c1da99220",
+          "size": 7148
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.412",
+      "from_version": "0.2.411",
+      "title": "Custody and audit shows QR inspection and confirmation evidence",
+      "installer_sha256": "b18302465f789c5ec2c6b9e09df96a209ccde86ef3c1da80c820dc68fd410eb6",
+      "source_files": [
+        {
+          "path": "assets/app.js",
+          "sha256": "6d94affba228508797ba23d4338a4b81436cd7e35b81568fa06e4c1feb6ff12c",
+          "size": 1545423
+        },
+        {
+          "path": "assets/property-scan-audit-412.css",
+          "sha256": "52843fbe946b1e9d8cfd3e1d57d394083dc1155f5539a227ca7c5518afe42687",
+          "size": 1120
+        },
+        {
+          "path": "app.html",
+          "sha256": "7c0c00c4ade43eca6c597e19bb323d4d8cc4525b9e23fc35c31802bf887e7ceb",
+          "size": 7223
+        }
+      ],
+      "migration_count": 0
+    },
+    {
+      "version": "0.2.413",
+      "from_version": "0.2.412",
+      "title": "Fix Custody & audit white screen for historical property events",
+      "installer_sha256": "ef18b44eb774c0eef96d8cccdada0e609112a21bbe0905360e9ad311fd67c971",
+      "source_files": [
+        {
+          "path": "assets/app.js",
+          "sha256": "a424fd2541db2b809d91ebc7eb41b4e7768e772fac7cf6eeabb57452c55467e8",
+          "size": 1545456
+        },
+        {
+          "path": "app.html",
+          "sha256": "60c08d8d56d293499bbd093c307e7914593b6f9a609caa3e4fc50e3efa08a03f",
+          "size": 7227
+        }
+      ],
+      "migration_count": 0
+    }
+  ],
+  "migration_source_only": {
+    "20261120_tax_transfer_bank_nullable": {
+      "commit_path": "docs/release-history/v0.2.402/20261120_tax_transfer_bank_nullable.sql",
+      "sha256": "8aa8ea27301afa3c8045081788ad786b5512b7515e84acd9841f932d0af2da04"
+    }
+  },
+  "deduplicated_final_source_sha256": {
+    "private/app/SettingsService.php": "07cfcc35d4e0942d64db16403ddc07c8e63783a5d412b96d8d6e30152e30f031",
+    "assets/property-stickers-400.css": "fc03253aa13bde67f04be54cb0743f4d73f33cab83940fdf8849aa19a8932b18",
+    "private/app/Domain.php": "03100f37e855c247b2377b48c72562eef2cb40772e7c2e9b9fe8e410c53cc001",
+    "assets/app.js": "a424fd2541db2b809d91ebc7eb41b4e7768e772fac7cf6eeabb57452c55467e8",
+    "app.html": "60c08d8d56d293499bbd093c307e7914593b6f9a609caa3e4fc50e3efa08a03f",
+    "assets/tax-remittance-402.css": "ef0256cf020d85812b8f1b167c837ccea2223cf88125dfcd463956c6e9995b12",
+    "docs/release-history/v0.2.402/20261120_tax_transfer_bank_nullable.sql": "8aa8ea27301afa3c8045081788ad786b5512b7515e84acd9841f932d0af2da04",
+    "private/app/ActionCenterWorkflow.php": "512d36a874d9451ccfcc57b8b26d3d3e7165891f853451f36a0508032c2a4a83",
+    "api/property-stickers.php": "d0db997e47fdfeeb00ed99e46d9df54cd5d04ec3af811d6c658ad749a723ae0b",
+    "assets/action-center-404.css": "a8f0931c7e6040af2a384f6bf5a099bb97efd8e21fc67d37a9200318a3378426",
+    "assets/action-center-405.css": "3ad7b072d55ccc3f052c3d5b3c9ad64794480ab50e70b4ac9171c81a178b0ef5",
+    "private/app/MaintenanceService.php": "d6bc7612df8b28c10c29ba5602c07fc3803a135a7614ce0b2d03167bf8576e27",
+    "private/app/bootstrap.php": "3c15f29d0e28804a3355c5558d649d580fa6e41e0e5d51055dd4b1d4d60dcccb",
+    "api/index.php": "579099e789e45cb197119f0b6c78bed199e1c0914a1f069d8479c4c25e98a413",
+    "settings.php": "687a8a8fe50f84cb228d6774205493f60d43e14ae4b9b076be21d7ec9cb00572",
+    "assets/maintenance-406.css": "dd875770ba8f8b4fdc9d8058c08577209776affab24520d5e6eb9893b99e8265",
+    "assets/maintenance-406.js": "f5e6c10f0252845279d4cfa1752e74f9903b36cbc6b09508c8e57c4556b2ad88",
+    "assets/maintenance-406-settings.js": "b4521b6ae1a43b8e7fad735adca14665223c2217c296e32a6431130bf8fd95c4",
+    "assets/maintenance-408.css": "afaddab5b5c36b079338a96435966c58e9a31eac0f530a226a12a8b356f107d6",
+    "private/app/PropertyQrVerification.php": "07bf0185a6b9816a11ba036e1b6d2af7c6c29f8e7fe854d55db96f4bfb508057",
+    "api/property-verify.php": "b21cdcb6c7daaeb3f0a8529ba31de34af2cf975e4c9c8e4b74c01de2024629f5",
+    "assets/property-stickers-400.js": "897d9c7bb2f2f436b3fa1685c7da7356bd7c1f87ad19b9e9044db93aa243265a",
+    "assets/property-verify-409.css": "09e2700fa5eaa23736ae09c7f5be278fdfb036712560364079f65257a7a3a5fe",
+    "private/app/PropertyStickerRegistry.php": "dfc2a2aaf5817c60367e14b773a94a86ad2915cffba5aa96653fc3d86b0710df",
+    "private/app/PropertyStickerTemplates.php": "603d93769e625857114cfd9aed6f04027a078395de32a19cc4a73ad0065940e8",
+    "private/app/PropertyScanAssessment.php": "59e2221b3ce305201179494d9d55d53f0656aae2f8cca1fff17942add6fb0302",
+    "api/property-scan.php": "9bba895d8b2dcd7224e0204f82b173fcced14477e0676fc9b99105bb95815e24",
+    "assets/property-scan-411.css": "4a349654220031bde8ea455414f6ed1a30ee3b3d5b4012b10b94de11eabe6939",
+    "assets/property-scan-411.js": "e39d3156fb7c9a1a3d5de99aa88ad13969021576097aa20f2a261c330eb71c56",
+    "assets/property-scan-audit-412.css": "52843fbe946b1e9d8cfd3e1d57d394083dc1155f5539a227ca7c5518afe42687"
+  },
+  "notes": [
+    "Reconstructed from the original Settings installers, not from an independently verified Hostinger snapshot.",
+    "SQL stored for audit/reference only, not placed in an automatically executed migration directory.",
+    "No production database, financial records, credentials, private keys or uploaded documents included.",
+    "The owner local uncommitted files are not collected or overwritten."
+  ]
+}

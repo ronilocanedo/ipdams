@@ -56,6 +56,18 @@ function ipdamsRequestFingerprint(string $route,array $body): string {
 
 $_SESSION['csrf']??=bin2hex(random_bytes(24));
 $route=(string)($_GET['route']??'auth.session');$method=$_SERVER['REQUEST_METHOD']??'GET';
+if($route==='maintenance.status' && $method==='GET'){
+    $public=maintenancePublicState();$owner=false;
+    if(isset($_SESSION['uid'])){
+        try{
+            $checkDb=database();$account=one($checkDb,'SELECT id,role,active,password_hash FROM users WHERE id=?',[(int)$_SESSION['uid']]);
+            if($account && (int)$account['active']===1 && is_string($_SESSION['credential_stamp']??null)
+                && hash_equals(ipdamsCredentialStamp((string)$account['password_hash']),$_SESSION['credential_stamp']))
+                $owner=maintenanceIsOwner($checkDb,$account);
+        }catch(Throwable $ignored){ /* Status must remain available during a DB outage. */ }
+    }
+    $public['owner_session']=$owner;jsonOut($public);
+}
 try {
     $db=database();
     if($route==='auth.login'&&$method==='POST'){
@@ -63,6 +75,7 @@ try {
         $attempts=(int)($_SESSION['login_attempts']??0);demand($attempts<8,'Too many attempts this session. Retry in a new session.',429);
         $user=one($db,'SELECT * FROM users WHERE email=?',[strtolower(requiredString($body,'email',190))]);
         if(!$user||!(bool)$user['active']||!password_verify((string)($body['password']??''),$user['password_hash'])){$_SESSION['login_attempts']=$attempts+1;throw new DomainError('Invalid credentials',401);}
+        maintenanceGuard($db,$user); // Refuse non-owner logins after activation.
         session_regenerate_id(true);$_SESSION['uid']=(int)$user['id'];$_SESSION['credential_stamp']=ipdamsCredentialStamp((string)$user['password_hash']);$_SESSION['login_attempts']=0;$_SESSION['csrf']=bin2hex(random_bytes(24));jsonOut(['user'=>['id'=>(int)$user['id'],'name'=>$user['full_name'],'role'=>$user['role']],'csrf'=>$_SESSION['csrf']]);
     }
     if($route==='auth.session'&&$method==='GET'){
@@ -77,9 +90,14 @@ try {
                 }else{
                     $orgs=$u['role']==='SUPER_ADMIN'?q($db,"SELECT id,code,name,kind,address FROM organizations WHERE active=1 ORDER BY CASE WHEN kind='DIVISION' THEN 0 ELSE 1 END,name")->fetchAll():q($db,"SELECT o.id,o.code,o.name,o.kind,o.address FROM organizations o JOIN user_organization_scopes s ON s.organization_id=o.id WHERE s.user_id=? AND o.active=1 ORDER BY CASE WHEN o.kind='DIVISION' THEN 0 ELSE 1 END,o.name",[$u['id']])->fetchAll();
                 }
-            }catch(DomainError $e){unset($_SESSION['uid']);}
+            }catch(DomainError $e){
+                // An active maintenance lock is NOT a revoked credential.
+                // Retain the session so normal work can resume after unlock.
+                if($e->status!==503)unset($_SESSION['uid']);
+            }
         }
-        jsonOut(['user'=>$user,'organizations'=>$orgs,'csrf'=>$_SESSION['csrf']]);
+        jsonOut(['user'=>$user,'organizations'=>$orgs,'csrf'=>$_SESSION['csrf'],
+            'maintenance'=>maintenancePublicState()]);
     }
     if($route==='auth.logout'&&$method==='POST'){csrfCheck();$_SESSION=[];session_regenerate_id(true);jsonOut(['ok'=>true]);}
     $user=currentUser($db);$domain=new Domain($db,$user);
@@ -255,8 +273,8 @@ try {
         'textbook.catalog.discard_draft'=>'discardDraft'];
     $calls=[
         'organization.bootstrap'=>'bootstrapOrganization','organization.division.create'=>'createDivision','organization.school.create'=>'createSchool','organization.school.attach'=>'attachLegacySchool','organization.user.create'=>'createOrganizationUser','organization.mooe.viewer.create'=>'createMooeViewerAccount','organization.user.reset_password'=>'resetOrganizationUserPassword','organization.profile.update'=>'updateOrganizationProfile','organization.school.classification'=>'saveSchoolImplementationClass','auth.change_password'=>'changeOwnPassword',
-        'division.vat.save'=>'saveDivisionVatRate','master.uacs.status'=>'setUacsStatus','division.item_uacs.save'=>'saveDivisionItemUacs','division.item_uacs.effectivity.preview'=>'previewItemUacsEffectivityCorrection','division.item_uacs.effectivity.apply'=>'applyItemUacsEffectivityCorrection','division.item_uacs.bulk.preview'=>'previewBulkConsumableUacs','division.item_uacs.bulk.apply'=>'applyBulkConsumableUacs','master.division_classification.save'=>'saveDivisionClassification','master.property.threshold.save'=>'savePropertyThreshold','master.property.useful_life.save'=>'savePropertyUsefulLife','master.property.registry.save'=>'savePropertyRegistryEntry','master.supplier.create'=>'addSupplier','master.supplier.update'=>'updateSupplier','master.supplier.status'=>'setSupplierStatus','master.atc.create'=>'addAtc','master.atc.update'=>'updateAtc','master.atc.status'=>'setAtcStatus','master.atc.rate.create'=>'addAtcRate','master.atc.rate.close'=>'closeAtcRate','master.unit.create'=>'addUnit','pr.unit.quick.create'=>'addPrUnitQuick','master.item.create'=>'addItem','master.item.subcategory'=>'updateItemSubcategory','master.item.status'=>'setItemStatus','master.fund.create'=>'addFund','division.fund_source.save'=>'saveDivisionFundSource','division.fund_policy.save'=>'saveFundWithholdingPolicy','bank.create'=>'addBankAccount','bank.download.record'=>'recordBankDownload','bank.download.link_existing'=>'linkHistoricalBankDownload',
-        'division.mooe.assignment.save'=>'saveDivisionMooeAssignment','staff.employee.change'=>'changeStaffEmployee','staff.head.save'=>'saveOfficeHead','staff.dv.signatories.save'=>'saveDvSectionSignatories','staff.custodian.save'=>'saveSupplyCustodian','staff.bac.save'=>'saveBacTerm','staff.bac.date.correct'=>'correctBacTermEffectiveDate','requesting.units.change'=>'changeRequestingUnit','requesting.units.save'=>'saveRequestingUnits','pr.create'=>'createPR','pr.update'=>'updateDraftPR','pr.finalize'=>'finalizePR','rfq.create'=>'createRFQ','rfq.update'=>'updateRFQ','quote.create'=>'createQuote','award.create'=>'createAward','po.create'=>'createPO','po.terms.correct'=>'correctTerms','po.document.correct'=>'correctDocument','iar.create'=>'createIAR','iar.document.correct'=>'correctIarDocument','advance.create'=>'createAdvance',
+        'division.vat.save'=>'saveDivisionVatRate','master.uacs.status'=>'setUacsStatus','division.item_uacs.save'=>'saveDivisionItemUacs','division.item_uacs.effectivity.preview'=>'previewItemUacsEffectivityCorrection','division.item_uacs.effectivity.apply'=>'applyItemUacsEffectivityCorrection','division.item_uacs.bulk.preview'=>'previewBulkConsumableUacs','division.item_uacs.bulk.apply'=>'applyBulkConsumableUacs','master.division_classification.save'=>'saveDivisionClassification','master.property.threshold.save'=>'savePropertyThreshold','master.property.useful_life.save'=>'savePropertyUsefulLife','master.property.registry.save'=>'savePropertyRegistryEntry','master.supplier.create'=>'addSupplier','master.supplier.update'=>'updateSupplier','master.supplier.status'=>'setSupplierStatus','master.atc.create'=>'addAtc','master.atc.update'=>'updateAtc','master.atc.status'=>'setAtcStatus','master.atc.rate.create'=>'addAtcRate','master.atc.rate.close'=>'closeAtcRate','master.unit.create'=>'addUnit','pr.unit.quick.create'=>'addPrUnitQuick','master.item.create'=>'addItem','master.item.subcategory'=>'updateItemSubcategory','master.item.status'=>'setItemStatus','master.fund.create'=>'addFund','division.fund_source.save'=>'saveDivisionFundSource','division.fund_policy.save'=>'saveFundWithholdingPolicy','division.tax_check_payee.save'=>'saveTaxCheckPayee','bank.create'=>'addBankAccount','bank.label.rename'=>'renameBankAccountLabel','bank.download.record'=>'recordBankDownload','bank.download.link_existing'=>'linkHistoricalBankDownload',
+        'division.mooe.assignment.save'=>'saveDivisionMooeAssignment','staff.employee.change'=>'changeStaffEmployee','staff.head.save'=>'saveOfficeHead','staff.dv.signatories.save'=>'saveDvSectionSignatories','staff.custodian.save'=>'saveSupplyCustodian','staff.bac.save'=>'saveBacTerm','staff.bac.date.correct'=>'correctBacTermEffectiveDate','requesting.units.change'=>'changeRequestingUnit','requesting.units.save'=>'saveRequestingUnits','pr.create'=>'createPR','pr.update'=>'updateDraftPR','pr.finalize'=>'finalizePR','rfq.create'=>'createRFQ','rfq.update'=>'updateRFQ','quote.create'=>'createQuote','quote.update'=>'updateQuote','award.create'=>'createAward','po.create'=>'createPO','po.terms.correct'=>'correctTerms','po.document.correct'=>'correctDocument','iar.create'=>'createIAR','iar.document.correct'=>'correctIarDocument','advance.create'=>'createAdvance',
         'travel.dv.approve'=>'approveTravelDvClaim','travel.claim.finalize'=>'finalizeTravelReimbursement','dv.create'=>'createDV','dv.update'=>'updateDraftDV','dv.particulars.update'=>'updateDvParticulars','dv.tax.disposition.correct'=>'correctDraftDvTaxDisposition','dv.finalize'=>'finalizeDV','dv.accounting'=>'reviseAccounts','tax.confirm'=>'confirmTax',
         'tax.transfer.create'=>'createTaxTransferDV','tax.transfer.receive'=>'receiveTaxTransfer',
         'tax.transfer.reconcile'=>'reconcileTaxTransfer',
@@ -283,7 +301,7 @@ try {
         'textbook.transfer.request','textbook.transfer.dispatch_requested','textbook.transfer.dispatch_direct',
         'textbook.transfer.receive','textbook.transfer.cancel_allocation','textbook.teacher.issue','textbook.teacher.return',
         'textbook.teacher.loss','textbook.teacher.damage','textbook.damage.quarantine','textbook.disposal.mark',
-        'textbook.disposal.authorize','textbook.disposal.deny','textbook.disposal.record','textbook.disposal.withdraw','textbook.catalog.register','textbook.catalog.update','textbook.catalog.discard_draft','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.documents.check','travel.claim.ctc.save','travel.claim.verify','travel.plan.save','travel.review.save','travel.dv.approve','travel.claim.finalize','rfq.update','quote.create','award.create','dv.create','dv.finalize','dv.tax.disposition.correct','dv.draft.cancel','tax.transfer.create','tax.transfer.receive','tax.transfer.reconcile','fund.event','document.cancel','bank.download.record','bank.download.link_existing','check.create','check.status','check.replace','check.print.profile.save','check.stock.register','check.stock.unusable','check.stock.correct','division.mooe.assignment.save','division.fund_source.save','division.fund_policy.save','division.item_uacs.save','division.item_uacs.bulk.apply','division.vat.save','organization.school.classification','master.fund.create'],true))
+        'textbook.disposal.authorize','textbook.disposal.deny','textbook.disposal.record','textbook.disposal.withdraw','textbook.catalog.register','textbook.catalog.update','textbook.catalog.discard_draft','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.documents.check','travel.claim.ctc.save','travel.claim.verify','travel.plan.save','travel.review.save','travel.dv.approve','travel.claim.finalize','rfq.update','quote.create','quote.update','award.create','dv.create','dv.finalize','dv.tax.disposition.correct','dv.draft.cancel','tax.transfer.create','tax.transfer.receive','tax.transfer.reconcile','fund.event','document.cancel','bank.download.record','bank.download.link_existing','check.create','check.status','check.replace','check.print.profile.save','check.stock.register','check.stock.unusable','check.stock.correct','division.mooe.assignment.save','division.fund_source.save','division.fund_policy.save','division.item_uacs.save','division.item_uacs.bulk.apply','division.vat.save','organization.school.classification','master.fund.create'],true))
         $db->exec('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
     // v0.2.79: atomically bind each idempotency key to exactly one
     // authorized route and canonical JSON body. Without this association a
