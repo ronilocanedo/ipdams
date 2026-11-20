@@ -9,6 +9,7 @@ require_once __DIR__.'/PropertyRegistrationNumbers.php';
 require_once __DIR__.'/PropertyBatchMetadata.php';
 require_once __DIR__.'/IarAutoPropertyPolicy.php';
 require_once __DIR__.'/EmployeeClaims.php';
+require_once __DIR__.'/PrUacsInheritance.php';
 require_once __DIR__.'/ReimbursementFinalization.php';
 require_once __DIR__.'/FundCashFundingPreview.php';
 require_once __DIR__.'/FundCashFinalization.php';
@@ -54,6 +55,47 @@ final class Domain {
     }
     private static function todayManila(): string {
         return (new DateTimeImmutable('now',new DateTimeZone('Asia/Manila')))->format('Y-m-d');
+    }
+    private static function taxCheckPayeeKey(string $code): string {
+        return 'TAX_PAYEE_'.substr(hash('sha256',$code),0,32);
+    }
+    private function taxCheckPayeeConfig(int $division,string $code): array {
+        $row=one($this->db,'SELECT id,config_json FROM configuration_versions WHERE organization_id=? AND config_key=? ORDER BY id DESC LIMIT 1',
+            [$division,self::taxCheckPayeeKey($code)]);
+        if(!$row)return ['payee'=>'','version_id'=>0];
+        $saved=json_decode((string)$row['config_json'],true,512,JSON_THROW_ON_ERROR);
+        demand(is_array($saved)&&($saved['source_code']??null)===$code && is_string($saved['payee']??null)
+            && trim($saved['payee'])!=='' && mbSafeLen($saved['payee'])<=180,'Invalid Division check payee configuration',500);
+        return ['payee'=>$saved['payee'],'version_id'=>(int)$row['id']];
+    }
+    /** Update only the check payee for a Division fund SOURCE. This must not rename
+     * a bank account or retroactively rewrite an existing DV/check. */
+    public function saveTaxCheckPayee(array $d): array {
+        $org=$this->org($d);$division=$this->scopedDivision($org);
+        demand(in_array($this->user['role'],['DIVISION','SUPER_ADMIN'],true),'Division administrator required',403);
+        $code=strtoupper(requiredString($d,'source_code',60));
+        demand((bool)preg_match('/^[A-Z0-9_-]{1,60}$/D',$code),'Invalid fund source code',422);
+        $payee=requiredString($d,'check_payee',180);
+        demand(!preg_match('/[\x00-\x1F\x7F]/',$payee),'Invalid control character in check payee',422);
+        $expected=$d['expected_version']??null;
+        demand(is_int($expected)&&$expected>=0,'Refresh the payee settings before saving',409);
+        return $this->tx(function()use($division,$code,$payee,$expected){
+            $this->divisionForActor($division);
+            $catalog=$this->divisionFundSourceList($division);$found=false;
+            foreach($catalog['sources'] as $s)if(($s['code']??'')===$code&&($s['active']??false)===true)$found=true;
+            demand($found,'Activate this fund in the Division source directory first',409);
+            $prior=$this->taxCheckPayeeConfig($division,$code);
+            demand($expected===$prior['version_id'],'Payee configuration changed in another session. Refresh.',409);
+            demand($payee!==$prior['payee'],'Check payee has not changed',422);
+            $id=$this->insert('configuration_versions',[
+                'organization_id'=>$division,'config_key'=>self::taxCheckPayeeKey($code),
+                'config_json'=>json_encode(['source_code'=>$code,'payee'=>$payee],JSON_THROW_ON_ERROR),
+                'effective_from'=>self::todayManila(),'review_note'=>'Division tax-transfer check payee updated']);
+            $this->audit($division,'FUND_TAX_CHECK_PAYEE_UPDATED','FUND',$id,[
+                'source_code'=>$code,'previous_payee'=>$prior['payee'],'check_payee'=>$payee,
+                'previous_version'=>$expected,'historical_dvs_unchanged'=>true]);
+            return ['source_code'=>$code,'check_payee'=>$payee,'version_id'=>$id];
+        });
     }
     private static function fundPolicyKey(string $code,string $classification): string {
         return 'FWP_'.substr(hash('sha256',$code.'|'.$classification),0,32);
@@ -156,7 +198,8 @@ final class Domain {
               AND e.reference_type='DIVISION_RELEASE' AND e.bank_account_id IS NOT NULL
               AND e.bank_credit_date<=?
             GROUP BY f.source_code,f.fiscal_year,f.id",[$org,$today])->fetchAll();
-        return ['division_id'=>$division,'catalog_version'=>$catalog['version_id'],'sources'=>$sources,'policies'=>$policies,
+        $checkPayees=[];foreach($sources as $source)$checkPayees[$source['code']]=$this->taxCheckPayeeConfig($division,$source['code']);
+        return ['division_id'=>$division,'catalog_version'=>$catalog['version_id'],'sources'=>$sources,'policies'=>$policies,'check_payees'=>$checkPayees,
             'linked_division_credits'=>$linked,
             'school_classification'=>$classification,'division_only'=>in_array($this->user['role'],['DIVISION','SUPER_ADMIN'],true)];
     }
@@ -971,6 +1014,41 @@ final class Domain {
             return ['id'=>$id,'bank_name'=>$name,'account_label'=>$label];
         });
     }
+    /** Change a bank DIRECTORY label only. No account identity, funds or payments change.
+     * Division can correct labels of its attached schools; all access remains
+     * scoped and is audited in the account-owning organization.
+     */
+    public function renameBankAccountLabel(array $d): array {
+        $org=$this->org($d);
+        allowedToWrite($this->user);
+        $office=one($this->db,'SELECT id,kind,parent_division_id FROM organizations WHERE id=? AND active=1',[$org]);
+        demand($office!==null,'Selected organization is unavailable',404);
+        $role=(string)$this->user['role'];
+        if($role==='DIVISION' && $office['kind']==='SCHOOL'){
+            demand((int)$office['parent_division_id']>0,'School has no Division Office',403);
+            $this->divisionForActor((int)$office['parent_division_id']);
+        }else{
+            $this->operationalWriteAllowed($org);
+        }
+        $id=idOf($d,'bank_account_id');
+        $label=requiredString($d,'account_label',120);
+        return $this->tx(function()use($org,$id,$label){
+            $existing=$this->record('bank_accounts',$id,$org,true);
+            $old=(string)$existing['account_label'];
+            demand($old!==$label,'The account label has not changed',422);
+            demand(one($this->db,'SELECT id FROM bank_accounts WHERE organization_id=? AND bank_name=? AND account_label=? AND id<>?',
+                [$org,$existing['bank_name'],$label,$id])===null,'This bank already has an account with that label',409);
+            // A Division bank label is the payee snapshot on a school's tax transfer DV.
+            // Prevent changing the label while an active transfer relies on it.
+            demand(one($this->db,"SELECT id FROM school_tax_transfers WHERE division_bank_account_id=? AND status<>'CANCELLED' LIMIT 1",[$id])===null,
+                'This account is linked to a tax transfer; its payee label must remain stable. Finance review required.',409);
+            q($this->db,'UPDATE bank_accounts SET account_label=? WHERE id=? AND organization_id=?',[$label,$id,$org]);
+            $this->audit($org,'BANK_ACCOUNT_LABEL_RENAMED','BANK',$id,[
+                'previous_label'=>$old,'new_label'=>$label,'bank_name'=>$existing['bank_name'],
+                'masked_account_unchanged'=>true,'fund_cash_unchanged'=>true]);
+            return ['id'=>$id,'account_label'=>$label,'previous_label'=>$old];
+        });
+    }
     public function list(array $p): mixed {
         $name=requiredString($p,'kind',40);$org=$this->org($p);
         DivisionSchoolAccess::requireGet($this->db,$this->user,'list',$p);
@@ -1334,7 +1412,9 @@ final class Domain {
         $quote=one($this->db,'SELECT q.id,q.rfq_id,q.supplier_id,r.pr_id,s.name supplier FROM supplier_quotes q JOIN rfqs r ON r.id=q.rfq_id JOIN suppliers s ON s.id=q.supplier_id WHERE q.id=? AND r.organization_id=?',[$id,$org]);
         demand($quote!==null,'Quotation not found in active workspace',404);
         $lines=q($this->db,'SELECT l.pr_line_id,l.offered_price,l.compliant,p.description_snapshot AS item_name,p.unit_snapshot AS unit,COALESCE(l.rfq_quantity,p.quantity) AS quantity FROM quote_lines l JOIN pr_lines p ON p.id=l.pr_line_id WHERE l.supplier_quote_id=? ORDER BY p.id',[$id])->fetchAll();
-        return ['quote'=>$quote,'lines'=>$lines];
+        $saved=one($this->db,'SELECT offered_at,evidence_note FROM supplier_quotes WHERE id=?',[$id]);
+        $quote['offered_at']=$saved['offered_at'];$quote['evidence_note']=$saved['evidence_note'];
+        return ['quote'=>$quote,'lines'=>$lines,'edit_token'=>$this->quotationEditToken($id)];
     }
     /** Remaining ordered quantities, including prior accepted/rejected deliveries. */
     public function workflowPoLines(array $p): array {
@@ -3143,6 +3223,39 @@ final class Domain {
             'config_json'=>json_encode($requestor,JSON_THROW_ON_ERROR),
             'effective_from'=>self::todayManila(),'review_note'=>$reason]);
     }
+    /** Freeze the eligible debit UACS against the actual PR document date.
+     * Only an approved, effective-dated Division or legacy mapping is allowed.
+     * One line-level record is preserved in the immutable PR document version.
+     * There is no DV/check/fund journal or accounting change here.
+     */
+    private function prLineAccountingSnapshot(int $org,array $pr,array $lines): array {
+        $date=self::transactionDocumentDate((string)($pr['document_date']??''),'PR item UACS date');
+        $division=$this->divisionId($org);
+        $config=$this->divisionItemUacsConfig($division);
+        $saved=[];
+        foreach($lines as $line){
+            $item=(int)($line['item_id']??0);
+            $lineId=(int)($line['id']??0);
+            demand($item>0 && $lineId>0,'PR item identity is incomplete; cannot freeze accounting UACS',409);
+            $global=q($this->db,"SELECT m.uacs_code,m.effective_from FROM item_account_mappings m
+                WHERE m.item_id=? AND m.effective_from<=?
+                  AND (m.effective_to IS NULL OR m.effective_to>=?)
+                ORDER BY m.effective_from DESC,m.id DESC LIMIT 2",[$item,$date,$date])->fetchAll();
+            $resolved=PrUacsInheritance::choose($item,$date,$config['mappings'],$global);
+            demand($resolved['ok'],
+                'PR item #'.$item.' has no eligible debit UACS effective on '.$date.'. '.
+                (string)($resolved['issue']??'').'. Ask the Division Accountant to review the dated mapping before continuing.',409);
+            $code=(string)$resolved['uacs_code'];
+            demand(one($this->db,'SELECT code FROM uacs_accounts WHERE code=? AND active=1',[$code])!==null,
+                'PR item #'.$item.' UACS '.$code.' is not an active approved debit account.',409);
+            $saved[]=['pr_line_id'=>$lineId,'item_id'=>$item,'uacs_code'=>$code,
+                'effective_from'=>$resolved['effective_from'],'source'=>$resolved['source']];
+        }
+        demand(count($saved)>0,'Purchase Request needs at least one item before accounting classification',409);
+        return ['format'=>1,'pr_id'=>(int)$pr['id'],'pr_document_date'=>$date,
+            'division_id'=>$division,'division_mapping_version_id'=>(int)$config['version_id'],
+            'lines'=>$saved];
+    }
     public function createPR(array $d): array { $org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
         $fund=$this->record('funds',idOf($d,'fund_id'),$org);
         $requestor=$this->choosePrRequestor($org,$d);
@@ -3150,7 +3263,11 @@ final class Domain {
         $pid=$this->insert('purchase_requests',['organization_id'=>$org,'transaction_id'=>$tid,'fund_id'=>$fund['id'],'purpose'=>requiredString($d,'purpose',500),'requesting_unit'=>$this->validatePrRequestingUnit($org,$d),'document_date'=>$this->prDocumentDate($d),'created_by'=>$this->user['id']]);
         $this->recordPrRequestor($org,$pid,$requestor,'Selected PR requestor');
         $sum=0;foreach(rowsRequired($d,'lines') as $line){demand(is_array($line),'Invalid line');$item=one($this->db,'SELECT i.*,u.code FROM item_catalog i JOIN units u ON u.id=i.unit_id WHERE i.id=? AND i.active=1',[idOf($line,'item_id')]);demand($item!==null && $this->catalogItemAccessible($org,(int)$item['id']), 'Item not found in this workspace catalog');$qty=qtyMillis($line['quantity']??'');$unit=moneyCents($line['unit_price']??'');demand($qty>0&&$unit>0,'Quantity and price must be positive');$sum+=totalCents($unit,$qty);$this->insert('pr_lines',['pr_id'=>$pid,'item_id'=>$item['id'],'description_snapshot'=>$item['name'],'unit_snapshot'=>$item['code'],'quantity'=>qtyString($qty),'estimated_unit_price'=>moneyString($unit)]);}
-        q($this->db,'UPDATE purchase_requests SET total=? WHERE id=?',[moneyString($sum),$pid]);$this->audit($org,'CREATED','PR',$pid,['requestor_employee_id'=>$requestor['employee_id']]);return ['id'=>$pid,'transaction_id'=>$tid,'status'=>'DRAFT','total'=>moneyString($sum)];
+        q($this->db,'UPDATE purchase_requests SET total=? WHERE id=?',[moneyString($sum),$pid]);
+        $createdPr=$this->record('purchase_requests',$pid,$org);
+        $createdLines=q($this->db,'SELECT * FROM pr_lines WHERE pr_id=? ORDER BY id',[$pid])->fetchAll();
+        $this->prLineAccountingSnapshot($org,$createdPr,$createdLines);
+        $this->audit($org,'CREATED','PR',$pid,['requestor_employee_id'=>$requestor['employee_id']]);return ['id'=>$pid,'transaction_id'=>$tid,'status'=>'DRAFT','total'=>moneyString($sum)];
     }); }
     /** A draft revision guard without changing the live database schema. */
     private function prDraftToken(array $pr,array $lines,string $method,?array $requestor=null): string {
@@ -3251,6 +3368,7 @@ final class Domain {
             }
             $current=$this->record('purchase_requests',(int)$pr['id'],$org);
             $currentLines=q($this->db,'SELECT * FROM pr_lines WHERE pr_id=? ORDER BY id',[$pr['id']])->fetchAll();
+            $prUacs=$this->prLineAccountingSnapshot($org,$current,$currentLines);
             $this->audit($org,'UPDATED','PR',(int)$pr['id'],[
                 'previous'=>['status'=>$pr['status'],'display_number'=>$pr['display_number'],
                     'fund_id'=>$pr['fund_id'],'purpose'=>$pr['purpose'],
@@ -3266,6 +3384,7 @@ final class Domain {
                 // the print source. A previously signed paper must be re-signed.
                 $this->snapshot($org,'PR',(int)$pr['id'],[
                     'header'=>$current,'lines'=>$currentLines,'requestor'=>$requestor,
+                    'uacs_line_snapshot'=>$prUacs,
                     'number'=>$pr['display_number'],
                     'fund_name'=>one($this->db,'SELECT name FROM funds WHERE id=?',[$fund['id']])['name'],
                     'organization_name'=>one($this->db,'SELECT name FROM organizations WHERE id=?',[$org])['name']
@@ -3277,7 +3396,19 @@ final class Domain {
     }
     public function finalizePR(array $d): array { $org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
         $p=$this->record('purchase_requests',idOf($d,'pr_id'),$org,true);demand($p['status']==='DRAFT','Only a draft PR can be finalized');
-        demand(!empty($p['document_date']),'Set the PR document date before finalization.');self::transactionDocumentDate((string)$p['document_date'],'PR document date');$n=$this->registered($org,'PR',(int)$p['id']);q($this->db,"UPDATE purchase_requests SET status='FINALIZED',display_number=? WHERE id=?",[$n,$p['id']]);$lines=q($this->db,'SELECT * FROM pr_lines WHERE pr_id=?',[$p['id']])->fetchAll();$this->snapshot($org,'PR',(int)$p['id'],['header'=>$p,'lines'=>$lines,'requestor'=>$this->prRequestor($org,(int)$p['id']),'number'=>$n,'fund_name'=>one($this->db,'SELECT name FROM funds WHERE id=?',[$p['fund_id']])['name'],'organization_name'=>one($this->db,'SELECT name FROM organizations WHERE id=?',[$org])['name']]);$this->audit($org,'FINALIZED','PR',(int)$p['id']);return ['id'=>(int)$p['id'],'number'=>$n];
+        demand(!empty($p['document_date']),'Set the PR document date before finalization.');
+        self::transactionDocumentDate((string)$p['document_date'],'PR document date');
+        $lines=q($this->db,'SELECT * FROM pr_lines WHERE pr_id=? ORDER BY id',[$p['id']])->fetchAll();
+        $prUacs=$this->prLineAccountingSnapshot($org,$p,$lines);
+        $n=$this->registered($org,'PR',(int)$p['id']);
+        q($this->db,"UPDATE purchase_requests SET status='FINALIZED',display_number=? WHERE id=?",[$n,$p['id']]);
+        $this->snapshot($org,'PR',(int)$p['id'],[
+            'header'=>$p,'lines'=>$lines,'requestor'=>$this->prRequestor($org,(int)$p['id']),
+            'number'=>$n,'uacs_line_snapshot'=>$prUacs,
+            'fund_name'=>one($this->db,'SELECT name FROM funds WHERE id=?',[$p['fund_id']])['name'],
+            'organization_name'=>one($this->db,'SELECT name FROM organizations WHERE id=?',[$org])['name']]);
+        $this->audit($org,'FINALIZED','PR',(int)$p['id']);
+        return ['id'=>(int)$p['id'],'number'=>$n];
     }); }
     public function createRFQ(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
         $pr=$this->record('purchase_requests',idOf($d,'pr_id'),$org,true);demand($pr['status']==='FINALIZED','Finalized PR required');
@@ -3411,6 +3542,86 @@ final class Domain {
         foreach($submitted as $line){$pl=idOf($line,'pr_line_id');demand(in_array($pl,$allowed,true),'Item is not in this RFQ');demand(!isset($seen[$pl]),'Duplicate quotation item');$seen[$pl]=true;$this->insert('quote_lines',['supplier_quote_id'=>$id,'pr_line_id'=>$pl,'offered_price'=>moneyString(moneyCents($line['price']??'')),'rfq_quantity'=>qtyString(qtyMillis($selected[array_search($pl,$allowed,true)]['quantity'])),'compliant'=>(int)!!($line['compliant']??false)]);}
         $this->audit($org,'RECEIVED','QUOTE',$id);return ['id'=>$id];
     });}
+    /** Optimistic edit token from the committed quote and all original offer lines. */
+    private function quotationEditToken(int $id): string {
+        $header=one($this->db,'SELECT rfq_id,supplier_id,offered_at,evidence_note FROM supplier_quotes WHERE id=?',[$id]);
+        demand($header!==null,'Quotation not found',404);
+        $lines=q($this->db,'SELECT pr_line_id,offered_price,rfq_quantity,compliant FROM quote_lines WHERE supplier_quote_id=? ORDER BY pr_line_id',[$id])->fetchAll();
+        return hash('sha256',json_encode(['header'=>$header,'lines'=>$lines],JSON_THROW_ON_ERROR));
+    }
+    /** A saved offer may be corrected until its RFQ enters Award or ordering.
+     * Corrections remain tied to the original supplier/quote ID with before/after audit. */
+    public function updateQuote(array $d): array {
+        $org=$this->org($d);$this->operationalWriteAllowed($org);
+        return $this->tx(function()use($org,$d){
+            $id=idOf($d,'quote_id');
+            $ref=one($this->db,'SELECT sq.rfq_id FROM supplier_quotes sq JOIN rfqs r ON r.id=sq.rfq_id WHERE sq.id=? AND r.organization_id=?',[$id,$org]);
+            demand($ref!==null,'Quotation not found in active workspace',404);
+            // Serialize with award and PO creation, which also lock this RFQ.
+            $rfq=$this->record('rfqs',(int)$ref['rfq_id'],$org,true);
+            demand($rfq['status']==='FINALIZED','RFQ is no longer active',409);
+            demand(one($this->db,'SELECT id FROM awards WHERE rfq_id=? LIMIT 1',[$rfq['id']])===null,
+                'Quotation correction is locked after an Award. Use a documented procurement correction instead.',409);
+            demand(one($this->db,'SELECT id FROM purchase_orders WHERE pr_id=? AND organization_id=? LIMIT 1',[$rfq['pr_id'],$org])===null,
+                'Quotation correction is locked once purchasing has begun.',409);
+            $quote=one($this->db,'SELECT id,rfq_id,supplier_id,offered_at,evidence_note FROM supplier_quotes WHERE id=? AND rfq_id=?',[$id,$rfq['id']]);
+            demand($quote!==null,'Quotation no longer available',409);
+            $expected=(string)($d['edit_token']??'');
+            demand((bool)preg_match('/^[a-f0-9]{64}$/D',$expected),'Refresh the quotation before correcting it.',409);
+            demand(hash_equals($expected,$this->quotationEditToken($id)),
+                'Quotation changed since it was opened. Refresh and review the latest amounts.',409);
+            require_once __DIR__.'/ProcurementDocumentDates.php';
+            $date=ProcurementDocumentDates::date($d['offered_at']??null,'supplier quotation date');
+            $rfqDate=ProcurementDocumentDates::date(substr((string)$rfq['issued_at'],0,10),'RFQ date');
+            demand($date >= $rfqDate,'Supplier quotation date cannot precede its RFQ date',422);
+            demand(!isset($d['evidence_note'])||is_string($d['evidence_note']),
+                'Quotation reference must be text',422);
+            $evidence=trim((string)($d['evidence_note']??''));
+            demand(mbSafeLen($evidence)<=500&&!preg_match('/[\x00-\x1F\x7F]/',$evidence),
+                'Quotation reference invalid or too long',422);
+            $selected=$this->rfqSelectedLines((int)$rfq['id'],(int)$rfq['pr_id']);
+            $byId=[];foreach($selected as $sl)$byId[(int)$sl['pr_line_id']]=$sl;
+            $submitted=rowsRequired($d,'lines');
+            demand(count($submitted)===count($byId),'Corrected quotation must cover all RFQ lines',422);
+            $before=q($this->db,'SELECT pr_line_id,offered_price,rfq_quantity,compliant FROM quote_lines WHERE supplier_quote_id=? ORDER BY pr_line_id',[$id])->fetchAll();
+            demand(count($before)===count($byId),'Saved quotation line count needs review',409);
+            $next=[];
+            foreach($submitted as $line){
+                $pl=idOf($line,'pr_line_id');
+                demand(isset($byId[$pl])&&!isset($next[$pl]),'Invalid or duplicate quotation item',422);
+                $price=moneyCents($line['price']??'');
+                demand($price>0,'Offered unit prices must be positive',422);
+                demand(array_key_exists('compliant',$line)&&is_bool($line['compliant']),
+                    'Confirm compliance for each RFQ item',422);
+                $next[$pl]=['pr_line_id'=>$pl,'offered_price'=>moneyString($price),
+                    'rfq_quantity'=>qtyString(qtyMillis($byId[$pl]['quantity'])),
+                    'compliant'=>$line['compliant']?1:0];
+            }
+            ksort($next,SORT_NUMERIC);
+            $oldSorted=[];foreach($before as $line)$oldSorted[(int)$line['pr_line_id']]=[
+                'pr_line_id'=>(int)$line['pr_line_id'],
+                'offered_price'=>moneyString(moneyCents($line['offered_price'])),
+                'rfq_quantity'=>qtyString(qtyMillis($line['rfq_quantity'])),
+                'compliant'=>(int)$line['compliant']];
+            ksort($oldSorted,SORT_NUMERIC);
+            demand($oldSorted!==$next || $date!==(string)$quote['offered_at'] || $evidence!==(string)$quote['evidence_note'],
+                'No quotation changes to save',409);
+            q($this->db,'UPDATE supplier_quotes SET offered_at=?,evidence_note=? WHERE id=?',[$date,$evidence,$id]);
+            foreach($next as $pl=>$row){
+                q($this->db,'UPDATE quote_lines SET offered_price=?,compliant=? WHERE supplier_quote_id=? AND pr_line_id=?',
+                    [$row['offered_price'],$row['compliant'],$id,$pl]);
+                // A no-op UPDATE can report zero affected rows. Validate full inventory before and after.
+            }
+            $after=q($this->db,'SELECT pr_line_id,offered_price,rfq_quantity,compliant FROM quote_lines WHERE supplier_quote_id=? ORDER BY pr_line_id',[$id])->fetchAll();
+            demand(count($after)===count($next),'Quotation correction did not preserve its lines',500);
+            $this->audit($org,'CORRECTED','QUOTE',$id,[
+                'reason'=>trim((string)($d['reason']??''))?:'Corrected saved supplier quotation',
+                'supplier_id'=>(int)$quote['supplier_id'],'rfq_id'=>(int)$rfq['id'],
+                'before'=>['offered_at'=>$quote['offered_at'],'evidence_note'=>$quote['evidence_note'],'lines'=>$before],
+                'after'=>['offered_at'=>$date,'evidence_note'=>$evidence,'lines'=>$after]]);
+            return ['id'=>$id,'rfq_id'=>(int)$rfq['id'],'edit_token'=>$this->quotationEditToken($id)];
+        });
+    }
     /** The verified quotation totals are measured in cent-thousandths (cents * quantity-millis),
      * avoiding floating-point ties and requiring all selected RFQ lines to be compliant. */
     private function eligibleRfqQuoteTotals(int $rfqId,int $prId): array {
@@ -4548,9 +4759,18 @@ final class Domain {
             'Current Division source policy must explicitly authorize Non-IUS remittance to Division.',409);
         $bank=one($this->db,"SELECT id,organization_id,account_label FROM bank_accounts WHERE id=? AND organization_id=?",
             [$transfer['division_bank_account_id'],$transfer['division_id']]);
-        demand($bank!==null && trim((string)$bank['account_label'])!=='' &&
-            $bank['account_label']===$dv['payee'],
-            'Approved Division bank receiving account/payee changed; Finance review is required.',409);
+        demand($bank!==null,'Approved Division receiving bank is no longer available; Finance review required.',409);
+        $created=one($this->db,"SELECT details FROM audit_events WHERE organization_id=? AND event_type='TAX_TRANSFER_DRAFT_CREATED'
+            AND entity_type='DV' AND entity_id=? ORDER BY id DESC LIMIT 1",[$org,$dv['id']]);
+        $createDetails=$created?json_decode((string)$created['details'],true):[];
+        $payeeSnapshot=is_array($createDetails)?trim((string)($createDetails['check_payee_snapshot']??'')):'';
+        if($payeeSnapshot!==''){
+            demand($dv['payee']===$payeeSnapshot,'Original remittance check payee snapshot changed; Finance review required.',409);
+        }else{
+            // Legacy transfers created before a Division-configurable check payee.
+            demand($bank['account_label']===$dv['payee'],
+                'Legacy Division receiving account/payee changed; Finance review required.',409);
+        }
         $transfer['source_rows']=$rows;
         $transfer['earliest_date']=max(array_column($rows,'document_date'));
         $transfer['policy']=$policy;
@@ -4587,13 +4807,37 @@ final class Domain {
                 AND c.id=(SELECT MAX(c2.id) FROM checks c2 WHERE c2.dv_id=v.id AND c2.organization_id=v.organization_id)
                 AND c.status IN ('RELEASED','CLEARED'))
             ORDER BY v.id DESC,w.id LIMIT 150",[$org])->fetchAll();
+        $excluded=q($this->db,"SELECT w.id,w.atc_code,w.amount,v.id source_dv_id,v.display_number,
+                v.document_date,v.fund_id,f.name fund_name,f.source_code,v.status dv_status,
+                (SELECT c.status FROM checks c WHERE c.dv_id=v.id AND c.organization_id=v.organization_id ORDER BY c.id DESC LIMIT 1) latest_check_status,
+                (SELECT COUNT(*) FROM tax_disposition_events e WHERE e.component_id=w.id AND e.state IN ('REMITTED','CONFIRMED_CREDIT')) completed_count,
+                (SELECT COUNT(*) FROM school_tax_transfer_components tc JOIN school_tax_transfers t ON t.id=tc.transfer_id WHERE tc.component_id=w.id AND t.status<>'CANCELLED') reserved_count
+            FROM withholding_components w JOIN disbursement_vouchers v ON v.id=w.dv_id
+            JOIN funds f ON f.id=v.fund_id AND f.organization_id=v.organization_id
+            WHERE v.organization_id=? AND w.disposition='REMIT'
+              AND NOT EXISTS (SELECT 1 FROM tax_disposition_events e WHERE e.component_id=w.id AND e.state IN ('REMITTED','CONFIRMED_CREDIT'))
+              AND (v.status<>'FINALIZED'
+                OR EXISTS (SELECT 1 FROM school_tax_transfer_components tc JOIN school_tax_transfers t ON t.id=tc.transfer_id WHERE tc.component_id=w.id AND t.status<>'CANCELLED')
+                OR NOT EXISTS (SELECT 1 FROM checks c WHERE c.dv_id=v.id AND c.organization_id=v.organization_id
+                  AND c.id=(SELECT MAX(c2.id) FROM checks c2 WHERE c2.dv_id=v.id AND c2.organization_id=v.organization_id)
+                  AND c.status IN ('RELEASED','CLEARED')))
+            ORDER BY v.id DESC,w.id LIMIT 501",[$org])->fetchAll();
+        $excludedLimited=count($excluded)>500;
+        if($excludedLimited)$excluded=array_slice($excluded,0,500);
+        foreach($excluded as &$item){
+            $item['reason']=$item['dv_status']!=='FINALIZED'?'Supplier DV not finalized':
+                ((int)$item['reserved_count']>0?'Already reserved in a tax-transfer DV':
+                (!$item['latest_check_status']?'Supplier check not issued':
+                (!in_array($item['latest_check_status'],['RELEASED','CLEARED'],true)?
+                    'Supplier check is '.$item['latest_check_status'].' (requires actual release or clearing)':'Not yet eligible')));
+        }unset($item);
         $rows=q($this->db,"SELECT t.*,v.display_number,v.gross,v.document_date,b.account_label division_bank_label,
             (SELECT GROUP_CONCAT(c.check_number ORDER BY c.id SEPARATOR ', ') FROM checks c WHERE c.dv_id=t.dv_id AND c.organization_id=t.organization_id) check_numbers,
             (SELECT COUNT(*) FROM school_tax_transfer_components x WHERE x.transfer_id=t.id) component_count
             FROM school_tax_transfers t JOIN disbursement_vouchers v ON v.id=t.dv_id
             JOIN bank_accounts b ON b.id=t.division_bank_account_id
             WHERE t.organization_id=? ORDER BY t.id DESC LIMIT 150",[$org])->fetchAll();
-        return ['office_kind'=>'SCHOOL','rows'=>$rows,'eligible'=>$eligible,'receiving_banks'=>$banks];
+        return ['office_kind'=>'SCHOOL','rows'=>$rows,'eligible'=>$eligible,'ineligible'=>$excluded,'ineligible_truncated'=>$excludedLimited,'eligible_truncated'=>count($eligible)===150,'receiving_banks'=>$banks];
     }
     public function createTaxTransferDV(array $d): array {
         $org=$this->org($d);$this->operationalWriteAllowed($org);
@@ -4624,6 +4868,10 @@ final class Domain {
             $payee=one($this->db,'SELECT id,account_label FROM bank_accounts WHERE id=? AND organization_id=?',[$bankId,$division]);
             demand($payee!==null && trim((string)$payee['account_label'])!=='' && mbSafeLen($payee['account_label'])<=180,
                 'Select the verified Division receiving account/payee (e.g., DepEd MOOE Trust Fund) from the Division bank directory.',409);
+            $payeeSettings=$this->taxCheckPayeeConfig($division,(string)$fund['source_code']);
+            demand($payeeSettings['payee']!=='',
+                'Division must configure the official check payee under Fund Configuration for this fund source before a new tax-remittance DV is prepared.',409);
+            $checkPayee=$payeeSettings['payee'];
             $marks=implode(',',array_fill(0,count($ids),'?'));
             $rows=q($this->db,"SELECT w.id,w.atc_code,w.amount,w.disposition,v.id source_dv_id,v.organization_id,v.fund_id,v.status dv_status,
                 v.document_date, v.display_number,
@@ -4639,7 +4887,7 @@ final class Domain {
             $remark=trim((string)($d['reference']??''));
             demand($remark!=='' && mbSafeLen($remark)<=255,'Enter the actual tax-remittance supporting reference.',422);
             $dv=$this->insert('disbursement_vouchers',['organization_id'=>$org,'fund_id'=>$fundId,'dv_type'=>'DIRECT',
-                'payee'=>$payee['account_label'],'gross'=>$sum,'deductions'=>'0.00','net'=>$sum,
+                'payee'=>$checkPayee,'gross'=>$sum,'deductions'=>'0.00','net'=>$sum,
                 'bill_reference'=>$remark,'particulars'=>'Remittance of previously withheld taxes to Division; not another expense or new withholding',
                 'created_by'=>$this->user['id']]);
             $this->insert('dv_allocation_lines',['dv_id'=>$dv,'amount'=>$sum]);
@@ -4651,7 +4899,8 @@ final class Domain {
             }
             $this->audit($org,'TAX_TRANSFER_DRAFT_CREATED','DV',$dv,['transfer_id'=>$id,'amount'=>$sum,
                 'component_ids'=>$ids,'division_id'=>$division,'division_bank_account_id'=>$bankId,'officer_verified_receiving_account'=>true,
-                'policy_version'=>$policy['version_id']]);
+                'policy_version'=>$policy['version_id'],'check_payee_snapshot'=>$checkPayee,
+                'check_payee_config_version'=>$payeeSettings['version_id']]);
             return ['id'=>$dv,'transfer_id'=>$id,'status'=>'DRAFT','gross'=>$sum,'net'=>$sum,'source_count'=>count($rows)];
         });
     }
@@ -5455,7 +5704,7 @@ final class Domain {
         $result['accounting_policy_version_id']=$accountingPolicyVersion;
         $result['payment_credit_uacs']=$paymentCredit;
         $result['withholding_liability_uacs']=$taxCredit;
-        $rows=q($this->db,"SELECT al.id allocation_id,al.amount,al.accounting_uacs_code,pl.item_id,cat.name item_name,i.accepted_at,pr.document_date AS pr_document_date
+        $rows=q($this->db,"SELECT al.id allocation_id,al.amount,al.accounting_uacs_code,pl.item_id,pl.pr_line_id,pr.id AS pr_id,cat.name item_name,i.accepted_at,pr.document_date AS pr_document_date
             FROM dv_allocation_lines al
             JOIN iar_lines il ON il.id=al.iar_line_id
             JOIN iars i ON i.id=il.iar_id AND i.status='FINALIZED'
@@ -5466,7 +5715,7 @@ final class Domain {
             WHERE al.dv_id=? ORDER BY al.id",[$org,$org,$dv['id']])->fetchAll();
         if(count($rows)===0)$result['issues'][]='This DV has no validated PO/IAR allocations.';
         $divisionMappings=$this->divisionItemUacsConfig($this->divisionId($org))['mappings'];
-        $group=[];$sum=0;$unmapped=0;
+        $group=[];$sum=0;$unmapped=0;$prUacsCache=[];
         foreach($rows as $row){
             $amount=moneyCents($row['amount']);$sum+=$amount;
             // PR displays Division item accounting at PR date. Preserve MOOE's
@@ -5480,18 +5729,78 @@ final class Domain {
                 'item_id'=>(int)$row['item_id'],
                 'item_name'=>(string)$row['item_name'],
                 'iar_accepted_at'=>(string)$row['accepted_at'],
+                'pr_document_date'=>(string)$row['pr_document_date'],
                 'mapping_as_of'=>$asOf,'mapping_basis'=>$isMooe?'IAR_ACCEPTANCE':'ORIGINAL_PR_DATE',
                 'allocated_amount'=>moneyString($amount),
                 'status'=>$override===''?'MAPPED':'DV_CORRECTION',
                 'uacs_code'=>null,'override_uacs_code'=>$override,
                 'effective_from'=>null,'next_effective_from'=>null];
             if($override!==''){
+                // A DV-only correction must never conceal an invalid finalized PR
+                // accounting snapshot. Check the original source FIRST, without
+                // replacing the source classification or altering the correction.
+                $overridePrId=(int)$row['pr_id'];
+                if(!array_key_exists($overridePrId,$prUacsCache)){
+                    $overridePrVersion=one($this->db,"SELECT snapshot_json FROM document_versions
+                        WHERE organization_id=? AND doc_type='PR' AND entity_id=?
+                        ORDER BY version_no DESC LIMIT 1",[$org,$overridePrId]);
+                    $overrideSavedPr=$overridePrVersion===null?null:json_decode((string)$overridePrVersion['snapshot_json'],true,512,JSON_THROW_ON_ERROR);
+                    demand($overrideSavedPr===null || is_array($overrideSavedPr),'Saved PR version is invalid',409);
+                    $prUacsCache[$overridePrId]=is_array($overrideSavedPr)?($overrideSavedPr['uacs_line_snapshot']??null):null;
+                }
+                $overrideSourceUacs=$prUacsCache[$overridePrId];
+                if($overrideSourceUacs!==null){
+                    $overrideInherited=is_array($overrideSourceUacs)
+                        ?PrUacsInheritance::inherited($overrideSourceUacs,$overridePrId,(int)$row['pr_line_id'],
+                            (int)$row['item_id'],(string)$row['pr_document_date'])
+                        :['ok'=>false,'issue'=>'PR accounting snapshot is invalid'];
+                    if(!$overrideInherited['ok']){
+                        $diagnostic['status']='INVALID_PR_UACS_SNAPSHOT';
+                        $result['issues'][]='PR #'.$overridePrId.' item #'.$row['item_id'].': '.$overrideInherited['issue'];
+                        $result['item_diagnostics'][]=$diagnostic;
+                        $unmapped+=$amount;
+                        continue;
+                    }
+                }
                 // Explicit draft-only reclassification; source item history and
                 // Division mapping remain unchanged. Active status is rechecked
                 // below during journal readiness and finalization.
                 $diagnostic['uacs_code']=$override;
                 $result['item_diagnostics'][]=$diagnostic;
                 $group[$override]=($group[$override]??0)+$amount;
+                continue;
+            }
+            // New PR versions carry their own audited, effective-dated line UACS.
+            // Legacy PRs (which have no snapshot) continue the original lookup.
+            $prId=(int)$row['pr_id'];
+            if(!array_key_exists($prId,$prUacsCache)){
+                $version=one($this->db,"SELECT snapshot_json FROM document_versions
+                    WHERE organization_id=? AND doc_type='PR' AND entity_id=?
+                    ORDER BY version_no DESC LIMIT 1",[$org,$prId]);
+                $savedPr=$version===null?null:json_decode((string)$version['snapshot_json'],true,512,JSON_THROW_ON_ERROR);
+                demand($savedPr===null || is_array($savedPr),'Saved PR version is invalid',409);
+                $prUacsCache[$prId]=is_array($savedPr)?($savedPr['uacs_line_snapshot']??null):null;
+            }
+            $sourceUacs=$prUacsCache[$prId];
+            if($sourceUacs!==null){
+                $inherited=is_array($sourceUacs)
+                    ?PrUacsInheritance::inherited($sourceUacs,$prId,(int)$row['pr_line_id'],
+                        (int)$row['item_id'],(string)$row['pr_document_date'])
+                    :['ok'=>false,'issue'=>'PR accounting snapshot is invalid'];
+                if(!$inherited['ok']){
+                    $diagnostic['status']='INVALID_PR_UACS_SNAPSHOT';
+                    $result['issues'][]='PR #'.$prId.' item #'.$row['item_id'].': '.$inherited['issue'];
+                    $result['item_diagnostics'][]=$diagnostic;
+                    $unmapped+=$amount;
+                    continue;
+                }
+                $code=(string)$inherited['uacs_code'];
+                $diagnostic['status']='PR_UACS_SNAPSHOT';
+                $diagnostic['uacs_code']=$code;
+                $diagnostic['effective_from']=$inherited['effective_from'];
+                $diagnostic['mapping_basis']='FINALIZED_PR_SNAPSHOT';
+                $result['item_diagnostics'][]=$diagnostic;
+                $group[$code]=($group[$code]??0)+$amount;
                 continue;
             }
             $divisionMatches=array_values(array_filter($divisionMappings,static fn($map)=>
@@ -6445,7 +6754,13 @@ final class Domain {
         $valid=['ISSUED'=>['SIGNED','STOPPED'],'SIGNED'=>['RELEASED','STOPPED'],'RELEASED'=>['CLEARED','STOPPED','STALE'],'STALE'=>[],'STOPPED'=>[],'CLEARED'=>[],'CANCELLED'=>[],'REPLACED'=>[]];
         demand(in_array($next,$valid[$check['status']]??[],true),'Invalid check status transition');
         demand($dv['status']==='FINALIZED','Cannot change payment status for a voided or unfinalized DV.',409);
-        $evidence=requiredString($d,'evidence_reference',190);
+        // Reference is optional, but an explicit current-event attestation is not.
+        // Store a truthful marker instead of fabricating a physical supporting document.
+        demand(($d['event_confirmed']??null)===true,'Confirm that the check event actually occurred.',422);
+        $providedEvidence=trim((string)($d['evidence_reference']??''));
+        demand(mbSafeLen($providedEvidence)<=190,'Supporting reference must be 190 characters or fewer.',422);
+        $hasReference=$providedEvidence!=='';
+        $evidence=$hasReference?$providedEvidence:'USER_ATTESTED_NO_REFERENCE';
         q($this->db,'UPDATE checks SET status=? WHERE id=?',[$next,$check['id']]);$this->insert('payment_events',['check_id'=>$check['id'],'event_type'=>$next,'evidence_reference'=>$evidence,'created_by'=>$this->user['id']]);
         if($next==='RELEASED' && !$this->replacementAncestorReleased($org,$check))
             $this->ledger($org,(int)$dv['fund_id'],'DISBURSEMENT',moneyCents($check['amount']),'CHECK',(int)$check['id']);
@@ -6457,7 +6772,7 @@ final class Domain {
             }
         }
         // Fund reversals for stopped/replaced released checks need confirmed accounting review: no implicit refund.
-        $this->audit($org,$next,'CHECK',(int)$check['id'],['dv_id'=>(int)$dv['id'],'previous_status'=>$check['status'],'evidence_reference'=>$evidence]);return ['id'=>(int)$check['id'],'status'=>$next];
+        $this->audit($org,$next,'CHECK',(int)$check['id'],['dv_id'=>(int)$dv['id'],'previous_status'=>$check['status'],'evidence_reference'=>$evidence,'reference_provided'=>$hasReference,'user_attested'=>true]);return ['id'=>(int)$check['id'],'status'=>$next];
     });}
     /** Called while the owning DV is locked. Inspect the entire chain, not
      * only the immediately preceding leaf, which may never have been released.
@@ -7174,7 +7489,14 @@ final class Domain {
                 ?'A check is recorded for this DV. The original entries must remain intact; use a separately documented reclassification adjustment.'
                 :($hasTaxCompletion?'Completed tax disposition requires a separately documented adjustment.'
                 :(!$workpaper['applicable']?'This DV accounting treatment does not support verified item-based correction yet.':null));
-            if($result['edit_allowed'])$result['draft_token']=$this->dvCorrectionToken($rec,$lines,$result['withholding'],(int)($saved['n']??0));
+            if($result['edit_allowed']){
+                // The detail withholding list includes joined rate/tax_kind display
+                // columns. Correction writes hash raw withholding_components rows.
+                // Read that same canonical saved row set for the optimistic-lock
+                // token so a fresh taxable draft is not falsely marked stale.
+                $tokenWithholding=q($this->db,'SELECT * FROM withholding_components WHERE dv_id=? ORDER BY id',[$rec['id']])->fetchAll();
+                $result['draft_token']=$this->dvCorrectionToken($rec,$lines,$tokenWithholding,(int)($saved['n']??0));
+            }
         }
         if($type==='PR'){
             $result['requestor']=$this->prRequestor($org,(int)$rec['id']);

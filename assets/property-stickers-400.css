@@ -1,0 +1,36 @@
+/* IPDAMS v0.2.400: DepEd sample-inspired 9-up identification sticker; no record mutations. */
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;margin:0;background:#f3f5f8;color:#182838}
+.bar{display:flex;justify-content:space-between;align-items:center;background:#163753;color:white;padding:15px 24px;gap:12px}
+.bar h1{font-size:20px;margin:0}.bar a{color:white}
+main{max-width:1200px;margin:20px auto;padding:0 15px}
+.controls{padding:18px;background:white;border:1px solid #d1d8de;border-radius:10px;margin:15px 0}
+.controls h2{font-size:18px;margin-top:0}
+button{padding:9px 13px;border:1px solid #7892a6;border-radius:6px;background:#fff;color:#12304b;cursor:pointer;margin:5px 5px 5px 0}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,select{padding:8px;margin:4px;border:1px solid #b2c1cc;border-radius:5px;max-width:100%}
+.hint{color:#526473;font-size:13px}.error{color:#a32626}
+.asset-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:6px;max-height:280px;overflow:auto;padding:10px 0}
+.asset-row{display:flex;align-items:start;gap:6px;font-size:13px;border-bottom:1px solid #eee;padding:6px}
+.extras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.extras label{display:flex;flex-direction:column;font-size:13px}
+.sheet{width:8.5in;height:13in;padding:.15in;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:0;background:#fff;box-shadow:0 2px 15px #d4d4d4;margin:16px auto;break-after:page;page-break-after:always}
+.sheet:last-child{break-after:auto;page-break-after:auto}
+.sticker{position:relative;min-width:0;min-height:0;overflow:hidden;border:.35px dashed #aeb6c0;background-size:100% 100%;background-repeat:no-repeat;background-color:white;font-family:'Bookman Old Style',Georgia,serif;color:#111}
+.sticker-school{position:absolute;top:38.2%;left:4.4%;width:91.2%;text-align:center;z-index:2;font-size:7.4px;line-height:1.04;font-weight:800;color:#092d53;background:rgba(255,255,255,.88);padding:2px 3px;border-radius:4px;overflow-wrap:anywhere}
+.sticker-content{position:absolute;z-index:2;top:43%;bottom:21%;left:4.6%;right:4.6%;display:flex;flex-direction:column;justify-content:stretch;border:1px solid #113b70;border-radius:5px;overflow:hidden;background:rgba(255,255,255,.93)}
+.sticker-extra-1 .sticker-content{top:42.4%;bottom:21.1%}.sticker-extra-2 .sticker-content{top:41.8%;bottom:21.1%}
+.line{display:grid;grid-template-columns:40% 60%;flex:1 1 0;min-height:0;margin:0;background:rgba(255,255,255,.93);border-bottom:1px solid #143d74}
+.line:last-child{border-bottom:0}
+.line .label{position:relative;display:flex;align-items:center;padding:1px 5px 1px 4px;background:#072e5b;color:#fff;font-family:Arial,sans-serif;font-weight:800;font-size:7.15px;line-height:1.02;overflow-wrap:anywhere}
+.line .label::after{content:'';position:absolute;top:0;bottom:0;right:0;width:3px;background:#efb50c;transform:skewX(-18deg)}
+.line-value{display:flex;align-items:center;padding:0 2px 0 6px;font-family:Arial,sans-serif;font-weight:800;font-size:9px;line-height:1.01;overflow-wrap:anywhere;min-width:0}
+.line-value.value-long{font-size:7px}.line-value.value-very-long{font-size:6.2px}
+.sticker-extra-1 .line .label,.sticker-extra-2 .line .label{font-size:6.7px}
+.sticker-extra-1 .line-value,.sticker-extra-2 .line-value{font-size:7.3px}
+.sticker-extra-1 .line-value.value-very-long,.sticker-extra-2 .line-value.value-very-long{font-size:5.9px}
+.sticker-qr{position:absolute;z-index:3;bottom:2.3%;right:5.3%;width:.73in;height:.73in;background:#fff;padding:2px;border:1px solid #0b3a6f;border-radius:2px}
+.sticker-qr svg{width:100%;height:100%;display:block}
+.sticker-qr-note{position:absolute;z-index:2;bottom:7.2%;left:6%;right:34%;font-family:Arial,sans-serif;font-size:8px;font-weight:800;line-height:1.15;color:#113b70;text-align:center;background:rgba(255,255,255,.82);padding:3px 1px;letter-spacing:.2px}
+@media(max-width:950px){.sheet{transform-origin:top left;transform:scale(.7);margin-bottom:-3.8in}.extras{grid-template-columns:1fr}}
+@page{size:8.5in 13in;margin:0}
+@media print{html,body{width:8.5in;margin:0;padding:0;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}.bar,main>.hint,.controls,footer{display:none!important}main{width:8.5in;max-width:none;margin:0;padding:0}#sheets{margin:0;padding:0}.sheet{margin:0;box-shadow:none;transform:none!important}.sticker{border:.25px dotted #ccc}}

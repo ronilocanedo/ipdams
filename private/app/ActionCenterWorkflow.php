@@ -98,9 +98,30 @@ final class ActionCenterWorkflow {
             'fiscal_year'=>(int)$v['fiscal_year'],
             'task'=>$v['disposition']==='SCHOOL_UTILIZATION'?'CONFIRM_WITHHOLDING':'REMIT_TAX',
         ],$taxRows);
+        // v0.2.400 Division-only incoming school remittance queue.
+        // Source status is the authoritative tax-transfer record: no parallel
+        // notification rows, no implicit bank receipt, no auto-confirmation.
+        $incomingTax=[];$incomingTaxCount=0;
+        if($org['kind']==='DIVISION'){
+            $incomingTaxCount=(int)one($this->db,"SELECT COUNT(*) n FROM school_tax_transfers
+                WHERE division_id=? AND status='CHECK_RELEASED'",[$organizationId])['n'];
+            $incomingTax=q($this->db,"SELECT t.id transfer_id,t.organization_id school_id,
+                    o.name school_name,v.id dv_id,v.display_number dv_number,
+                    v.document_date,v.gross,t.status,
+                    f.source_code fund_code,
+                    (SELECT COUNT(*) FROM school_tax_transfer_components tc WHERE tc.transfer_id=t.id) component_count,
+                    (SELECT c.check_number FROM checks c WHERE c.dv_id=t.dv_id AND c.organization_id=t.organization_id ORDER BY c.id DESC LIMIT 1) check_number
+                FROM school_tax_transfers t
+                JOIN organizations o ON o.id=t.organization_id AND o.parent_division_id=t.division_id AND o.kind='SCHOOL'
+                JOIN disbursement_vouchers v ON v.id=t.dv_id AND v.organization_id=t.organization_id
+                JOIN funds f ON f.id=t.fund_id AND f.organization_id=t.organization_id
+                WHERE t.division_id=? AND t.status='CHECK_RELEASED'
+                ORDER BY t.id DESC LIMIT 75",[$organizationId])->fetchAll();
+        }
         return ['organization_id'=>$organizationId,'kind'=>$org['kind'],
-            'pending_count'=>count($pending)+count($textbookActions)+$taxCount,'incoming_transfers'=>$pending,
+            'pending_count'=>count($pending)+count($textbookActions)+$taxCount+$incomingTaxCount,'incoming_transfers'=>$pending,
             'textbook_actions'=>$textbookActions,'pending_tax_actions'=>$taxActions,
+            'incoming_tax_remittances'=>$incomingTax,'incoming_tax_remittance_count'=>$incomingTaxCount,
             'pending_tax_count'=>$taxCount,'pending_tax_truncated'=>$taxCount>count($taxActions),
             'property_pending_count'=>count($pending),
             'checked_at'=>(new DateTimeImmutable('now',new DateTimeZone('Asia/Manila')))->format(DATE_ATOM)];
