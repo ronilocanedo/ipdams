@@ -22,12 +22,12 @@ final class M82SchemaContract {
             'fund_events'=>['columns'=>[
                 'id'=>'bigint','organization_id'=>'bigint','fund_id'=>'bigint',
                 'event_type'=>'enum','amount'=>'decimal(18,2)',
-                'bank_account_id'=>'bigint','bank_credit_date'=>'date',
+                'bank_account_id'=>'bigint','bank_credit_date'=>'varchar',
                 'bank_credit_ref'=>'varchar','bank_advice_ref'=>'varchar',
                 'bank_evidence_ref'=>'varchar']],
             'purchase_requests'=>['columns'=>[
                 'id'=>'bigint','organization_id'=>'bigint','fund_id'=>'bigint',
-                'status'=>'enum','total'=>'decimal(18,2)','document_date'=>'date']],
+                'status'=>'enum','total'=>'decimal(18,2)','document_date'=>'varchar']],
             'suppliers'=>['columns'=>['id'=>'bigint','name'=>'varchar',
                 'business_classification'=>'varchar|enum','proprietor_name'=>'varchar']],
             'disbursement_vouchers'=>['columns'=>[
