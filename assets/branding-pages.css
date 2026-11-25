@@ -112,3 +112,24 @@
 .ipdams-dashboard-page .ipdams-dashboard-new-pr{padding:10px 14px;background:linear-gradient(110deg,#0c719d,#118c73);color:#fff;border:0;border-radius:8px;font-size:12px;font-weight:850}
 .ipdams-dashboard-page .ipdams-dashboard-new-pr:focus-visible{outline:3px solid #21a18a;outline-offset:2px}
 @media(max-width:760px){.ipdams-dashboard-page .ipdams-dashboard-welcome-actions{align-items:flex-start;gap:7px}}
+
+/* v0.2.425: accessible mobile logout in the persistent topbar.
+   The desktop logout remains in sidebar-foot; do not show two buttons. */
+.shell .ipdams-mobile-logout{display:none}
+@media(max-width:760px){
+ .shell .topbar{flex-wrap:wrap}
+ .shell .ipdams-mobile-logout{display:inline-flex;align-items:center;justify-content:center;
+   min-height:42px;min-width:80px;margin-left:auto;padding:8px 12px;
+   border:1px solid #b9d5df;border-radius:9px;background:#fff;color:#144b65;
+   font-weight:800;font-size:12px;white-space:nowrap;cursor:pointer}
+ .shell .ipdams-mobile-logout:focus-visible{outline:3px solid #1688a1;outline-offset:2px}
+ .shell .topbar-school{order:3;flex-basis:100%;width:100%}
+}
+
+/* v0.2.426: Dashboard home links for workspace and Settings branding. */
+.shell .ipdams-home-link,.settings-shell .ipdams-home-link{cursor:pointer;text-decoration:none}
+.shell .ipdams-home-link:focus-visible,.settings-shell .ipdams-home-link:focus-visible,
+.settings-shell .ipdams-settings-home:focus-visible{outline:3px solid #1688a1;outline-offset:3px}
+.settings-shell .ipdams-settings-home{display:inline-flex;max-width:100%;align-items:center;flex:0 0 auto;text-decoration:none;cursor:pointer;border-radius:9px}
+.settings-shell .ipdams-settings-home img{max-width:100%;height:auto}
+@media(max-width:750px){.settings-shell .ipdams-settings-home{max-width:100%}}

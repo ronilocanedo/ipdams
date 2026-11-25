@@ -37,9 +37,9 @@ try {
     $divisionReceivingDesk=$officeKind==='DIVISION';
     if($user['role']==='SUPER_ADMIN')$schools=q($db,"SELECT id,name FROM organizations WHERE kind='SCHOOL' AND active=1 ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
     if($_SERVER['REQUEST_METHOD']==='POST'){
-        // The Division receiving inbox is documentary/read-only in v0.2.260.
-        // Never dispatch a school mutation when a Division workspace is selected.
-        demand(!$divisionReceivingDesk,'Incoming Division transfers are read-only until receiving-office acceptance is implemented',403);
+        // Outgoing transfers are prepared in the originating school's workspace.
+        // The receiving office uses its separately authorized Receiving Property desk.
+        demand(!$divisionReceivingDesk,'Division receiving actions belong in the Receiving Property desk; originating-school transfer preparation is unavailable here.',403);
         demand(hash_equals((string)$_SESSION['csrf'],(string)($_POST['_csrf']??'')),'Security token expired; refresh this page',403);
         $action=(string)($_POST['action']??'');
         if($action==='prepare'){
@@ -134,13 +134,13 @@ html.embedded{background:transparent}html.embedded .shell{max-width:none;margin:
 <?php if(!$context['assets']):?><tr><td colspan="5">No reviewed, active, unreserved properties available in this school.</td></tr><?php endif;?></tbody></table></div>
 <div class="pt-control"><span class="pt-count" id="pt-selected-footer">0 properties selected</span> <span class="pt-status">Mixed PPE/semi-expendable selections are not allowed in one document.</span></div>
 <button type="submit" id="pt-submit" <?=(!$context['assets'])?'disabled':''?>>Record internal transfer</button></form></section>
-<section><h2>Transfer register</h2><p class="muted">Internal transfers update the current custodian immediately. External transfers remain Awaiting Receipt; their properties stay in the sender's active register until receiving-office inspection and acceptance are implemented.</p><div class="scroll"><table><thead><tr><th>Number / report</th><th>From → To</th><th>Properties</th><th>Status</th><th>Print</th><th>Custody record</th></tr></thead><tbody>
+<section><h2>Transfer register</h2><p class="muted">Internal transfers update the current custodian immediately. External transfers remain Awaiting Receipt; their properties stay in the sender's active register until the authorized receiving Property Custodian records physical inspection and acceptance in the Receiving Property desk.</p><div class="scroll"><table><thead><tr><th>Number / report</th><th>From → To</th><th>Properties</th><th>Status</th><th>Print</th><th>Custody record</th></tr></thead><tbody>
 <?php foreach($context['transfers'] as $t):$s=$t['snapshot'];?><tr><td><?=ptE($t['type'].' '.$t['number'])?></td><td><?=ptE($s['source_school_name'].' → '.($s['destination_division_name']??'').' / '.$s['destination_school_name'])?></td><td><?=count($s['items'])?></td><td><span class="pill"><?=ptE($s['status']==='PENDING_RECEIPT'?'AWAITING RECEIPT':$s['status'])?></span></td><td><div class="rowActions"><a target="_blank" rel="noopener" href="property-transfers.php?organization_id=<?=ptE($requested)?>&amp;id=<?=ptE($t['id'])?>&amp;print=transfer">Print <?=ptE($t['type'])?></a><a target="_blank" rel="noopener" href="property-transfers.php?organization_id=<?=ptE($requested)?>&amp;id=<?=ptE($t['id'])?>&amp;print=ris">Companion RIS</a></div></td><td>
 <?php if($s['status']==='PENDING_RECEIPT'&&$s['transfer_kind']==='INTERNAL'&&(int)$s['source_school_id']===$requested):?>
 <p>Older internal transfer awaiting IPDAMS custodian update.</p><form method="post"><input type="hidden" name="_csrf" value="<?=ptE($_SESSION['csrf'])?>"><input type="hidden" name="organization_id" value="<?=ptE($requested)?>"><input type="hidden" name="action" value="record_pending"><input type="hidden" name="transfer_id" value="<?=ptE($t['id'])?>"><button type="submit">Apply saved internal transfer</button></form>
 <?php elseif($s['status']==='PENDING_RECEIPT'&&$s['transfer_kind']==='EXTERNAL'):?>Awaiting receiving-office inspection. The receiving school or Division Office can open Incoming Transfers to record physical acceptance.
 <?php elseif($s['status']==='RECORDED'):?>Custodian updated in IPDAMS; paper copy kept separately
-<?php elseif($s['status']==='RECEIVED'):?>Historical signed handover recorded
+<?php elseif($s['status']==='RECEIVED'):?>Receiving-office acceptance recorded; signed paper documents remain external
 <?php elseif($s['status']==='CANCELLED'):?>Cancelled
 <?php else:?>Requires review<?php endif;?>
 <?php if($s['status']==='PENDING_RECEIPT'&&(int)$s['source_school_id']===$requested):?><form method="post"><input type="hidden" name="_csrf" value="<?=ptE($_SESSION['csrf'])?>"><input type="hidden" name="organization_id" value="<?=ptE($requested)?>"><input type="hidden" name="action" value="cancel"><input type="hidden" name="transfer_id" value="<?=ptE($t['id'])?>"><label>Cancel pending transfer</label><input name="reason" minlength="8" maxlength="240" required placeholder="Reason for cancellation"><button type="submit">Cancel pending</button></form><?php endif;?></td></tr><?php endforeach;?>

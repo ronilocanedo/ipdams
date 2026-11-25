@@ -6,16 +6,25 @@
 const h=React.createElement;
 const fields=[['date_month','Date month'],['date_day','Date day'],['date_year','Date year'],['payee','Payee'],['numeric','Numeric amount'],['words','Amount in words'],['signatory','Printed signatory']];
 const defaults=()=>({width_mm:205,height_mm:82,font_pt:10,positions:{date_month:{x:143,y:11},date_day:{x:155,y:11},date_year:{x:169,y:11},payee:{x:22,y:32},numeric:{x:158,y:31},words:{x:18,y:48},signatory:{x:142,y:65}}});
-const digits=(value)=>Number(value).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
-function amountWords(value){
-    if(!/^[0-9]+(?:\.[0-9]{1,2})?$/.test(String(value).trim()))return 'AMOUNT REQUIRES VERIFICATION';
-    const num=Number(value);
-    if(!Number.isSafeInteger(Math.floor(num))||num<0||num>999999999.99)return 'AMOUNT REQUIRES VERIFICATION';
+// Read saved check amounts literally. Never reconstruct them from DV gross/net,
+// withholding totals, floats, or missing values. A missing issued-check amount
+// must be visible as an error instead of an invented zero.
+function parseCheckAmount(raw){
+    const value=String(raw??'').trim();
+    if(!/^(?:0|[1-9][0-9]{0,8})(?:\.[0-9]{1,2})?$/.test(value))return null;
+    const parts=value.split('.');
+    const whole=Number(parts[0]), cents=Number((parts[1]||'').padEnd(2,'0'));
+    if((whole===0&&cents===0)||!Number.isSafeInteger(whole)||whole>999999999)return null;
+    return {whole,cents,display:whole.toLocaleString('en-PH')+'.'+String(cents).padStart(2,'0')};
+}
+function amountWords(raw){
+    const parsed=parseCheckAmount(raw);
+    if(!parsed)return 'AMOUNT REQUIRES VERIFICATION';
     const ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
     const tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
     const small=n=>n<20?ones[n]:(tens[Math.floor(n/10)]+(n%10?' '+ones[n%10]:''));
     const hundreds=n=>(n>=100?ones[Math.floor(n/100)]+' Hundred'+(n%100?' ':''):'')+(n%100?small(n%100):'');
-    const integer=Math.floor(num),cent=Math.round((num-integer)*100);
+    const integer=parsed.whole,cent=parsed.cents;
     const a=[Math.floor(integer/1000000),Math.floor(integer/1000)%1000,integer%1000];
     const s=a.map((v,i)=>v?hundreds(v)+(i===0?' Million':i===1?' Thousand':''):'').filter(Boolean).join(' ')||'Zero';
     return s+' Pesos and '+String(cent).padStart(2,'0')+'/100 Only';
@@ -118,8 +127,9 @@ class CheckProof extends React.Component {
         const p=profile.positions;
         const {dv,checkNo,payee,amount}=this.props;
         const rawDate=/^\d{4}-\d{2}-\d{2}$/.test(String(dv?.document_date||''))?dv.document_date:'';
+        const parsedAmount=parseCheckAmount(amount);
         const f={date_month:rawDate?rawDate.slice(5,7):'MM',date_day:rawDate?rawDate.slice(8,10):'DD',date_year:rawDate?rawDate.slice(0,4):'YYYY',
-            payee:payee||'PAYEE PENDING',numeric:Number.isFinite(Number(amount))?'₱'+digits(amount):'AMOUNT PENDING',words:amountWords(amount||''),signatory:'AUTHORIZED SIGNATORY — VERIFY SCHOOL APPOINTMENT'};
+            payee:payee||'PAYEE REQUIRES VERIFICATION',numeric:parsedAmount?'₱'+parsedAmount.display:'AMOUNT REQUIRES VERIFICATION',words:amountWords(amount),signatory:'AUTHORIZED SIGNATORY — VERIFY SCHOOL APPOINTMENT'};
         return h('div',{className:'check-proof-overflow'},
             h('div',{className:'check-proof-paper',style:{width:profile.width_mm+'mm',height:profile.height_mm+'mm',fontSize:profile.font_pt+'pt'},
                 role:'img','aria-label':'Non-negotiable alignment proof with date, payee and amount'},
@@ -148,12 +158,18 @@ class CheckProof extends React.Component {
         return h('section',{className:'surface check-proof-container','aria-label':'Check alignment preview'},
             h('div',{className:'check-proof-head'},
                 h('div',null,h('h3',null,mode==='ISSUED'?'Issued check — printing proof':'Check preview and school printer alignment'),
-                    h('p',{className:'hint'},'View the selected Business or Proprietor payee. This proof cannot modify the issued check or DV and is never a negotiable bank check.')),
+                    h('p',{className:'hint'},'Use the exact saved check payee and amount to verify field alignment. This test proof never modifies a check, DV or bank record, and is not negotiable.')),
                 close?h('button',{type:'button',className:'outline',onClick:close},'Close check proof'):null),
             this.state.loading?h('p',{className:'hint'},'Loading your school’s saved printer layout…'):null,
             this.state.error?h('p',{className:'error',role:'alert'},this.state.error):null,
             this.proof(),
-            h('p',{className:'hint'},'School-specific layout: '+(unavailable?'not loaded':this.state.version?'saved version '+this.state.version:'default (unsaved)')+'. The date is from the finalized DV. Signatory is a placeholder until its current registered appointment is verified.'),
+            h('div',{className:'check-proof-source',role:'status'},
+                h('strong',null,'Read-only proof data'),
+                h('span',null,'Check serial: '+String(this.props.checkNo||'not issued')),
+                h('span',null,'Payee: '+String(this.props.payee||'not recorded')),
+                h('span',null,'Check amount: '+(parseCheckAmount(this.props.amount)?'₱'+parseCheckAmount(this.props.amount).display:'not available — verify the saved check record')),
+                h('span',null,'Date: finalized DV document date; confirm the intended check date against physical stationery')),
+            h('p',{className:'hint'},'School-specific layout: '+(unavailable?'not loaded':this.state.version?'saved version '+this.state.version:'default (unsaved)')+'. The date is from the finalized DV, not a recorded check-date field. Signatory remains a placeholder until the current authorized check appointment is independently verified.'),
             h('div',{className:'check-proof-actions'},
                 h('button',{type:'button',className:'outline',disabled:!editable,onClick:()=>this.setState(s=>({editor:!s.editor}))},this.state.editor?'Hide alignment settings':'Adjust check positions'),
                 h('button',{type:'button',className:'outline',disabled:!editable,onClick:()=>window.print()},'Print TEST alignment sheet')),
@@ -187,5 +203,7 @@ class CheckProof extends React.Component {
             h('p',{className:'check-proof-warning'},'TEST PRINT ONLY — NOT NEGOTIABLE. Official check printing and verified bank-cash sufficiency are not activated by this feature.'));
     }
 }
+window.IpdamsCheckText={parseCheckAmount,amountWords};
+window.IpdamsCheckText={parseCheckAmount,amountWords};
 window.IpdamsCheckProof=CheckProof;
 })();

@@ -1,0 +1,54 @@
+/* v0.2.443 - DV register action icons; scoped to the two voucher registers. */
+.dv-reg-actions .dv-reg-action-group,
+.dv-mobile-card-actions { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.dv-register-table .dv-reg-actions { min-width:182px; max-width:196px; padding:9px 7px; }
+.dv-reg-actions .dv-register-action,
+.dv-mobile-card-actions .dv-register-action {
+  box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center;
+  flex:0 0 33px; width:33px; height:34px; min-width:33px; min-height:34px;
+  padding:0; margin:0; border:1px solid #d5e5e7; border-radius:9px;
+  background:#f6fafb; color:#156d74; font:inherit; cursor:pointer;
+  text-decoration:none; vertical-align:middle; line-height:1;
+  transition:background .15s ease,border-color .15s ease,box-shadow .15s ease;
+  position:relative;
+}
+.dv-register-action-svg { display:block; pointer-events:none; }
+.dv-reg-actions .dv-register-action:hover,
+.dv-mobile-card-actions .dv-register-action:hover {
+  background:#e3f4f2; border-color:#239f9c; color:#086e72;
+}
+.dv-reg-actions .dv-register-action:focus-visible,
+.dv-mobile-card-actions .dv-register-action:focus-visible {
+  outline:3px solid #139f9c; outline-offset:2px; background:#e3f4f2;
+}
+.dv-reg-actions .dv-register-action:disabled,
+.dv-mobile-card-actions .dv-register-action:disabled {
+  opacity:.45; cursor:not-allowed;
+}
+.dv-reg-actions .dv-register-action--danger,
+.dv-mobile-card-actions .dv-register-action--danger {
+  background:#fff8f7; border-color:#f0d3d1; color:#aa3439;
+}
+.dv-reg-actions .dv-register-action--danger:hover,
+.dv-mobile-card-actions .dv-register-action--danger:hover {
+  background:#ffe9e7; border-color:#d96966; color:#9b252a;
+}
+/* Native title supplies hover tooltips beyond the clipped desktop table. On
+   keyboard focus the same name is visible without requiring a pointer. */
+.dv-reg-actions .dv-register-action:focus-visible::after,
+.dv-mobile-card-actions .dv-register-action:focus-visible::after {
+  content:attr(data-action-label); position:absolute; left:50%; bottom:calc(100% + 6px);
+  transform:translateX(-50%); z-index:50; width:max-content; max-width:190px;
+  padding:5px 8px; color:white; background:#153849; border-radius:5px;
+  font-size:12px; font-weight:650; line-height:1.25; pointer-events:none;
+}
+@media(max-width:650px) {
+  .dv-mobile-card-actions { display:flex; gap:9px; align-items:center; justify-content:flex-start; }
+  .dv-mobile-card-actions .dv-register-action {
+    flex:0 0 44px; width:44px; height:44px; min-width:44px; min-height:44px;
+    padding:0; margin:0; border-radius:10px;
+  }
+  .dv-mobile-card-actions .dv-register-action:only-child { grid-column:auto; }
+  .dv-mobile-card-actions .dv-register-action-svg { width:21px; height:21px; }
+}
+@media(prefers-reduced-motion:reduce) { .dv-register-action {transition:none!important} }

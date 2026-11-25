@@ -54,7 +54,7 @@ $collapseRecord=!$isActiveUpdate && !$featured;
 <?php }
 
 $backupReady=null;$backupStatus='';$backupPreflight=null;$error='';$success='';$results=null;$user=null;$lastUpload=null;$resetPreview=null;$resetOutcome=null;$schemaHealth=null;$dateQuality=null;
-$activeTab=(string)($_POST['settings_tab']??$_GET['tab']??'updates');if(!in_array($activeTab,['updates','health','sql','reset','numbering','branding','backups'],true))$activeTab='updates';
+$activeTab=(string)($_POST['settings_tab']??$_GET['tab']??'updates');if(!in_array($activeTab,['updates','health','sql','reset','numbering','branding','backups','maintenance'],true))$activeTab='updates';
 try{
     $db=database();
     // School users can open the isolated numbering page only. They never enter
@@ -75,18 +75,24 @@ try{
     }
     $canBrand=brandingOwner($db,$user);
     if($activeTab==='branding')brandingRequireOwner($db,$user);
+    if($activeTab==='maintenance')maintenanceRequireOwner($db,$user);
     if($activeTab==='updates' && isset($_GET['migration_backup']))settingsDownloadMigrationBackup((string)$_GET['migration_backup'],(int)$user['id']);
     if($activeTab==='reset' && isset($_GET['reset_download'])) resetDownload($db,(int)$user['id'],(string)$_GET['reset_download']);
     if($activeTab==='backups' && isset($_GET['backup_download'])) throw new DomainError('Use the authenticated download form to retrieve backups',405);
     if($_SERVER['REQUEST_METHOD']==='POST'){
         demand(hash_equals((string)($_SESSION['csrf']??''),(string)($_POST['_csrf']??'')),'Invalid CSRF token',403);
         $action=(string)($_POST['action']??'');
-        if(in_array($action,['rollback','query_write','reset_apply','backup_create','backup_create_source','numbering_save'],true)){
+        if(in_array($action,['rollback','query_write','reset_apply','backup_create','backup_create_source','numbering_save','maintenance_schedule','maintenance_enable_now','maintenance_disable','maintenance_preset_save','maintenance_preset_delete'],true)){
             $row=one($db,'SELECT password_hash FROM users WHERE id=?',[$user['id']]);
             demand($row!==null&&password_verify((string)($_POST['password']??''),(string)$row['password_hash']),'Current password incorrect',403);
         }
         if(in_array($action,['query_write','apply','rollback','upload','branding_upload','branding_restore','backup_create','backup_create_source'],true))demand(!is_file(settingsPrivate().'/reset-maintenance.lock'),'System reset in progress',503);
-        if($action==='backup_create'){
+        if(str_starts_with($action,'maintenance_')){
+            demand($activeTab==='maintenance','Open Maintenance Control before changing system access',403);
+            maintenanceRequireOwner($db,$user);
+            demand($isHttps||cfg('APP_ENV')!=='production','HTTPS is required for owner maintenance controls',403);
+            $success=maintenanceUpdate($_POST,(int)$user['id']);
+        }elseif($action==='backup_create'){
             demand($activeTab==='backups','Open Backup Center to create a full backup',403);
             demand($isHttps||cfg('APP_ENV')!=='production','HTTPS is required for confidential backups',403);
             $mode=(string)($_POST['backup_mode']??'');
@@ -259,9 +265,9 @@ if($user && $activeTab==='reset' && !$resetPreview && isset($_SESSION['reset_pre
 }
 try{$state=settingsState();$releases=$user?settingsReleaseHistory():[];}catch(Throwable $ex){$state=['version'=>'unknown','installed_at'=>null,'release_id'=>null];$releases=[];$error=$error?:'Cannot read update state. Check private storage permissions.';}
 ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IPDAMS · System Settings</title><link rel="stylesheet" href="settings.css?v=02207-scroll"><link rel="stylesheet" href="assets/branding-ui.css?v=02132"><link rel="stylesheet" href="assets/branding-pages.css?v=02133"><link rel="stylesheet" href="assets/dense-ui.css?v=0225"><script src="assets/settings-tools.js?v=02205-shell" defer></script></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IPDAMS · System Settings</title><link rel="stylesheet" href="settings.css?v=02207-scroll"><link rel="stylesheet" href="assets/branding-ui.css?v=02132"><link rel="stylesheet" href="assets/branding-pages.css?v=0426-brand-home"><link rel="stylesheet" href="assets/dense-ui.css?v=0225"><script src="assets/settings-tools.js?v=02205-shell" defer></script><link rel="stylesheet" href="assets/maintenance-406.css?v=0406"><link rel="stylesheet" href="assets/maintenance-408.css?v=0408"><script src="assets/maintenance-406-settings.js?v=0407" defer></script><script src="assets/maintenance-406.js?v=0407" defer></script></head><body>
 <div class="settings-shell"><aside class="settings-sidebar" aria-label="IPDAMS application sidebar">
-<div class="settings-brand"><span class="settings-logo"><img src="api/branding.php?kind=icon" alt="" class="ipdams-settings-icon"></span><div><strong>IPDAMS</strong><small>OPERATIONS PLATFORM</small></div></div>
+<a class="settings-brand ipdams-home-link" href="index.php" aria-label="IPDAMS — Go to Dashboard" title="Go to Dashboard"><span class="settings-logo"><img src="api/branding.php?kind=icon" alt="" class="ipdams-settings-icon"></span><div><strong>IPDAMS</strong><small>OPERATIONS PLATFORM</small></div></a>
 <div class="settings-side-label">WORKSPACE</div>
 <details class="settings-nav-drawer" open><summary class="settings-nav-drawer-toggle">Browse workspace sections</summary>
 <nav class="settings-main-nav" aria-label="Workspace sections">
@@ -296,11 +302,108 @@ foreach($settingsNavigation as [$section,$symbol,$group]):
 </nav></details>
 <div class="settings-side-foot"><span class="settings-avatar"><?=e(strtoupper(substr((string)($user['full_name']??'I'),0,1)))?></span><div class="settings-side-account"><strong><?=e((string)($user['full_name']??'Administrator'))?></strong><small>IPDAMS v<?=e((string)$state['version'])?></small></div></div>
 </aside>
-<div class="settings-content"><main><div class="ipdams-settings-banner"><img src="api/branding.php?kind=header" alt="IPDAMS — by Loy"><div><div class="settings-eyebrow">IPDAMS / SETTINGS</div><h1>System Settings</h1><p class="lead">Manage authorized system configuration and updates without leaving the IPDAMS layout.</p></div></div>
+<div class="settings-content"><main><div class="ipdams-settings-banner"><a class="ipdams-settings-home" href="index.php" aria-label="IPDAMS header — Go to Dashboard" title="Go to Dashboard"><img src="api/branding.php?kind=header" alt="IPDAMS — by Loy"></a><div><div class="settings-eyebrow">IPDAMS / SETTINGS</div><h1>System Settings</h1><p class="lead">Manage authorized system configuration and updates without leaving the IPDAMS layout.</p></div></div>
 <?php if(!$user):?><section class="panel"><h2><?=!empty($success)?'Reset completed':'Access restricted'?></h2><?php if($success):?><p class="alert good"><?=e($success)?></p><p><a href="index.php">Return to login</a></p><?php else:?><p>Sign in using an active Super Administrator account, then reopen Settings.</p><?php endif;?></section><?php else:?>
-<nav class="settings-tabs" aria-label="Settings sections"><a class="settings-tab <?=$activeTab==='updates'?'selected':''?>" href="settings.php?tab=updates" <?=$activeTab==='updates'?'aria-current="page"':''?>>System Updates</a><a class="settings-tab <?=$activeTab==='health'?'selected':''?>" href="settings.php?tab=health" <?=$activeTab==='health'?'aria-current="page"':''?>>Database Health</a><a class="settings-tab <?=$activeTab==='sql'?'selected':''?>" href="settings.php?tab=sql" <?=$activeTab==='sql'?'aria-current="page"':''?>>SQL Query</a><a class="settings-tab <?=$activeTab==='reset'?'selected':''?>" href="settings.php?tab=reset" <?=$activeTab==='reset'?'aria-current="page"':''?>>Data Reset</a><a class="settings-tab <?=$activeTab==='numbering'?'selected':''?>" href="settings.php?tab=numbering" <?=$activeTab==='numbering'?'aria-current="page"':''?>>School Numbering</a><a class="settings-tab <?=$activeTab==='backups'?'selected':''?>" href="settings.php?tab=backups" <?=$activeTab==='backups'?'aria-current="page"':''?>>Backups</a><?php if($canBrand):?><a class="settings-tab <?=$activeTab==='branding'?'selected':''?>" href="settings.php?tab=branding" <?=$activeTab==='branding'?'aria-current="page"':''?>>System Branding</a><?php endif;?></nav>
+<nav class="settings-tabs" aria-label="Settings sections"><a class="settings-tab <?=$activeTab==='updates'?'selected':''?>" href="settings.php?tab=updates" <?=$activeTab==='updates'?'aria-current="page"':''?>>System Updates</a><a class="settings-tab <?=$activeTab==='health'?'selected':''?>" href="settings.php?tab=health" <?=$activeTab==='health'?'aria-current="page"':''?>>Database Health</a><a class="settings-tab <?=$activeTab==='sql'?'selected':''?>" href="settings.php?tab=sql" <?=$activeTab==='sql'?'aria-current="page"':''?>>SQL Query</a><a class="settings-tab <?=$activeTab==='reset'?'selected':''?>" href="settings.php?tab=reset" <?=$activeTab==='reset'?'aria-current="page"':''?>>Data Reset</a><a class="settings-tab <?=$activeTab==='numbering'?'selected':''?>" href="settings.php?tab=numbering" <?=$activeTab==='numbering'?'aria-current="page"':''?>>School Numbering</a><a class="settings-tab <?=$activeTab==='backups'?'selected':''?>" href="settings.php?tab=backups" <?=$activeTab==='backups'?'aria-current="page"':''?>>Backups</a><?php if($canBrand):?><a class="settings-tab <?=$activeTab==='branding'?'selected':''?>" href="settings.php?tab=branding" <?=$activeTab==='branding'?'aria-current="page"':''?>>System Branding</a><a class="settings-tab <?=$activeTab==='maintenance'?'selected':''?>" href="settings.php?tab=maintenance" <?=$activeTab==='maintenance'?'aria-current="page"':''?>>Maintenance Control</a><?php endif;?></nav>
 <?php if($error):?><p class="alert bad" role="alert"><?=e($error)?></p><?php endif;?><?php if($success):?><p class="alert good" role="status"><?=e($success)?></p><?php endif;?>
-<?php if($activeTab==='branding' && $canBrand):?>
+<?php if($activeTab==='maintenance' && $canBrand):
+$maintenance=maintenanceRead();$liveMaintenance=maintenancePublicState(); ?>
+<section class="panel ipdams-maintenance-control ipdams-maintenance-408" aria-labelledby="mc-title">
+<header class="mc-header">
+  <div class="mc-title-area">
+    <div class="mc-eyebrow">OWNER ACCESS · SYSTEM OPERATIONS</div>
+    <h2 id="mc-title">Maintenance Control</h2>
+    <p>Schedule downtime, notify users in advance, and control the system lock. Unfinished transactions are never automatically finalized.</p>
+  </div>
+  <div class="mc-current" role="status">
+    <span class="mc-current-label">CURRENT STATUS</span>
+    <strong class="mc-status mc-status--<?=e(strtolower((string)$liveMaintenance['status']))?>"><?=e((string)$liveMaintenance['status'])?></strong>
+    <small>Revision <?=e((string)$maintenance['revision'])?></small>
+  </div>
+</header>
+<?php if(!empty($liveMaintenance['starts_at'])): ?>
+<div class="mc-schedule-note"><span class="mc-note-dot" aria-hidden="true"></span><strong>Scheduled start</strong><span><?=e((string)$maintenance['starts_at'])?> · Philippine time</span></div>
+<?php endif; ?>
+<form method="post" action="settings.php?tab=maintenance" class="mc-form" autocomplete="off" id="maintenance-schedule-form">
+<input type="hidden" name="_csrf" value="<?=e($_SESSION['csrf'])?>"><input type="hidden" name="settings_tab" value="maintenance">
+<input type="hidden" name="action" value="maintenance_schedule"><input type="hidden" name="revision" value="<?=(int)$maintenance['revision']?>">
+<section class="mc-section" aria-labelledby="mc-schedule-heading">
+  <div class="mc-section-heading"><span class="mc-step" aria-hidden="true">01</span><div><h3 id="mc-schedule-heading">Schedule</h3><p>Set when maintenance begins and how often it repeats.</p></div></div>
+  <div class="mc-grid mc-grid--3">
+    <label>Start date &amp; time <small>Asia/Manila</small><input type="datetime-local" name="starts_at" value="<?=e(substr((string)$maintenance['starts_at'],0,16))?>" required></label>
+    <label>Repeat schedule<select name="repeat" id="maintenance-repeat">
+      <option value="NONE" <?=($maintenance['repeat']==='NONE'?'selected':'')?>>One time</option>
+      <option value="DAILY" <?=($maintenance['repeat']==='DAILY'?'selected':'')?>>Daily</option>
+      <option value="WEEKLY" <?=($maintenance['repeat']==='WEEKLY'?'selected':'')?>>Weekly</option>
+      <option value="MONTHLY" <?=($maintenance['repeat']==='MONTHLY'?'selected':'')?>>Monthly</option>
+      <option value="QUARTERLY" <?=($maintenance['repeat']==='QUARTERLY'?'selected':'')?>>Quarterly</option>
+      <option value="SEMIANNUAL" <?=($maintenance['repeat']==='SEMIANNUAL'?'selected':'')?>>Semiannually</option>
+      <option value="ANNUAL" <?=($maintenance['repeat']==='ANNUAL'?'selected':'')?>>Annually</option>
+    </select></label>
+    <label>Downtime duration <small>Minutes; 0 = manual unlock (one time only)</small><input type="number" name="duration_minutes" id="maintenance-duration" value="<?=(int)$maintenance['duration_minutes']?>" min="0" max="1440" required></label>
+  </div>
+</section>
+<section class="mc-section" aria-labelledby="mc-notice-heading">
+  <div class="mc-section-heading"><span class="mc-step" aria-hidden="true">02</span><div><h3 id="mc-notice-heading">Countdown &amp; activation</h3><p>The notice and the actual system lock are separate controls.</p></div></div>
+  <div class="mc-grid mc-grid--2 mc-lead-fields">
+    <label>Notice lead time <small>Custom 1–365 days</small><input type="number" name="notice_lead_days" id="maintenance-notice-days" value="<?=e((string)($maintenance['notice_lead_days']??max(1,(int)ceil(((int)$maintenance['lead_minutes'])/1440))))?>" min="1" max="365" step="1" required></label>
+    <label>Quick selection <small>Optional shortcut</small><select id="maintenance-quick-days"><option value="">Use custom days</option><option value="1">1 day</option><option value="3">3 days</option><option value="5">5 days</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option><option value="31">31 days</option></select></label>
+  </div>
+  <div class="mc-switch-grid">
+    <label class="mc-switch"><input type="checkbox" name="notice_auto_publish" value="1" <?=($maintenance['notice_auto_publish']?'checked':'')?>><span><strong>Auto-show announcement</strong><small>Display at the configured lead time.</small></span></label>
+    <label class="mc-switch"><input type="checkbox" name="notice_manual_enabled" value="1" <?=($maintenance['notice_manual_enabled']?'checked':'')?>><span><strong>Show announcement now</strong><small>Display immediately, even before lead time.</small></span></label>
+    <label class="mc-switch mc-switch--lock"><input type="checkbox" name="auto_activate" value="1" <?=($maintenance['auto_activate']?'checked':'')?>><span><strong>Automatically lock at start</strong><small>Block non-owner access when countdown ends.</small></span></label>
+  </div>
+</section>
+<section class="mc-section" aria-labelledby="mc-message-heading">
+  <div class="mc-section-heading"><span class="mc-step" aria-hidden="true">03</span><div><h3 id="mc-message-heading">Messages</h3><p>Choose a saved announcement or write your own notice.</p></div></div>
+  <label class="mc-preset-picker">Message preset<select id="maintenance-preset-select"><option value="">Custom message</option><?php foreach($maintenance['presets'] as $i=>$preset):?><option value="<?=$i?>"><?=e((string)$preset['name'])?></option><?php endforeach;?></select></label>
+  <div class="mc-message-grid">
+    <div class="mc-message-card"><h4>Countdown notice</h4>
+      <label>Notice heading<input name="header" maxlength="100" value="<?=e((string)$maintenance['header'])?>" required></label>
+      <label>Message <small>Use [countdown] to show time remaining.</small><textarea name="message" maxlength="600" rows="2" required><?=e((string)$maintenance['message'])?></textarea></label>
+    </div>
+    <div class="mc-message-card"><h4>Maintenance lock screen</h4>
+      <label>Page heading<input name="active_header" maxlength="100" value="<?=e((string)$maintenance['active_header'])?>" required></label>
+      <label>Message<textarea name="active_message" maxlength="600" rows="2" required><?=e((string)$maintenance['active_message'])?></textarea></label>
+    </div>
+  </div>
+</section>
+<div class="mc-form-footer">
+  <label>Owner password <small>Required to save changes</small><input type="password" name="password" autocomplete="current-password" required></label>
+  <button type="submit" class="mc-primary-button">Save maintenance schedule</button>
+</div>
+</form>
+<details class="mc-extra" id="mc-presets">
+  <summary><span class="mc-summary-icon" aria-hidden="true">▤</span><span><strong>Saved message presets</strong><small><?=count($maintenance['presets'])?> saved · Reuse without changing schedule dates</small></span><span class="mc-chevron" aria-hidden="true">⌄</span></summary>
+  <div class="mc-extra-body">
+    <form method="post" action="settings.php?tab=maintenance" class="mc-preset-form">
+      <input type="hidden" name="settings_tab" value="maintenance"><input type="hidden" name="_csrf" value="<?=e($_SESSION['csrf'])?>"><input type="hidden" name="action" value="maintenance_preset_save"><input type="hidden" name="revision" value="<?=(int)$maintenance['revision']?>">
+      <label>Preset name<input name="preset_name" maxlength="48" placeholder="e.g., Christmas Maintenance" required></label>
+      <label>Heading<input name="preset_header" maxlength="100" required></label>
+      <label class="mc-full">Announcement text<textarea name="preset_message" maxlength="600" rows="2" required></textarea></label>
+      <label>Owner password<input type="password" name="password" autocomplete="current-password" required></label>
+      <button type="submit" class="mc-primary-button">Save preset</button>
+    </form>
+    <?php if($maintenance['presets']):?><div class="mc-preset-list"><?php foreach($maintenance['presets'] as $preset):?>
+      <div class="mc-preset-row"><div><strong><?=e((string)$preset['name'])?></strong><small><?=e((string)$preset['header'])?></small></div>
+      <form method="post" action="settings.php?tab=maintenance"><input type="hidden" name="settings_tab" value="maintenance"><input type="hidden" name="_csrf" value="<?=e($_SESSION['csrf'])?>"><input type="hidden" name="action" value="maintenance_preset_delete"><input type="hidden" name="revision" value="<?=(int)$maintenance['revision']?>"><input type="hidden" name="preset_name" value="<?=e((string)$preset['name'])?>"><label class="mc-inline-password"><span class="mc-sr-only">Owner password for deleting <?=e((string)$preset['name'])?></span><input type="password" name="password" placeholder="Owner password" aria-label="Owner password for deleting preset" autocomplete="current-password" required></label><button type="submit" class="mc-secondary-button" data-maintenance-confirm="Delete this announcement preset?">Delete</button></form></div>
+    <?php endforeach;?></div><?php endif;?>
+  </div>
+</details>
+<details class="mc-extra mc-extra--danger" id="mc-emergency" <?=!empty($liveMaintenance['active'])?'open':''?>>
+  <summary><span class="mc-summary-icon" aria-hidden="true">⚑</span><span><strong>Emergency maintenance controls</strong><small>Lock now or unlock and cancel scheduled maintenance</small></span><span class="mc-chevron" aria-hidden="true">⌄</span></summary>
+  <div class="mc-extra-body">
+    <p class="mc-help">These actions take effect immediately. Locking blocks non-owner API access; unlocking also cancels future scheduled activation.</p>
+    <div class="mc-emergency-grid">
+      <form method="post" action="settings.php?tab=maintenance"><input type="hidden" name="settings_tab" value="maintenance"><input type="hidden" name="_csrf" value="<?=e($_SESSION['csrf'])?>"><input type="hidden" name="revision" value="<?=(int)$maintenance['revision']?>"><input type="hidden" name="action" value="maintenance_enable_now"><label>Owner password<input type="password" name="password" autocomplete="current-password" required></label><button type="submit" class="mc-danger-button" data-maintenance-confirm="Lock all non-owner IPDAMS sessions immediately?">Lock system now</button></form>
+      <form method="post" action="settings.php?tab=maintenance"><input type="hidden" name="settings_tab" value="maintenance"><input type="hidden" name="_csrf" value="<?=e($_SESSION['csrf'])?>"><input type="hidden" name="revision" value="<?=(int)$maintenance['revision']?>"><input type="hidden" name="action" value="maintenance_disable"><label>Owner password<input type="password" name="password" autocomplete="current-password" required></label><button type="submit" class="mc-secondary-button" data-maintenance-confirm="Unlock the system and cancel its future schedule?">Disable / unlock maintenance</button></form>
+    </div>
+  </div>
+</details>
+<script type="application/json" id="maintenance-preset-data"><?=json_encode($maintenance['presets'],JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT)?></script>
+</section>
+<?php elseif($activeTab==='branding' && $canBrand):?>
 <section class="panel ipdams-branding-panel">
 <h2>System Branding — Owner Only</h2>
 <p class="muted">Set the global IPDAMS application icon and wide header. These images appear in the application interface only; official DepEd document letterheads and procurement forms remain unchanged. Only the original owner account can replace them.</p>

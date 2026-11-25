@@ -145,3 +145,42 @@ nav.property-workspace-subtabs {
 @media print {
     .property-workspace-navigation { display: none !important; }
 }
+
+/* v0.2.378 QA candidate — bound Property Accountability's responsive layout.
+   Its tables retain their intrinsic widths and scroll inside the property
+   work area instead of expanding the document on narrow screens.
+   Scope intentionally excludes Inventory Management, other pages and print. */
+@media screen and (max-width: 720px) {
+    .section-stack.inventory-workspace.ipdams-property-modern {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+    .section-stack.inventory-workspace.ipdams-property-modern .property-workspace-navigation,
+    .section-stack.inventory-workspace.ipdams-property-modern .property-workspace-panel,
+    .section-stack.inventory-workspace.ipdams-property-modern .inventory-tab-content,
+    .section-stack.inventory-workspace.ipdams-property-modern .surface,
+    .section-stack.inventory-workspace.ipdams-property-modern .table-wrap,
+    .section-stack.inventory-workspace.ipdams-property-modern .table-scroll {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+    .section-stack.inventory-workspace.ipdams-property-modern .property-workspace-panel {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .section-stack.inventory-workspace.ipdams-property-modern .table-wrap,
+    .section-stack.inventory-workspace.ipdams-property-modern .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .section-stack.inventory-workspace.ipdams-property-modern .property-workspace-subnav,
+    .section-stack.inventory-workspace.ipdams-property-modern .property-workspace-groups {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+}

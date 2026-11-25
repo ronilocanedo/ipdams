@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/MaintenanceService.php';
 const IPDAMS_ROOT = __DIR__ . '/..';
 date_default_timezone_set('Asia/Manila');
 function loadEnv(string $path): void {
@@ -78,7 +79,18 @@ function currentUser(PDO $db): array {
     demand(is_string($_SESSION['credential_stamp']??null) &&
         hash_equals($expected,$_SESSION['credential_stamp']),
         'Session expired. Please sign in again.',401);
+    if(!empty($_SESSION['password_reset_force_change'])) {
+        $temporary=one($db,"SELECT status,expires_at FROM password_reset_requests WHERE user_id=? AND temporary_credential_stamp=? ORDER BY id DESC LIMIT 1",[(int)$u['id'],$expected]);
+        demand($temporary!==null && $temporary['status']==='APPROVED' && strtotime((string)$temporary['expires_at'])>=time(), 'Temporary password expired. Request a new Division-approved reset.',403);
+        $route=(string)($_GET['route']??'');
+        $uriPath=(string)parse_url((string)($_SERVER['REQUEST_URI']??''),PHP_URL_PATH);
+        $authApi=str_ends_with($uriPath,'/api/index.php') &&
+            in_array($route,['auth.session','auth.logout','auth.change_password'],true);
+        demand($authApi || defined('IPDAMS_PASSWORD_RECOVERY_CHANGE_PAGE'),
+            'Change the temporary password before accessing IPDAMS records',403);
+    }
     unset($u['password_hash']); // Never include credential hashes in API/domain user payloads.
+    maintenanceGuard($db,$u); // Global lock: all entrypoints using currentUser(), not UI-only.
     return $u;
 }
 /** School-scoped Division MOOE viewer scope is derived on EVERY request from the

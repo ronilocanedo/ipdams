@@ -40,6 +40,53 @@ const dvCompactSavedWithholding = (h, r, components) => {
             'Saved tax components; not editable here. Printing does not record remittance.'));
 };
 
+// v0.2.443: DV register icons are presentational; the original action handlers,
+// access checks, financial state and confirmation dialogs remain authoritative.
+const dvRegisterIcon=(h,name)=>{
+    const path=d=>h('path',{d});
+    const circle=(cx,cy,r)=>h('circle',{cx,cy,r});
+    const shapes={
+        details:[path('M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5S6 18.5 2.5 12Z'),circle(12,12,3)],
+        printer:[path('M6 9V3h12v6'),path('M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2'),path('M6 14h12v7H6z'),circle(18,12,0.65)],
+        actualcheck:[path('M3 5h18v14H3z'),path('M6 9h11M6 12h6'),path('m14 15 2 2 4-5')],
+        checkstatus:[circle(12,12,9),path('M12 7v5l3 2'),path('M8 3l2 2')],
+        proof:[path('M9 4h-3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3'),path('M9 2h6v4H9z'),path('m8 14 3 3 5-6')],
+        bir2307:[path('M7 2h8l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z'),path('M15 2v5h5'),path('M9 12h7M9 15h7M9 18h4')],
+        void:[circle(12,12,9),path('M5.6 5.6 18.4 18.4')],
+        edit:[path('M12 20H4v-8L16.5 3.5a2.1 2.1 0 0 1 3 3L11 15l-4 1 1-4'),path('M14.5 5.5l4 4')],
+        finalize:[circle(12,12,9),path('m8 12 3 3 5-6')]
+    };
+    return h('svg',{className:'dv-register-action-svg',viewBox:'0 0 24 24',width:19,height:19,
+        fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round',
+        'aria-hidden':'true',focusable:'false'},...(shapes[name]||shapes.details));
+};
+const dvRegisterAction=(h,kind,label,props={},tag='button')=>h(tag,{
+    ...props,
+    ...(tag==='button'?{type:'button'}:{}),
+    className:'dv-register-action dv-register-action--'+kind+(kind==='void'?' dv-register-action--danger':''),
+    title:label,'aria-label':label,'data-action-label':label,'data-dv-action':kind
+},dvRegisterIcon(h,kind));
+
+// v0.2.447: repeat printing is allowed at every ordinary check lifecycle stage.
+// Printing is an audited attempt, never a replacement for a check status transition.
+const activeCheckForDv=(checks,dvId)=>{
+    const active=(Array.isArray(checks)?checks:[]).filter(c=>
+        Number(c.dv_id)===Number(dvId) && ['ISSUED','SIGNED','RELEASED','CLEARED'].includes(c.status));
+    return active.length===1?active[0]:null; // Split-check DVs must choose an exact serial in Cash & Bank.
+};
+const checkLifecycleNext=status=>({
+    ISSUED:'Test print or print on approved stationery. Record physical SIGNED separately after signing.',
+    SIGNED:'Print again if needed. Record RELEASED only after verified physical handover.',
+    RELEASED:'Print again if necessary; recorded release remains unchanged. Record CLEARED only with bank evidence.',
+    CLEARED:'Print again if needed for an accountable copy. Bank clearing remains recorded.'
+}[status]||'Review the authorized check correction process; do not print or change status without evidence.');
+const dvCheckAction=(h,dv,checks,canOperate,open)=>{
+    if(dv.status!=='FINALIZED'||!canOperate)return null;
+    const check=activeCheckForDv(checks,dv.id);
+    if(!check)return null;
+    return dvRegisterAction(h,'actualcheck','Print Check',{
+            onClick:()=>open({check_id:Number(check.id)})});
+};
 const semiSubcategoryLabel = value => semiSubcategories.find(([code]) => code === value)?.[1] || '';
 const supplierProfileTypes = ['GOODS','SERVICES','RENTAL','CONTRACTOR','UTILITIES','OTHER'];
 const supplierProfileLabels = {GOODS:'Goods',SERVICES:'Services',RENTAL:'Rental',CONTRACTOR:'Contractor',UTILITIES:'Utilities',OTHER:'Other'};
@@ -101,8 +148,9 @@ const nav = [
 const ipdamsNavigationViews = {
     'Textbooks': ['textbookSection', ['books','receipts','transfers','teacher','disposal','stock','history','reports']],
     'Procurement': ['procurementSection', ['PR','PROCESS']],
+    'Disbursements': ['dvSection', ['vouchers','transfers']],
     'Inventory Management': ['inventorySection', ['stock','ris','issue','opening','movements','special_stock']],
-    'Property Accountability': ['propertySection', ['assets','special_assets','received_assets','edit','register','historical','issue','slips','transfers','incoming','returns','lifecycle','reports']],
+    'Property Accountability': ['propertySection', ['assets','special_assets','received_assets','edit','register','historical','issue','slips','transfers','incoming','returns','lifecycle','reports','stickers']],
     'Travel & Training': ['travelStage', ['REQUEST','AUTHORITY','PLAN','CLAIM']],
     'Fund Management': ['fundSection', ['overview','funds','banks','downloads','mooe','withheld','allocations']],
     'Cash & Bank': ['cashBankSection', ['prepare','inventory','register','reconciliation','ledger','funds','banks']],
@@ -516,7 +564,7 @@ const blankTextbookBookProfile = () => ({
     translator:'',illustrator:'',catalog_source_reference:'',source_url:'',
     verification_note:'',remarks:'',confirmed_official_title:false
 });
-const initial = { user: null, travelStage:'REQUEST',travelRequestFormOpen:false,travelDocuments:{requests:[],authorities:[]},travelClaims:{claims:[],required_evidence:{},cost_types:{}},travelClaimsLoading:false,travelClaimError:'',travelClaimUploadKind:'',travelClaimDetail:null,travelClaimEditing:false,travelClaimSubtab:'CLAIMS',travelClaimSearch:'',travelClaimEditorOpen:false,travelClaimExpenseModal:null,travelClaimDraft:emptyTravelClaim(),travelClaimChecks:emptyTravelVerification(),travelClaimDocumentChecks:{},travelCtcOpen:false,travelCtcDraft:emptyTravelCTC(),travelCtcSaving:false,travelCtcContextText:'',travelCtcContextLoading:false,travelCtcContextWarning:'',travelPlans:{plans:[]},travelPlanCursor:null,travelPlanHasMore:false,travelPlanLoading:false,travelPlanAuthorityId:'',travelPlanDetail:null,travelPlanDraft:emptyTravelPlan(),travelPlanExpenseModal:null,travelPlanError:'',travelPlanActionPending:false,travelReviewDetail:null,travelReviewOpen:false,travelReviewEditing:null,travelReviewStatusFilter:'ALL',travelReviewDraft:{sessions:[],decisions:[]},travelReviewReceiptFilter:'ALL',travelReviewError:'',travelReviewLoading:false,travelNoReceiptOpen:false,travelNoReceiptRows:[],travelNoReceiptCursor:null,travelNoReceiptHasMore:false,travelNoReceiptLoading:false,travelNoReceiptError:'',travelNoReceiptScanned:0,travelCenrrSelected:{},travelCenrrVerified:false,travelLoading:false,travelError:'',travelSignatories:null,travelSignatoriesLoading:false,travelSignatoriesError:'',travelBranding:null,travelBrandingLoading:false,travelBrandingError:'',travelBrandingPending:null,travelBrandingReason:'',travelSignatoryIds:{budget_officer:'',division_accountant:'',asds:'',sds:''},travelSignatoryRegion:'',travelSignatorySalutation:'Sir/Madam:',travelSignatoryReason:'',travelRefreshSignatoryId:'',travelRefreshSignatoryReason:'',travelRequest:emptyTravelRequest(),travelEditId:'',travelEditVersion:0,travelEditReason:'',travelAuthorityRequestId:'',travelAuthorityDate:localToday(),travelApprovalReference:'',travelPaperApproved:false, sessionStatus: 'checking', sessionError: '', csrf: '', orgs: [], organization_id: '', tab: 'Dashboard', busy: false, workspaceLoading: false, workspaceFailures: [], error: '', success: '', lists: {}, eligible: [], eligibleLoading: false, eligibleError: '', eligibleLoadedFor: '', dashboard: {}, accounts: [], loginEmail: '', loginPassword: '', loginPasswordVisible:false, purpose: '', requesting_unit: '', pr_requestor: '', fund_id: '', pr_doc_date: localToday(), prLines: [{ item_id: '', quantity: '1', unit_price: '0.00' }], prRegisterMonth:'',prRegisterYear:'',workflowRegisterMonth:localToday().slice(5,7),workflowRegisterYear:localToday().slice(0,4),workflowExpandedQuotes:[],workflowQuoteBucket:'UNQUOTED',workflowFormOpen:false,prUnits:[],prUnitRecords:[],prUnitsShowInactive:false,prUnitsVersion:0,prUnitsLoading:false,prUnitsError:'',prUnitsDraft:'',prUnitsReason:'',prUnitEdit:'',prUnitName:'',staffData:null,staffLoading:false,mooeData:null,mooeViewerEmail:'',mooeViewerPassword:'',mooeViewerBusy:false,mooeLoading:false,mooeError:'',mooeSchoolId:'',mooeEmployeeId:'',mooeDate:localToday(),mooeBusy:false,mooeNotice:'',mooeHistoricalConfirmed:false,mooeAppointmentReference:'',staffSavingAction:'',staffSavedMessage:'',staffError:'',staffAddOpen:false,staffAddOrg:'',staffFullName:'',staffPosition:'',staffDesignation:'',staffEmployeeNo:'',staffTIN:'',staffAddress:'',staffProfileId:'',staffProfileOrg:'',staffProfileName:'',staffProfileEmployeeNo:'',staffProfileTIN:'',staffProfileAddress:'',staffProfileVersion:0,staffProfileBusy:false,staffEditName:'',staffEditPosition:'',staffEditDesignation:'',staffEditReason:'',staffEditOriginal:null,staffEditProfileOriginal:null,staffShowInactive:false,staffRenameId:'',staffRenameName:'',staffRenameReason:'',staffHeadId:'',staffDvPartA:'',staffDvPartC:'',staffDvPartD:'',staffHeadReason:'',staffCustodianId:'',staffCustodianDate:localToday(),staffCustodianReason:'',staffCustodianAttested:false,staffChair:'',staffCoChair:'',staffMembers:[],staffBacReason:'',staffBacDate:'',staffBacDateReason:'',staffBacAttested:false,prCreateOpen:false, prCreateBaseline:'', prCreateError:'', prEditOpen:false, prEdit:null, prEditError:'', prPickerOpen:'', prPickerQuery:'', prPickerResults:[],prRegistryMatches:[], prPickerLoading:false, prPickerError:'', prPickerActive:0, prQuickAdd:null, prQuickAddBusy:false, prQuickAddError:'', dvEdit:null,dvEditOriginal:'',dvEditError:'',dvParticularsEdit:null,dvParticularsError:'',dvCancel:null,dvCancelError:'',dvComposeOpen:false,dvSearch:'',taxTransferOpen:false,taxTransferData:null,taxTransferLoading:false,taxTransferError:'',taxTransferSelected:{},taxTransferFundId:'',taxTransferBankId:'',taxTransferReference:'',taxTransferAuthority:'',taxTransferReceiveDate:localToday(),taxTransferReviewId:0,taxTransferReviewKind:'',taxTransferBankConfirmed:false,employeeExtraOpen:false,employeeClaimFormOpen:false,employeeClaimReviewId:'',employeeClaimReviewAmount:'',employeeClaimReviewDecision:'ALLOWED',employeeClaimReviewReason:'',employeeClaimReviewAttested:false,employeeClaimAttested:false,employeeClaimsData:null,employeeClaimsError:'',employeeClaimsLoading:false,employeeClaimForm:{employee_id:'',fund_id:'',category:'SUPPLIES',purchase_date:localToday(),vendor:'',receipt_reference:'',description:'',claimed_amount:'',authority_reference:'',payment_reference:'',acceptance_reference:'',procurement_source_type:'',procurement_source_id:''},travelDvEmployeeFilter:'',travelDvApprovalAmounts:{},travelDvChecked:{},dv_type: 'REGULAR', dv_po: '', dv_po_tax_profile: '', dvInvoiceVat:'', dvVatMode:'STANDARD',dvVatExceptionReason:'',dvTaxPreview:null, dvTaxBusy:false, dvTaxError:'', payee: '', bill_reference: '', allocations: {}, dv_fund: '', selectedDv: '', debitAccount: '', creditAccount: '', inventorySection:'stock', propertySection:'assets',propertyLastSection:{},propertyReportModal:null,propertyReportFrom:localToday().slice(0,7)+'-01',propertyReportThrough:localToday(),divisionModuleGrants:null,consolView:'OVERVIEW',consolSchool:'',consolSchools:[],consolMonth:'',consolReport:null,consolBusy:false,consolError:'',consolScopeId:'',divisionModuleGrantsBusy:false,divisionModuleGrantsError:'',divisionContextRegister:null,divisionContextBusy:false,divisionContextError:'',divisionRisLines:[],divisionRisLots:[],mooeIssuedMonth:localToday().slice(0,7),mooeIssuedDocs:null,mooeIssuedBusy:false,mooeIssuedError:'', ris_mode: 'PR', ris_requestor: '', ris_item: '', ris_qty: '1', ris_pr: '', ris_employee:'', risOptions:{employees:[],prs:[]}, risOptionsLoading:false, risOptionsError:'', risPrPreview:null, risPrLoading:false, risPrError:'', risDirectLines:[], risSupplyTerm:'', risSupplyRows:[], risSupplyLoading:false, risSupplyError:'', risCancelId:'', risCancelReason:'', risCancelConfirmed:false, ris_id: '', ris_line_id: '', ris_lot_id: '', ris_issue_qty: '1', stock_item: '', stock_qty: '', tb_title:'',tb_isbn:'',tb_grade:'',tb_subject:'',tb_batch:'',tb_condition_note:'',tb_storage:'',tb_opening_qty:'1',tb_move_batch_id:'',tb_move_event_type:'RECEIPT',tb_move_quantity:'1',tb_move_direction:'IN',tb_move_reference:'',tbBatches:[],tbLoading:false,tbError:'',tbDirectory:null,tbDirectoryQuery:'',tbDirectoryLoading:false,tbDirectoryError:'',textbookSection:'books',tbLifecycleLoading:false,tbLifecycleBusy:false,tbLifecycleError:'',tbLifecycleNotice:'',tbLifecycleAvailable:[],tbLifecycleTeachers:[],tbTeacherRows:[],tbDisposalRows:[],tbLifecycleReport:null,tbLifecycleReportType:'STOCK',tbLifecycleModal:'',tbLifecycleSelected:null,tbLifecycleForm:{},tbTransfers:[],tbTransferAvailable:[],tbTransferDestinations:[],tbTransferSignatories:null,tbTransferSignerLoading:false,tbTransferLoading:false,tbTransferLoadingDetail:false,tbTransferError:'',tbTransferNotice:'',tbTransferMore:null,tbTransferDetail:null,tbTransferModal:'',tbTransferPath:'ALLOCATION_REQUEST',tbTransferBusy:false,tbTransferCancelReason:'',tbTransferForm:{destination_school_id:'',purpose:'',lines:[{batch_id:'',quantity:'1'}],issued_on:localToday(),actual_delivery_mode:'ISSUER_DELIVERY',issued_by_name:'',issued_by_reason:'',released_to_name:'',dispatch_reference:'',dispatch_remarks:'',short_issue_reason:''},tbTransferRequestForm:{requester_name:'',preferred_delivery_mode:'ISSUER_DELIVERY',preferred_delivery_date:localToday(),delivery_instructions:'',lines:[]},tbTransferDispatchForm:{issued_on:localToday(),actual_delivery_mode:'ISSUER_DELIVERY',issued_by_name:'',issued_by_reason:'',released_to_name:'',dispatch_reference:'',dispatch_remarks:'',short_issue_reason:'',lines:[]},tbTransferReceiveForm:{received_on:localToday(),received_by_name:'',received_by_reason:'',receipt_reference:'',receipt_remarks:'',lines:[]},tbCoReceipts:[],tbCoDetail:null,tbCoLoading:false,tbCoBusy:false,tbCoError:'',tbCoNotice:'',tbCoFormOpen:false,tbCoPickerIndex:-1,tbCoPickerRows:[],tbCoPickerLoading:false,tbCoPickerError:'',tbCoPickerActive:0,tbCatalogOpen:false,tbCatalogDraft:blankTextbookBookProfile(),tbCatalogEditingId:0,tbCatalogExpectedVersion:0,tbCatalogView:null,tbCatalogReason:'',tbCatalogDiscardConfirm:false,tbProfilesShowDiscarded:false,tbProfilesConfirmDiscardId:0,tbProfiles:null,tbProfilesLoading:false,tbProfilesError:'',tbBookLedgerOpen:false,tbBookLedgerOrg:'',tbBookLedgerId:0,tbBookLedgerScope:'OFFICE',tbBookLedger:null,tbBookLedgerLoading:false,tbBookLedgerError:'',tbCoForm:{co_delivery_reference:'',received_on:localToday(),remarks:'',lines:[{isbn:'',expected_quantity:'1',source_batch:'',storage:''}]},tbCoReview:[],tbCoInspectionReference:'',tbCoInspectionNote:'',tbCoInspectionDate:localToday(),tbCoInspectorName:'',tbCoInspectorDesignation:'',tbCoReceivingName:'',tbCoReceivingDesignation:'',tbCoInspectorAttested:false,tbCoPaperCorrectionReason:'',tbCoAcceptanceReference:'',tbCoAcceptanceDate:localToday(),tbCoAttested:false,tbCoRejectionReason:'',tbCoRejectionReference:'',tbCoCancellationReason:'',tbHistory:[],tbHistoryMonth:'',tbHistoryBatch:'',tbHistoryLoading:false,tbHistoryError:'',tbHistoryHasMore:false,actionCenterOrg:'',actionCenterItems:[],actionCenterBookItems:[],actionCenterCount:0,actionCenterTaxItems:[],actionCenterTaxTotal:0,actionCenterLoading:false,actionCenterError:'',actionCenterChecked:'',propertyRecords:{assets:[],accountability:[],received_property:[]},
+const initial = { user: null, travelStage:'REQUEST',travelRequestFormOpen:false,travelDocuments:{requests:[],authorities:[]},travelClaims:{claims:[],required_evidence:{},cost_types:{}},travelClaimsLoading:false,travelClaimError:'',travelClaimUploadKind:'',travelClaimDetail:null,travelClaimEditing:false,travelClaimSubtab:'CLAIMS',travelClaimSearch:'',travelClaimEditorOpen:false,travelClaimExpenseModal:null,travelClaimDraft:emptyTravelClaim(),travelClaimChecks:emptyTravelVerification(),travelClaimDocumentChecks:{},travelCtcOpen:false,travelCtcDraft:emptyTravelCTC(),travelCtcSaving:false,travelCtcContextText:'',travelCtcContextLoading:false,travelCtcContextWarning:'',travelPlans:{plans:[]},travelPlanCursor:null,travelPlanHasMore:false,travelPlanLoading:false,travelPlanAuthorityId:'',travelPlanDetail:null,travelPlanDraft:emptyTravelPlan(),travelPlanExpenseModal:null,travelPlanError:'',travelPlanActionPending:false,travelReviewDetail:null,travelReviewOpen:false,travelReviewEditing:null,travelReviewStatusFilter:'ALL',travelReviewDraft:{sessions:[],decisions:[]},travelReviewReceiptFilter:'ALL',travelReviewError:'',travelReviewLoading:false,travelNoReceiptOpen:false,travelNoReceiptRows:[],travelNoReceiptCursor:null,travelNoReceiptHasMore:false,travelNoReceiptLoading:false,travelNoReceiptError:'',travelNoReceiptScanned:0,travelCenrrSelected:{},travelCenrrVerified:false,travelLoading:false,travelError:'',travelSignatories:null,travelSignatoriesLoading:false,travelSignatoriesError:'',travelBranding:null,travelBrandingLoading:false,travelBrandingError:'',travelBrandingPending:null,travelBrandingReason:'',travelSignatoryIds:{budget_officer:'',division_accountant:'',asds:'',sds:''},travelSignatoryRegion:'',travelSignatorySalutation:'Sir/Madam:',travelSignatoryReason:'',travelRefreshSignatoryId:'',travelRefreshSignatoryReason:'',travelRequest:emptyTravelRequest(),travelEditId:'',travelEditVersion:0,travelEditReason:'',travelAuthorityRequestId:'',travelAuthorityDate:localToday(),travelApprovalReference:'',travelPaperApproved:false, sessionStatus: 'checking', sessionError: '', csrf: '', orgs: [], organization_id: '', tab: 'Dashboard', busy: false, workspaceLoading: false, workspaceFailures: [], error: '', success: '', lists: {}, eligible: [], eligibleLoading: false, eligibleError: '', eligibleLoadedFor: '', dashboard: {}, accounts: [], loginEmail: '', loginPassword: '', loginPasswordVisible:false,passwordChangeRequired:false, purpose: '', requesting_unit: '', pr_requestor: '', fund_id: '', pr_doc_date: localToday(), prLines: [{ item_id: '', quantity: '1', unit_price: '0.00' }], prRegisterMonth:'',prRegisterYear:'',workflowRegisterMonth:localToday().slice(5,7),workflowRegisterYear:localToday().slice(0,4),workflowExpandedQuotes:[],workflowQuoteBucket:'UNQUOTED',workflowFormOpen:false,prUnits:[],prUnitRecords:[],prUnitsShowInactive:false,prUnitsVersion:0,prUnitsLoading:false,prUnitsError:'',prUnitsDraft:'',prUnitsReason:'',prUnitEdit:'',prUnitName:'',staffData:null,staffLoading:false,mooeData:null,mooeViewerEmail:'',mooeViewerPassword:'',mooeViewerBusy:false,mooeLoading:false,mooeError:'',mooeSchoolId:'',mooeEmployeeId:'',mooeDate:localToday(),mooeBusy:false,mooeNotice:'',mooeHistoricalConfirmed:false,mooeAppointmentReference:'',staffSavingAction:'',staffSavedMessage:'',staffError:'',staffAddOpen:false,staffAddOrg:'',staffFullName:'',staffPosition:'',staffDesignation:'',staffEmployeeNo:'',staffTIN:'',staffAddress:'',staffProfileId:'',staffProfileOrg:'',staffProfileName:'',staffProfileEmployeeNo:'',staffProfileTIN:'',staffProfileAddress:'',staffProfileVersion:0,staffProfileBusy:false,staffEditName:'',staffEditPosition:'',staffEditDesignation:'',staffEditReason:'',staffEditOriginal:null,staffEditProfileOriginal:null,staffShowInactive:false,staffRenameId:'',staffRenameName:'',staffRenameReason:'',staffHeadId:'',staffDvPartA:'',staffDvPartC:'',staffDvPartD:'',staffHeadReason:'',staffCustodianId:'',staffCustodianDate:localToday(),staffCustodianReason:'',staffCustodianAttested:false,staffChair:'',staffCoChair:'',staffMembers:[],staffBacReason:'',staffBacDate:'',staffBacDateReason:'',staffBacAttested:false,prCreateOpen:false, prCreateBaseline:'', prCreateError:'', prEditOpen:false, prEdit:null, prEditError:'', prPickerOpen:'', prPickerQuery:'', prPickerResults:[],prRegistryMatches:[], prPickerLoading:false, prPickerError:'', prPickerActive:0, prQuickAdd:null, prQuickAddBusy:false, prQuickAddError:'', dvEdit:null,dvEditOriginal:'',dvEditError:'',dvParticularsEdit:null,dvParticularsError:'',dvCancel:null,dvCancelError:'',dvComposeOpen:false,dvSearch:'',dvSection:'vouchers',taxTransferOpen:false,taxTransferData:null,taxTransferLoading:false,taxTransferError:'',taxTransferSelected:{},taxTransferFundId:'',taxTransferBankId:'',taxTransferReference:'',taxTransferAuthority:'',taxTransferReceiptAmount:'',taxTransferReceiveDate:localToday(),taxTransferReviewId:0,taxTransferReviewKind:'',taxTransferBankConfirmed:false,taxTransferShowExcluded:false,taxPayeeSource:'',taxPayeeName:'',taxPayeeExpected:0,taxPayeeNotice:'',taxPayeeError:'',employeeExtraOpen:false,employeeClaimFormOpen:false,employeeClaimReviewId:'',employeeClaimReviewAmount:'',employeeClaimReviewDecision:'ALLOWED',employeeClaimReviewReason:'',employeeClaimReviewAttested:false,employeeClaimAttested:false,employeeClaimsData:null,employeeClaimsError:'',employeeClaimsLoading:false,employeeClaimForm:{employee_id:'',fund_id:'',category:'SUPPLIES',purchase_date:localToday(),vendor:'',receipt_reference:'',description:'',claimed_amount:'',authority_reference:'',payment_reference:'',acceptance_reference:'',procurement_source_type:'',procurement_source_id:''},travelDvEmployeeFilter:'',travelDvApprovalAmounts:{},travelDvChecked:{},dv_type: 'REGULAR', dv_po: '', dv_po_tax_profile: '', dvInvoiceVat:'', dvVatMode:'STANDARD',dvVatExceptionReason:'',dvTaxPreview:null, dvTaxBusy:false, dvTaxError:'', payee: '', bill_reference: '', allocations: {}, dv_fund: '', selectedDv: '', debitAccount: '', creditAccount: '', inventorySection:'stock', propertySection:'assets',propertyLastSection:{},actionCenterTab:'auto',propertyReportModal:null,propertyReportFrom:localToday().slice(0,7)+'-01',propertyReportThrough:localToday(),divisionModuleGrants:null,consolView:'OVERVIEW',consolSchool:'',consolSchools:[],consolMonth:'',consolReport:null,consolBusy:false,consolError:'',consolScopeId:'',divisionModuleGrantsBusy:false,divisionModuleGrantsError:'',divisionContextRegister:null,divisionContextBusy:false,divisionContextError:'',divisionRisLines:[],divisionRisLots:[],mooeIssuedMonth:localToday().slice(0,7),mooeIssuedDocs:null,mooeIssuedBusy:false,mooeIssuedError:'', ris_mode: 'PR', ris_requestor: '', ris_item: '', ris_qty: '1', ris_pr: '', ris_employee:'', risOptions:{employees:[],prs:[]}, risOptionsLoading:false, risOptionsError:'', risPrPreview:null, risPrLoading:false, risPrError:'', risDirectLines:[], risSupplyTerm:'', risSupplyRows:[], risSupplyLoading:false, risSupplyError:'', risCancelId:'', risCancelReason:'', risCancelConfirmed:false, ris_id: '', ris_line_id: '', ris_lot_id: '', ris_issue_qty: '1', stock_item: '', stock_qty: '', tb_title:'',tb_isbn:'',tb_grade:'',tb_subject:'',tb_batch:'',tb_condition_note:'',tb_storage:'',tb_opening_qty:'1',tb_move_batch_id:'',tb_move_event_type:'RECEIPT',tb_move_quantity:'1',tb_move_direction:'IN',tb_move_reference:'',tbBatches:[],tbLoading:false,tbError:'',tbDirectory:null,tbDirectoryQuery:'',tbDirectoryLoading:false,tbDirectoryError:'',textbookSection:'books',tbLifecycleLoading:false,tbLifecycleBusy:false,tbLifecycleError:'',tbLifecycleNotice:'',tbLifecycleAvailable:[],tbLifecycleTeachers:[],tbTeacherRows:[],tbDisposalRows:[],tbLifecycleReport:null,tbLifecycleReportType:'STOCK',tbLifecycleModal:'',tbLifecycleSelected:null,tbLifecycleForm:{},tbTransfers:[],tbTransferAvailable:[],tbTransferDestinations:[],tbTransferSignatories:null,tbTransferSignerLoading:false,tbTransferLoading:false,tbTransferLoadingDetail:false,tbTransferError:'',tbTransferNotice:'',tbTransferMore:null,tbTransferDetail:null,tbTransferModal:'',tbTransferPath:'ALLOCATION_REQUEST',tbTransferBusy:false,tbTransferCancelReason:'',tbTransferForm:{destination_school_id:'',purpose:'',lines:[{batch_id:'',quantity:'1'}],issued_on:localToday(),actual_delivery_mode:'ISSUER_DELIVERY',issued_by_name:'',issued_by_reason:'',released_to_name:'',dispatch_reference:'',dispatch_remarks:'',short_issue_reason:''},tbTransferRequestForm:{requester_name:'',preferred_delivery_mode:'ISSUER_DELIVERY',preferred_delivery_date:localToday(),delivery_instructions:'',lines:[]},tbTransferDispatchForm:{issued_on:localToday(),actual_delivery_mode:'ISSUER_DELIVERY',issued_by_name:'',issued_by_reason:'',released_to_name:'',dispatch_reference:'',dispatch_remarks:'',short_issue_reason:'',lines:[]},tbTransferReceiveForm:{received_on:localToday(),received_by_name:'',received_by_reason:'',receipt_reference:'',receipt_remarks:'',lines:[]},tbCoReceipts:[],tbCoDetail:null,tbCoLoading:false,tbCoBusy:false,tbCoError:'',tbCoNotice:'',tbCoFormOpen:false,tbCoPickerIndex:-1,tbCoPickerRows:[],tbCoPickerLoading:false,tbCoPickerError:'',tbCoPickerActive:0,tbCatalogOpen:false,tbCatalogDraft:blankTextbookBookProfile(),tbCatalogEditingId:0,tbCatalogExpectedVersion:0,tbCatalogView:null,tbCatalogReason:'',tbCatalogDiscardConfirm:false,tbProfilesShowDiscarded:false,tbProfilesConfirmDiscardId:0,tbProfiles:null,tbProfilesLoading:false,tbProfilesError:'',tbBookLedgerOpen:false,tbBookLedgerOrg:'',tbBookLedgerId:0,tbBookLedgerScope:'OFFICE',tbBookLedger:null,tbBookLedgerLoading:false,tbBookLedgerError:'',tbCoForm:{co_delivery_reference:'',received_on:localToday(),remarks:'',lines:[{isbn:'',expected_quantity:'1',source_batch:'',storage:''}]},tbCoReview:[],tbCoInspectionReference:'',tbCoInspectionNote:'',tbCoInspectionDate:localToday(),tbCoInspectorName:'',tbCoInspectorDesignation:'',tbCoReceivingName:'',tbCoReceivingDesignation:'',tbCoInspectorAttested:false,tbCoPaperCorrectionReason:'',tbCoAcceptanceReference:'',tbCoAcceptanceDate:localToday(),tbCoAttested:false,tbCoRejectionReason:'',tbCoRejectionReference:'',tbCoCancellationReason:'',tbHistory:[],tbHistoryMonth:'',tbHistoryBatch:'',tbHistoryLoading:false,tbHistoryError:'',tbHistoryHasMore:false,actionCenterOrg:'',actionCenterItems:[],actionCenterScanItems:[],actionCenterScanCount:0,actionCenterBookItems:[],actionCenterCount:0,actionCenterTaxItems:[],actionCenterTaxTotal:0,actionCenterTaxGroupCount:0,actionCenterTransferTasks:[],actionCenterTransferPendingTotal:0,actionCenterTransferAwaiting:[],actionCenterTransferAwaitingTotal:0,actionCenterRemittances:[],actionCenterRemittanceCount:0,actionCenterRetainedNotices:[],actionCenterRetainedNoticeCount:0,actionCenterPasswordResetCount:0,actionCenterLoading:false,actionCenterError:'',actionCenterChecked:'',taxReceiptModal:null,taxReceiptReference:'',taxReceiptDate:localToday(),taxReceiptAmount:'',taxReceiptError:'',propertyRecords:{assets:[],accountability:[],received_property:[]},
     // v0.2.219: register state MUST exist on initial render, not only after
     // the user switches organizations. Keep matching reset shape in session().
     propertyRegister:{rows:[],facets:{items:[],classifications:[],custodians:[],statuses:[]},has_more:false,next_before_id:null},
@@ -524,9 +572,12 @@ const initial = { user: null, travelStage:'REQUEST',travelRequestFormOpen:false,
     propertyRegisterLoading:false,propertyRegisterError:'',
     propertyHistoricalRows:[],propertyHistoricalHasMore:false,propertyHistoricalBeforeId:null,propertyHistoricalLoading:false,propertyHistoricalError:'',propertyHistoricalMode:'CURRENT',propertyHistoricalLoadedOrg:'',
     propertyDetailId:'',propertyDetailOrg:'',propertyDetail:null,propertyDetailLoading:false,propertyDetailError:'',propertyDetailTab:'overview',propertyDetailBusy:false,propertyDetailEditShared:{},propertyDetailEditUnit:{},propertyDetailEditReason:'',propertyDetailEditMode:'UNIT',
-    propertyBusy:false,propertyError:'',propertyReceivedId:'',propertyUnitCount:'1',propertyRegistrationNotice:'',propertyTags:'',propertyBatchItem:'',propertyBatchCount:'1',propertyBatchDate:'',propertyBatchCost:'',propertyBatchShared:{brand:'',model:'',acquisition_type:'PURCHASE',original_fund_source:'',useful_life_years:'',historical_po:'',historical_iar:'',historical_dv:'',evidence_note:''},propertyBatchUnits:[{serial_number:'',location:'',condition_note:'',legacy_property_number:''}],propertyEditAssetId:'',propertyEditPreview:null,propertyEditMode:'UNIT',propertyEditReason:'',propertyEditShared:{},propertyEditUnit:{},propertyAssetId:'',propertySearch:'',propertyCustodian:'',propertyCustodianSearch:'',propertyCustodianEmployeeId:'', searchTerm: '', searchResults: [], procurementSection:'PR',workflowStage:'RFQ',workflowPR:'',workflowRfqLines:[],workflowRfqDate:'',workflowCanvasserId:'',workflowCanvasserHistoricalAttested:false,workflowCanvasserHistoricalReference:'',workflowChairHistoricalAttested:false,workflowChairHistoricalReference:'',workflowConsolidate:null,workflowConsolidateLoading:false,workflowConsolidateError:'',workflowConsolidatePrIds:[],workflowConsolidateExcluded:[],workflowRFQEditId:'',workflowRFQEditDate:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditReason:'',workflowRFQEditConfirm:false,workflowRFQEditError:'',workflowRFQEditLoading:false,workflowRFQ:'',workflowSupplier:'',workflowQuoteDate:localToday(),workflowQuoteEvidence:'',workflowQuoteLines:[],workflowAwardRFQ:'',workflowAwardDate:localToday(),workflowQuoteId:'',workflowAwardNote:'',workflowAwardNoteManual:false,workflowAwardApproved:false,workflowAward:'',workflowPoDate:localToday(),workflowPoLines:[],workflowPoDeliveryDate:localToday(),workflowPoDeliveryPlace:'',workflowPoDeliveryTerm:'Door-to-Door Delivery',workflowPoPaymentTerm:'Full Payment upon Delivery',workflowPoPaymentType:'Check',workflowPoMethod:'',workflowPoEdit:null,workflowPoEditError:'',workflowPoEditLoading:false,workflowPO:'',workflowIARLines:[],workflowDelivered:'',workflowAccepted:'',workflowIARInvoice:'',workflowIARInvoiceDate:'',workflowIARPoMeta:null,workflowIarDate:localToday(),workflowIARReviewed:false,workflowIarEdit:null,workflowIarEditLoading:false,workflowIarEditError:'',workflowMessage:'',workflowError:'', advancedRoute: 'rfq.create', advancedBody: '{}', details: null, viewType: '', pending: false, catalogRegistryLinks:{links:{}},prAccountingPreview:{},prAccountingBusy:{},prLineage:null,prLineageBusy:'',prLineageError:'',registryLinkDialog:null,registryLinkQuery:'',registryLinkOptions:[],registryLinkBusy:false,registryLinkError:'',propertyRegistry:null,propertyRegistryBusy:false,propertyRegistryError:'',propertyRegistrySearch:'',propertyRegistrySection:'',propertyUnitCost:'',propertyThresholdDialog:false,propertyThresholdValue:'5000.00',propertyThresholdDate:localToday(),propertyThresholdReason:'',propertyLifeDialog:null,propertyLifeMonths:'',propertyLifeReason:'',propertyEntryDialog:null,propertyEntrySection:'',propertyEntryDescription:'',propertyEntryMode:'HV_LV',propertyEntryHvCode:'',propertyEntryLvCode:'',propertyEntryReferenceCode:'',propertyEntryDetail:'',propertyEntryMonths:'',propertyEntryReason:'',masterSection: 'suppliers', fundSection: 'overview',fundAudit:null,fundAuditLoading:false,fundAuditError:'',fundAuditFund:'',fundAuditMonth:localToday().slice(0,7),fundAuditPage:1,fundAuditExporting:false, fundPolicyClass:'NON_IUS',fundPolicies:null,fundPoliciesLoading:false,sourceDialog:false,policyDialog:false,sourceCode:'',sourceName:'',sourceActive:true,sourceReason:'',fundPolicySource:'',fundPolicyMode:'NOT_CONFIGURED',fundPolicyDate:localToday(),fundPolicyAuthority:'',fundPolicyReason:'',fundPolicyPaymentCredit:'',fundPolicyWithholdingCredit:'',schoolClass:'',schoolClassDate:localToday(),schoolClassReason:'',schoolClassEdit:'',schoolClassEditClass:'',schoolClassEditDate:localToday(),schoolClassEditReason:'', masterEditorOpen: false, masterSearch: '', divisionClassifications: semiSubcategories.map(([code,name])=>({code,name,active:true,default_uacs_code:null})), divisionName: '', classEditCode: '', classCode: '', className: '', classUacs: '', classAppliesTo:'SEMI_EXPENDABLE', classProcurementTypes:[], classActive: true, classDialogOpen: false, uacsQuery: '', uacsStatus: 'ALL', uacsClassification: 'ALL', uacsPage: 0, uacsLoading: false, uacsData: {rows: [],total: 0,offset: 0,limit:80,summary:{total:0,enabled:0,disabled:0}}, sup_name: '', sup_proprietor: '', sup_tax_id: '', sup_address: '', sup_zip: '', sup_commercial: 'UNSPECIFIED', sup_vat_status: 'UNKNOWN', sup_atcs: [], sup_profiles: [], sup_legacy_atcs: [], sup_edit_id: '', atc_code: '', atc_description: '', atc_supply_type: 'BOTH', atc_profile_category:'', atc_edit_profile_category:'', atc_goods_applicable:true, atc_services_applicable:true, atc_rental_applicable:false, atc_contractor_applicable:false, atc_utilities_applicable:false, atc_other_applicable:false, atc_business_type: 'BOTH', atc_tax_kind: '', atc_tax_filter:'ALL', rate_atc_code: '', rate_percent: '', rate_starts: '', rate_ends: '', rate_authority: '', rate_close_id: '', rate_close_date: '', atc_initial_percent: '', atc_initial_start: '', atc_initial_end: '', atc_initial_authority: '', atc_selected_code: '', atc_action: '', atc_list_loading: false, atc_dialog: '', atc_edit_description: '', atc_edit_supply_type: 'BOTH', atc_edit_goods_applicable:true, atc_edit_services_applicable:true, atc_edit_rental_applicable:false, atc_edit_contractor_applicable:false, atc_edit_utilities_applicable:false, atc_edit_other_applicable:false, atc_edit_business_type: 'BOTH', atc_edit_tax_kind: '', dvTaxes: [], unit_code: '', unit_name: '', item_name: '', item_unit_id: '', item_category: 'SUPPLY', item_subcategory: '', item_school_class:'', item_edit_id: '', itemUacsSettings:null,itemUacsLoading:false,vatSettings:null,vatSettingsLoading:false,vatRateInput:'12.00',vatRateDate:localToday(),vatRateAuthority:'',vatRateReason:'',itemUacsId:'',itemUacsCode:'',itemUacsDate:localToday(),itemUacsReason:'',itemUacsDialog:false,uacsCorrection:null,uacsCorrectionPreview:null,bulkUacsOpen:false,bulkUacsIds:[],bulkUacsClass:'',bulkUacsDate:localToday(),bulkUacsReason:'',bulkUacsPreview:null, mooeMonitor:{rows:[],schools:[],mode:''},mooeMonitorLoadedFor:'',mooeMonitorLoading:false,mooeMonitorError:'',mooeMonitorNotice:'',mooeMonitorBusy:false,mooeSchoolId:'',mooeDirectType:'NCA',mooePeriod:localToday().slice(0,7),mooeAmount:'',mooeDate:localToday(),mooeReference:'',mooeFundType:'MOOE',mooeOtherFund:'',mooeConfirmFor:0,mooeConfirmAmount:'',mooeConfirmDate:localToday(),mooeConfirmReference:'',mooeConfirmVerified:false,mooeConfirmRevision:0,mooeConfirmBank:'',mooeConfirmEvidence:'',mooeLinkFor:0,mooeLinkBank:'',mooeLinkEvidence:'',mooeCorrectionFor:0,mooeCorrectionAmount:'',mooeCorrectionReason:'',mooeCorrectionRevision:0,taxUtilization:null,taxUtilizationOrg:'',taxUtilizationLoading:false,taxUtilizationError:'',taxUtilizationNotice:'',taxUtilizationBusy:false,taxConfirmFor:0,taxConfirmBudget:false,taxConfirmCash:false,taxUseFor:0,taxUseDv:'',taxUseAmount:'',taxUseEvidence:'',taxUseAuthority:'',taxUseBankVerified:false,taxUseBudgetVerified:false,fundActionOrg:'',fundActionItems:[],fundActionCount:0,fundActionError:'',fund_name: '', fund_source_code: '', fund_allocation_open:false,bank_download_open:false,bank_download_mode:'NEW',bank_download_fund:'',bank_download_bank:'',bank_download_date:localToday(),bank_download_amount:'',bank_download_ref:'',bank_download_advice:'',bank_download_evidence:'',bank_download_particulars:'',bank_download_existing_id:'',bank_download_link_reason:'',fund_allocation_type:'OBLIGATION',fund_allocation_id:'',fund_allocation_amount:'',fund_allocation_reference:'',fund_allocation_reason:'',bank_name:'',bank_label:'',bank_mask:'',checkDv:'',checkBank:'',checkNo:'',checkAmount:'',checkPayeeBasis:'BUSINESS',checkStockPreview:null,checkLeafConfirmed:false,checkStockList:{rows:[],stats:[]},checkStockLoaded:false,checkStockLoading:false,checkStockError:'',cashBankSection:'prepare',bankRegister:null,bankRegisterLoading:false,bankRegisterError:'',bankRegisterBank:'ALL',bankRegisterFund:'ALL',bankRegisterMonth:localToday().slice(0,7),bankRegisterPage:0,checkProofOpen:false,checkProofIssued:null,cashCheckSearch:'',cashCheckStatus:'ALL',cashLeafSearch:'',cashLeafStatus:'ALL',checkbookReference:'',checkbookFirst:'',checkbookLast:'',checkbookVerified:false,checkbookBank:'',dvCheckBank:'',dvCheckStock:null,dvCheckLoading:false,dvCheckLeafConfirmed:false,dvBankCashVerified:false,dvCheckPayeeBasis:'DV_PAYEE',dvFundAvailable:null,dvFundLoading:false, fund_fiscal_year: String(new Date().getFullYear()), pr_method: 'REVIEW_REQUIRED', setup_code: '', setup_name: '', setup_kind: 'DIVISION', orgHierarchy: [], orgUsers: [], organizationSection: (() => { const q=new URLSearchParams(window.location.search).get('orgtab'); return ['division','schools','users','roles','myfunctions','account','school'].includes(q) ? q : 'division'; })(), roleCatalog:null,roleDetail:null,roleBusy:false,roleError:'',roleNotice:'',roleUserId:'',roleSchoolId:'',rolePermission:'',roleReason:'',roleEndsOn:'',roleStartsOn:localToday(),roleAuditOpen:false,roleFunctionSearch:'',roleModule:'ALL',myFunctions:null,myFuncOrg:'',myFuncType:'PR',myFuncMonth:localToday().slice(0,7),myFuncRecords:null,myFuncBusy:false,myFuncError:'', division_code: '', division_name: '', division_address: '', division_email: '', division_phone: '', school_code: '', school_name: '', school_address: '', school_email: '', school_phone: '', selected_division_id: '', legacy_school_id: '', new_division_user_name: '', new_division_user_email: '', new_division_user_password: '', new_school_user_name: '', new_school_user_email: '', new_school_user_password: '', new_user_school_id: '', organizationPendingAction: '', edit_org_id:'',edit_name:'',edit_code:'',edit_code_reason:'',edit_address:'',edit_email:'',edit_phone:'', own_current_password:'', own_new_password:'', own_confirm_password:'', reset_user_id:'',reset_admin_password:'',reset_new_password:'',reset_confirm_password:'',reset_identity_confirmed:false };
+    propertyBusy:false,propertyError:'',propertyReceivedId:'',propertyUnitCount:'1',propertyRegistrationNotice:'',propertyTags:'',propertyBatchItem:'',propertyBatchCount:'1',propertyBatchDate:'',propertyBatchCost:'',propertyBatchShared:{brand:'',model:'',acquisition_type:'PURCHASE',original_fund_source:'',useful_life_years:'',historical_po:'',historical_iar:'',historical_dv:'',evidence_note:''},propertyBatchUnits:[{serial_number:'',location:'',condition_note:'',legacy_property_number:''}],propertyEditAssetId:'',propertyEditPreview:null,propertyEditMode:'UNIT',propertyEditReason:'',propertyEditShared:{},propertyEditUnit:{},propertyAssetId:'',propertySearch:'',propertyCustodian:'',propertyCustodianSearch:'',propertyCustodianEmployeeId:'', searchTerm: '', searchResults: [], procurementSection:'PR',workflowStage:'RFQ',workflowPR:'',workflowRfqLines:[],workflowRfqDate:'',workflowCanvasserId:'',workflowCanvasserHistoricalAttested:false,workflowCanvasserHistoricalReference:'',workflowChairHistoricalAttested:false,workflowChairHistoricalReference:'',workflowConsolidate:null,workflowConsolidateLoading:false,workflowConsolidateError:'',workflowConsolidatePrIds:[],workflowConsolidateExcluded:[],workflowRFQEditId:'',workflowRFQEditDate:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditReason:'',workflowRFQEditConfirm:false,workflowRFQEditError:'',workflowRFQEditLoading:false,workflowRFQ:'',workflowSupplier:'',workflowQuoteDate:localToday(),workflowQuoteEvidence:'',workflowQuoteLines:[],workflowQuoteEditId:'',workflowQuoteEditToken:'',workflowAwardRFQ:'',workflowAwardDate:localToday(),workflowQuoteId:'',workflowAwardNote:'',workflowAwardNoteManual:false,workflowAwardApproved:false,workflowAward:'',workflowPoDate:localToday(),workflowPoLines:[],workflowPoDeliveryDate:localToday(),workflowPoDeliveryPlace:'',workflowPoDeliveryTerm:'Door-to-Door Delivery',workflowPoPaymentTerm:'Full Payment upon Delivery',workflowPoPaymentType:'Check',workflowPoMethod:'',workflowPoEdit:null,workflowPoEditError:'',workflowPoEditLoading:false,workflowPO:'',workflowIARLines:[],workflowDelivered:'',workflowAccepted:'',workflowIARInvoice:'',workflowIARInvoiceDate:'',workflowIARPoMeta:null,workflowIarDate:localToday(),workflowIARReviewed:false,workflowIarEdit:null,workflowIarEditLoading:false,workflowIarEditError:'',workflowMessage:'',workflowError:'', advancedRoute: 'rfq.create', advancedBody: '{}', details: null, viewType: '', pending: false, catalogRegistryLinks:{links:{}},prAccountingPreview:{},prAccountingBusy:{},prLineage:null,prLineageBusy:'',prLineageError:'',registryLinkDialog:null,registryLinkQuery:'',registryLinkOptions:[],registryLinkBusy:false,registryLinkError:'',propertyRegistry:null,propertyRegistryBusy:false,propertyRegistryError:'',propertyRegistrySearch:'',propertyRegistrySection:'',propertyUnitCost:'',propertyThresholdDialog:false,propertyThresholdValue:'5000.00',propertyThresholdDate:localToday(),propertyThresholdReason:'',propertyLifeDialog:null,propertyLifeMonths:'',propertyLifeReason:'',propertyEntryDialog:null,propertyEntrySection:'',propertyEntryDescription:'',propertyEntryMode:'HV_LV',propertyEntryHvCode:'',propertyEntryLvCode:'',propertyEntryReferenceCode:'',propertyEntryDetail:'',propertyEntryMonths:'',propertyEntryReason:'',masterSection: 'suppliers', fundSection: 'overview',fundAudit:null,fundAuditLoading:false,fundAuditError:'',fundAuditFund:'',fundAuditMonth:localToday().slice(0,7),fundAuditPage:1,fundAuditExporting:false, fundPolicyClass:'NON_IUS',fundPolicies:null,fundPoliciesLoading:false,sourceDialog:false,policyDialog:false,sourceCode:'',sourceName:'',sourceActive:true,sourceReason:'',fundPolicySource:'',fundPolicyMode:'NOT_CONFIGURED',fundPolicyDate:localToday(),fundPolicyAuthority:'',fundPolicyReason:'',fundPolicyPaymentCredit:'',fundPolicyWithholdingCredit:'',schoolClass:'',schoolClassDate:localToday(),schoolClassReason:'',schoolClassEdit:'',schoolClassEditClass:'',schoolClassEditDate:localToday(),schoolClassEditReason:'', masterEditorOpen: false, masterSearch: '', divisionClassifications: semiSubcategories.map(([code,name])=>({code,name,active:true,default_uacs_code:null})), divisionName: '', classEditCode: '', classCode: '', className: '', classUacs: '', classAppliesTo:'SEMI_EXPENDABLE', classProcurementTypes:[], classActive: true, classDialogOpen: false, uacsQuery: '', uacsStatus: 'ALL', uacsClassification: 'ALL', uacsPage: 0, uacsLoading: false, uacsData: {rows: [],total: 0,offset: 0,limit:80,summary:{total:0,enabled:0,disabled:0}}, sup_name: '', sup_proprietor: '', sup_tax_id: '', sup_address: '', sup_zip: '', sup_commercial: 'UNSPECIFIED', sup_vat_status: 'UNKNOWN', sup_atcs: [], sup_profiles: [], sup_legacy_atcs: [], sup_edit_id: '', atc_code: '', atc_description: '', atc_supply_type: 'BOTH', atc_profile_category:'', atc_edit_profile_category:'', atc_goods_applicable:true, atc_services_applicable:true, atc_rental_applicable:false, atc_contractor_applicable:false, atc_utilities_applicable:false, atc_other_applicable:false, atc_business_type: 'BOTH', atc_tax_kind: '', atc_tax_filter:'ALL', rate_atc_code: '', rate_percent: '', rate_starts: '', rate_ends: '', rate_authority: '', rate_close_id: '', rate_close_date: '', atc_initial_percent: '', atc_initial_start: '', atc_initial_end: '', atc_initial_authority: '', atc_selected_code: '', atc_action: '', atc_list_loading: false, atc_dialog: '', atc_edit_description: '', atc_edit_supply_type: 'BOTH', atc_edit_goods_applicable:true, atc_edit_services_applicable:true, atc_edit_rental_applicable:false, atc_edit_contractor_applicable:false, atc_edit_utilities_applicable:false, atc_edit_other_applicable:false, atc_edit_business_type: 'BOTH', atc_edit_tax_kind: '', dvTaxes: [], unit_code: '', unit_name: '', item_name: '', item_unit_id: '', item_category: 'SUPPLY', item_subcategory: '', item_school_class:'', item_edit_id: '', itemUacsSettings:null,itemUacsLoading:false,vatSettings:null,vatSettingsLoading:false,vatRateInput:'12.00',vatRateDate:localToday(),vatRateAuthority:'',vatRateReason:'',itemUacsId:'',itemUacsCode:'',itemUacsDate:localToday(),itemUacsReason:'',itemUacsDialog:false,uacsCorrection:null,uacsCorrectionPreview:null,bulkUacsOpen:false,bulkUacsIds:[],bulkUacsClass:'',bulkUacsDate:localToday(),bulkUacsReason:'',bulkUacsPreview:null, mooeMonitor:{rows:[],schools:[],mode:''},mooeMonitorLoadedFor:'',mooeMonitorLoading:false,mooeMonitorError:'',mooeMonitorNotice:'',mooeMonitorBusy:false,mooeSchoolId:'',mooeDirectType:'NCA',mooePeriod:localToday().slice(0,7),mooeAmount:'',mooeDate:localToday(),mooeReference:'',mooeFundType:'MOOE',mooeOtherFund:'',mooeConfirmFor:0,mooeConfirmAmount:'',mooeConfirmDate:localToday(),mooeConfirmReference:'',mooeConfirmVerified:false,mooeConfirmRevision:0,mooeConfirmBank:'',mooeConfirmEvidence:'',mooeLinkFor:0,mooeLinkBank:'',mooeLinkEvidence:'',mooeCorrectionFor:0,mooeCorrectionAmount:'',mooeCorrectionReason:'',mooeCorrectionRevision:0,taxHandoffData:null,taxHandoffOrg:'',taxHandoffLoading:false,taxHandoffError:'',taxHandoffBusy:false,divisionTaxData:null,divisionTaxOrg:'',divisionTaxLoading:false,divisionTaxError:'',divisionTaxPage:1,divisionTaxMonth:localToday().slice(0,7),divisionTaxFromDate:'',divisionTaxToDate:'',divisionTaxSchool:'',divisionTaxFund:'',divisionTaxSource:'',divisionTaxAtc:'',divisionTaxDisposition:'ALL',divisionTaxNotice:'ALL',divisionTaxCheck:'ALL',divisionTaxYear:'',taxUtilization:null,taxUtilizationOrg:'',taxUtilizationLoading:false,taxUtilizationError:'',taxUtilizationNotice:'',taxUtilizationBusy:false,taxConfirmFor:0,taxConfirmBudget:false,taxConfirmCash:false,taxUseFor:0,taxUseDv:'',taxUseAmount:'',taxUseEvidence:'',taxUseAuthority:'',taxUseBankVerified:false,taxUseBudgetVerified:false,fundActionOrg:'',fundActionItems:[],fundActionCount:0,fundActionError:'',fund_name: '', fund_source_code: '', fund_allocation_open:false,bank_download_open:false,bank_download_mode:'NEW',bank_download_fund:'',bank_download_bank:'',bank_download_date:localToday(),bank_download_amount:'',bank_download_ref:'',bank_download_advice:'',bank_download_evidence:'',bank_download_particulars:'',bank_download_existing_id:'',bank_download_link_reason:'',fund_allocation_type:'OBLIGATION',fund_allocation_id:'',fund_allocation_amount:'',fund_allocation_reference:'',fund_allocation_reason:'',bank_name:'',bank_label:'',bank_mask:'',checkDv:'',checkBank:'',checkNo:'',checkAmount:'',checkPayeeBasis:'BUSINESS',checkStockPreview:null,checkLeafConfirmed:false,checkStockList:{rows:[],stats:[]},checkStockLoaded:false,checkStockLoading:false,checkStockError:'',cashBankSection:'prepare',bankRegister:null,bankRegisterLoading:false,bankRegisterError:'',bankRegisterBank:'ALL',bankRegisterFund:'ALL',bankRegisterMonth:localToday().slice(0,7),bankRegisterPage:0,checkProofOpen:false,checkProofIssued:null,actualCheckPrintTarget:null,cashCheckSearch:'',cashCheckStatus:'ALL',checkStatusSelected:'',checkStatusNext:'',checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:'',checkSigningDialogOpen:false,cashLeafSearch:'',cashLeafStatus:'ALL',checkbookReference:'',checkbookFirst:'',checkbookLast:'',checkbookVerified:false,checkbookBank:'',dvCheckBank:'',dvCheckStock:null,dvCheckLoading:false,dvCheckLeafConfirmed:false,dvBankCashVerified:false,dvCheckPayeeBasis:'DV_PAYEE',dvFundAvailable:null,dvFundLoading:false, fund_fiscal_year: String(new Date().getFullYear()), pr_method: 'REVIEW_REQUIRED', setup_code: '', setup_name: '', setup_kind: 'DIVISION', orgHierarchy: [], orgUsers: [], organizationSection: (() => { const q=new URLSearchParams(window.location.search).get('orgtab'); return ['division','schools','users','roles','myfunctions','account','school'].includes(q) ? q : 'division'; })(), roleCatalog:null,roleDetail:null,roleBusy:false,roleError:'',roleNotice:'',roleUserId:'',roleSchoolId:'',rolePermission:'',roleReason:'',roleEndsOn:'',roleStartsOn:localToday(),roleAuditOpen:false,roleFunctionSearch:'',roleModule:'ALL',myFunctions:null,myFuncOrg:'',myFuncType:'PR',myFuncMonth:localToday().slice(0,7),myFuncRecords:null,myFuncBusy:false,myFuncError:'', division_code: '', division_name: '', division_address: '', division_email: '', division_phone: '', school_code: '', school_name: '', school_address: '', school_email: '', school_phone: '', selected_division_id: '', legacy_school_id: '', new_division_user_name: '', new_division_user_email: '', new_division_user_password: '', new_school_user_name: '', new_school_user_email: '', new_school_user_password: '', new_user_school_id: '', organizationPendingAction: '', birProfile:null,birProfileTarget:'',birProfileLoading:false,birProfileSaving:false,birProfileError:'',birProfileNotice:'',birProfileDraft:{registered_name:'',tin:'',address:'',zip:''},edit_org_id:'',edit_name:'',edit_code:'',edit_code_reason:'',edit_address:'',edit_email:'',edit_phone:'', own_current_password:'', own_new_password:'', own_confirm_password:'', reset_user_id:'',reset_admin_password:'',reset_new_password:'',reset_confirm_password:'',reset_identity_confirmed:false };
 class App extends React.Component {
     componentDidUpdate(prevProps,prevState) {
+        if(this.state.tab==='Organization'&&this.state.user?.role==='SCHOOL'&&this.state.organization_id&&
+           (prevState.tab!=='Organization'||prevState.organization_id!==this.state.organization_id))
+            this.loadBirProfile(this.state.organization_id);
         // Changing organizations invalidates all older Action Center responses.
         if(this.state.sessionStatus==='ready' && this.state.user && this.state.organization_id &&
            (prevState.organization_id!==this.state.organization_id ||
@@ -589,6 +640,14 @@ class App extends React.Component {
             }
         }
 
+        // v0.2.429 — open the transfer workspace when selected from the tab,
+        // Action Center or a bookmarked Disbursements ?pane=transfers URL.
+        if(this.state.tab==='Disbursements' && this.state.dvSection==='transfers' &&
+           (prevState.tab!=='Disbursements' || prevState.dvSection!=='transfers' ||
+            prevState.organization_id!==this.state.organization_id)){
+            if(!this.state.taxTransferOpen)this.setState({taxTransferOpen:true});
+            this.loadTaxTransferWorkspace();
+        }
         if((this.state.tab==='Fund Management' && this.state.fundSection==='funds' &&
              (prevState.tab!==this.state.tab || prevState.fundSection!==this.state.fundSection || prevState.organization_id!==this.state.organization_id)) ||
            (this.state.tab==='Disbursements' && (prevState.tab!==this.state.tab || prevState.organization_id!==this.state.organization_id)))
@@ -600,8 +659,11 @@ class App extends React.Component {
                 prevState.organization_id!==this.state.organization_id))
             this.loadFundTransactionAudit({fundId:'',page:1,month:localToday().slice(0,7)});
         if(this.state.tab==='Fund Management' && this.state.fundSection==='withheld' &&
-            (prevState.tab!==this.state.tab || prevState.fundSection!==this.state.fundSection || prevState.organization_id!==this.state.organization_id))
-            this.loadTaxUtilization();
+            (prevState.tab!==this.state.tab || prevState.fundSection!==this.state.fundSection || prevState.organization_id!==this.state.organization_id)) {
+            const divisionOffice=this.state.orgs.some(o=>String(o.id)===String(this.state.organization_id)&&o.kind==='DIVISION');
+            if(divisionOffice)this.loadDivisionTaxReport(1);
+            else {this.loadTaxUtilization();this.loadTaxHandoff();}
+        }
         if(this.state.tab==='Fund Management' && this.state.fundSection==='mooe' &&
             (prevState.tab!==this.state.tab || prevState.fundSection!==this.state.fundSection || prevState.organization_id!==this.state.organization_id))
             this.loadMooeMonitor();
@@ -648,6 +710,7 @@ class App extends React.Component {
         if((prevState.masterSection!==this.state.masterSection && this.state.masterSection==='property_registry') || (prevState.organization_id!==this.state.organization_id && this.state.masterSection==='property_registry'))this.loadPropertyRegistry();
         // Keep the address bar aligned with sidebar + module tabs. Only page
         // labels are stored: never an unsaved form, selected document or token.
+        document.body.classList.toggle('ipdams-bir2307-open',Boolean(this.state.bir2307Dialog));
         this.syncNavigationUrl();
     }
     syncNavigationUrl(){
@@ -660,11 +723,19 @@ class App extends React.Component {
                 window.history.replaceState(window.history.state,'',window.location.pathname+desired+window.location.hash);
         }catch(_){/* Navigation works even if browser history rewriting is blocked. */}
     }
+    goDashboardFromBrand(event){
+        // A real link gives a reliable dashboard destination if JavaScript fails.
+        // Keep ordinary clicks in-app; preserve browser modified-click behavior.
+        if (!event || event.defaultPrevented || event.button !== 0 ||
+            event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        this.goDashboard();
+    }
     goDashboard(){
         // Same action as the Dashboard sidebar item, for sidebar and top-bar
         // branding. URL navigation state is cleared by syncNavigationUrl().
         this.eligibleRequest=(this.eligibleRequest||0)+1;
-        this.setState({tab:'Dashboard',error:'',success:'',details:null,viewType:'',
+        this.setState({tab:'Dashboard',error:'',success:'',details:null,viewType:'',bir2307Dialog:null,
             atc_dialog:'',atc_action:'',atc_selected_code:'',
             prCreateOpen:false,prQuickAdd:null,dvComposeOpen:false,
             tbCatalogOpen:false,tbCoFormOpen:false,tbCoDetail:null,tbCatalogView:null,tbProfilesConfirmDiscardId:0,tbTransferModal:'',tbTransferDetail:null,
@@ -687,11 +758,57 @@ class App extends React.Component {
     componentWillUnmount() {
         if(this.actionTimer)window.clearInterval(this.actionTimer);
         if(this.actionVisibilityRefresh)document.removeEventListener('visibilitychange',this.actionVisibilityRefresh);
+        window.removeEventListener('message',this.bir2307ReceiveMessage);
+        document.body.classList.remove('ipdams-bir2307-open');
         document.body.classList.remove('atc-dialog-open','ipdams-pr-create-open','ipdams-dv-compose-open','ipdams-asset-dialog-open');
     }
     constructor() {
         super(...arguments);
-        this.state = { ...initial, superAdminViewOnly:false, inventoryActionOpen:'', propertyHistoricalOpen:false, propertyCatalogOpen:false, propertyCatalogBusy:false, propertyCatalogError:'', propertyCatalogForm:{name:'',category:'PPE',unit_id:'',division_class_code:''}, tab: (() => { const section = new URLSearchParams(window.location.search).get('section'); return section === 'Property & Supply' ? 'Inventory Management' : nav.some(([name]) => name === section) ? section : 'Dashboard'; })() };
+        this.state = { ...initial, superAdminViewOnly:false, inventoryActionOpen:'', propertyHistoricalOpen:false, propertyCatalogOpen:false, propertyCatalogBusy:false, propertyCatalogError:'', propertyCatalogForm:{name:'',category:'PPE',unit_id:'',division_class_code:''}, bir2307Dialog:null, tab: (() => { const section = new URLSearchParams(window.location.search).get('section'); return section === 'Property & Supply' ? 'Inventory Management' : nav.some(([name]) => name === section) ? section : 'Dashboard'; })() };
+        this.openBir2307Dialog = (dvId, event) => {
+            const id=Number(dvId), org=String(this.state.organization_id||'');
+            if(!Number.isSafeInteger(id)||id<1||!org||this.state.tab!=='Disbursements')return;
+            this.bir2307ReturnFocus=event?.currentTarget||document.activeElement;
+            this.bir2307CloseFocused=false;
+            this.setState({bir2307Dialog:{dvId:id,organizationId:org,fromDv: this.state.viewType==='DV' &&
+                String(this.state.details?.record?.id)===String(id)}});
+        };
+        this.closeBir2307Dialog = () => {
+            if(!this.state.bir2307Dialog)return;
+            const restore=this.bir2307ReturnFocus;
+            this.setState({bir2307Dialog:null},()=>{
+                if(restore&&restore.isConnected&&typeof restore.focus==='function')restore.focus();
+                this.bir2307ReturnFocus=null;
+            });
+        };
+        this.bir2307DialogView = () => {
+            const h=React.createElement;
+            const d=this.state.bir2307Dialog;
+            if(!d||this.state.tab!=='Disbursements'||String(this.state.organization_id)!==String(d.organizationId))return null;
+            const r=(this.state.lists.dv||[]).find(x=>String(x.id)===String(d.dvId));
+            const detail=this.state.details?.record;
+            const dvNo=(d.fromDv&&String(detail?.id)===String(d.dvId)?detail?.display_number:r?.display_number)||'Selected DV';
+            const url='api/bir2307.php?organization_id='+encodeURIComponent(d.organizationId)+'&dv_id='+encodeURIComponent(d.dvId)+'&print=1&embedded=1';
+            return h('div',{className:'ipdams-bir2307-overlay',role:'presentation',onMouseDown:e=>{
+                    if(e.target===e.currentTarget)this.closeBir2307Dialog();}},
+                h('section',{className:'ipdams-bir2307-dialog',role:'dialog','aria-modal':'true',
+                    'aria-labelledby':'ipdams-bir2307-modal-title',onKeyDown:e=>{
+                        if(e.key==='Escape'){e.preventDefault();e.stopPropagation();this.closeBir2307Dialog();}}},
+                    h('header',{className:'ipdams-bir2307-dialog-header'},
+                        h('div',null,h('strong',{id:'ipdams-bir2307-modal-title'},'BIR Form 2307 · '+dvNo),
+                            h('small',null,'A4 preview · Selected DV only · No accounting changes')),
+                        h('button',{type:'button',className:'ipdams-bir2307-dialog-close',
+                            onClick:this.closeBir2307Dialog,'aria-label':d.fromDv?'Close BIR preview and return to DV':'Close BIR preview and return to Disbursements',
+                            ref:el=>{if(el&&!this.bir2307CloseFocused){this.bir2307CloseFocused=true;el.focus();}}},
+                            d.fromDv?'Return to DV':'Return to Disbursements','  ×')),
+                    h('iframe',{className:'ipdams-bir2307-frame',title:'BIR Form 2307 readiness and A4 PDF print preview',
+                        src:url,referrerPolicy:'no-referrer',onLoad:()=>{ /* Read-only document retained inside the modal. */ }})));
+        };
+        this.bir2307ReceiveMessage = event => {
+            const frame=document.querySelector('.ipdams-bir2307-frame');
+            if(event.origin!==window.location.origin||!frame||event.source!==frame.contentWindow)return;
+            if(event.data?.type==='IPDAMS_BIR2307_CLOSE')this.closeBir2307Dialog();
+        };
         this.api = async (route, body) => {
             const post = body !== undefined;
             if(post && this.state.user?.role==='SUPER_ADMIN' && this.state.superAdminViewOnly && !['auth.logout','auth.change_password'].includes(route))
@@ -714,7 +831,8 @@ class App extends React.Component {
         };
         this.session = async () => { try {
             const r = await this.api('auth.session');
-            const available = r.organizations || [];
+            const mustChangePassword=Boolean(r.password_change_required);
+            const available = mustChangePassword?[]:(r.organizations || []);
             let saved = '';
             try { if (r.user) saved = window.localStorage.getItem(this.workspacePreferenceKey(r.user)) || ''; } catch (_) { /* Optional preference only. */ }
             const previous = this.state.organization_id;
@@ -724,10 +842,10 @@ class App extends React.Component {
             // Never trust a URL's page preference until authenticated role and
             // workspace access have been confirmed by auth.session.
             const locationView=ipdamsNavigationFromSearch(window.location.search,r.user,available,org);
-            this.setState({ ...locationView, superAdminViewOnly:r.user?.role==='SUPER_ADMIN', user: r.user, orgs: available, csrf: r.csrf, organization_id: org ? String(org) : '',mooeIssuedDocs:null,mooeIssuedError:'',mooeIssuedBusy:false,divisionModuleGrants:null,divisionModuleGrantsBusy:false,divisionContextRegister:null,divisionContextError:'',
-                sessionStatus: 'ready', sessionError: '', error: '',
+            this.setState({ ...locationView, superAdminViewOnly:false, user: r.user, orgs: available, csrf: r.csrf, organization_id: org ? String(org) : '',mooeIssuedDocs:null,mooeIssuedError:'',mooeIssuedBusy:false,divisionModuleGrants:null,divisionModuleGrantsBusy:false,divisionContextRegister:null,divisionContextError:'',
+                sessionStatus: 'ready', sessionError: '', error: '',passwordChangeRequired:mustChangePassword,
                 workspaceLoading: Boolean(r.user && org) }, () => {
-                if (r.user && org) { this.rememberWorkspace(r.user, org); this.refresh(); this.loadHierarchy(); }
+                if (r.user && org && !mustChangePassword) { this.rememberWorkspace(r.user, org); this.refresh(); this.loadHierarchy(); }
             });
         }
         catch (e) {
@@ -967,13 +1085,39 @@ class App extends React.Component {
                 // Saving the catalog never creates/approves a tax policy.  The
                 // officer must explicitly choose the authorized disposition.
                 this.setState({sourceDialog:false,sourceCode:'',sourceName:'',sourceReason:'',
-                    ...(pending?.code===code&&pending.needsPolicy&&active?{
+                    ...(pending?.code===code&&pending.needsPolicy&&active?{fundConfigSelected:code,
                         policyDialog:true,fundPolicySource:code,fundPolicyMode:'NOT_CONFIGURED',
                         fundPolicyDate:localToday(),fundPolicyAuthority:'',fundPolicyReason:'',
                         fundPolicyPaymentCredit:'',fundPolicyWithholdingCredit:''
                     }:{})});
                 await this.loadFundPolicySettings();
             }
+        };
+        this.saveDivisionTaxPayee = async e => {
+            e.preventDefault();
+            if(this.state.busy)return;
+            const code=String(this.state.fundConfigSelected||'').trim();
+            const payee=String(this.state.taxPayeeName||'').trim();
+            const saved=this.state.fundPolicies?.check_payees?.[code]||{};
+            if(!code||this.state.taxPayeeSource!==code||!payee){
+                this.setState({taxPayeeError:'Select a fund and enter its exact check payee.',taxPayeeNotice:''});return;
+            }
+            if(payee===String(saved.payee||'')){
+                this.setState({taxPayeeError:'This payee name is already saved. No changes were made.',taxPayeeNotice:''});return;
+            }
+            this.setState({busy:true,taxPayeeNotice:'',taxPayeeError:'',error:'',success:''});
+            try {
+                const result=await this.api('division.tax_check_payee.save',{
+                    organization_id:Number(this.state.organization_id),source_code:code,check_payee:payee,
+                    expected_version:Number(this.state.taxPayeeExpected)
+                });
+                // Keep the saved name in view, rather than clearing the form.
+                this.setState({taxPayeeExpected:Number(result.version_id),taxPayeeName:result.check_payee||payee,
+                    taxPayeeError:'',taxPayeeNotice:'Saved successfully for '+code+'. New remittance checks will use this name; existing DVs and checks are unchanged.'});
+                await this.loadFundPolicySettings();
+            } catch(err) {
+                this.setState({taxPayeeError:String(err.message||'Save failed. Review your permissions and try again.'),taxPayeeNotice:''});
+            } finally {this.setState({busy:false});}
         };
         this.saveDivisionFundPolicy = async e => {
             e.preventDefault();const r=await this.task('division.fund_policy.save',{source_code:this.state.fundPolicySource,school_class:this.state.fundPolicyClass,
@@ -1008,15 +1152,97 @@ class App extends React.Component {
         this.linkLegacySchool = e => this.submitOrganization(e,'organization.school.attach',{
             division_id:Number(this.state.selected_division_id),school_id:Number(this.state.legacy_school_id)
         });
+        // Organization's BIR profile and Form 2307 share one versioned, audited
+        // configuration. No DV is required to maintain identity here.
+        this.loadBirProfile = async targetId => {
+            const id=String(targetId||'');
+            const token=this.birProfileRequest=(this.birProfileRequest||0)+1;
+            if(!id){this.setState({birProfile:null,birProfileTarget:'',birProfileError:'',birProfileNotice:''});return;}
+            this.setState({birProfile:null,birProfileTarget:id,birProfileLoading:true,birProfileError:'',birProfileNotice:''});
+            try{
+                const response=await fetch('api/bir2307.php?profile=1&organization_id='+encodeURIComponent(id),{credentials:'same-origin'});
+                const json=await response.json().catch(()=>({error:'Invalid BIR profile response from the server.'}));
+                if(!response.ok)throw Error(json.error||'Unable to load BIR profile.');
+                const data=json.data||json;
+                if(token!==this.birProfileRequest)return;
+                this.setState({birProfile:data,birProfileLoading:false,
+                    birProfileDraft:{registered_name:data.registered_name||'',tin:data.tin||'',address:data.address||'',zip:data.zip||''}});
+            }catch(err){if(token===this.birProfileRequest)this.setState({birProfileLoading:false,birProfileError:err.message||String(err)});}
+        };
+        this.saveBirProfile = async event => {
+            event.preventDefault();
+            const {birProfile:profile,birProfileDraft:d}=this.state;
+            if(!profile?.editable||this.state.birProfileSaving)return;
+            const id=String(profile.target_organization_id);
+            this.setState({birProfileSaving:true,birProfileError:'',birProfileNotice:''});
+            try{
+                const response=await fetch('api/bir2307.php?profile=1&organization_id='+encodeURIComponent(id),{
+                    method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-CSRF-Token':this.state.csrf},
+                    body:JSON.stringify({...d,expected_version:profile.version_id,
+                        expected_payor_organization_id:profile.payor_organization_id})});
+                const json=await response.json().catch(()=>({error:'Invalid BIR profile response from the server.'}));
+                if(!response.ok)throw Error(json.error||'Unable to save registered BIR identity.');
+                if(String(this.state.birProfileTarget)===id){
+                    await this.loadBirProfile(id);
+                    this.setState({birProfileNotice:'Registered BIR identity saved with version history. Existing DVs and withholding are unchanged.'});
+                }
+            }catch(err){this.setState({birProfileError:err.message||String(err)});}
+            finally{this.setState({birProfileSaving:false});}
+        };
+        this.birProfileEditor = (targetId) => {
+            const h=React.createElement,id=String(targetId||'');
+            if(!id)return null;
+            const profile=String(this.state.birProfileTarget)===id?this.state.birProfile:null;
+            const working=this.state.birProfileLoading&&String(this.state.birProfileTarget)===id;
+            const nonIus=profile?.classification==='NON_IUS';
+            const field=(key,label,placeholder)=>h('label',{className:'field',key},h('span',null,label),
+                h('input',{type:'text',value:this.state.birProfileDraft[key]||'',placeholder,required:true,
+                    maxLength:key==='registered_name'?200:key==='tin'?22:6,autoComplete:'off',
+                    onChange:e=>this.setState({birProfileDraft:{...this.state.birProfileDraft,[key]:e.target.value}})}));
+            return h('section',{className:'surface',role:'region','aria-label':'BIR Registered Payor Profile'},
+                h('h3',null,'BIR Registered Payor Profile · Form 2307'),
+                h('p',{className:'body-muted'},'This is the tax-registered identity, separate from the office name used in IPDAMS. It is shared with BIR Form 2307 and is versioned and audited.'),
+                working?h('p',{role:'status'},'Loading registered BIR identity…'):null,
+                this.state.birProfileError&&String(this.state.birProfileTarget)===id?h('p',{role:'alert',className:'workflow-error'},this.state.birProfileError):null,
+                this.state.birProfileNotice&&String(this.state.birProfileTarget)===id?h('p',{role:'status',className:'workflow-success'},this.state.birProfileNotice):null,
+                !profile&&!working?h('button',{type:'button',className:'outline',onClick:()=>this.loadBirProfile(id)},'Load registered BIR identity'):null,
+                profile?(
+                    nonIus?h('div',null,
+                        h('p',{className:'hint'},'Non-IUS: this school uses the Division Office registered name, TIN, address and ZIP. Configure them under Division Profile; this school cannot override them.'),
+                        h('p',null,'Registered BIR name: ',h('strong',null,profile.registered_name||'Not configured')),
+                        h('p',null,'Division TIN: ',h('strong',null,profile.tin||'Not configured')),
+                        h('p',null,'Registered address / ZIP: ',profile.address||'—',' · ',profile.zip||'—')):
+                    profile.editable?h('form',{onSubmit:this.saveBirProfile},
+                        h('div',{className:'form-grid'},
+                            field('registered_name','Registered BIR name *','e.g. Department of Education'),
+                            field('tin','Registered office TIN *','12 or 14 digits'),
+                            h('label',{className:'field'},h('span',null,'BIR registered address *'),
+                                h('textarea',{required:true,rows:2,maxLength:400,value:this.state.birProfileDraft.address||'',
+                                    onChange:e=>this.setState({birProfileDraft:{...this.state.birProfileDraft,address:e.target.value}})})),
+                            field('zip','Registered ZIP code *','4 to 6 digits')),
+                        h('p',{className:'hint'},'For Non-IUS schools, the parent Division BIR profile is used automatically. For IUS schools, this school profile is used. The appointed School Head and personal employee TIN remain the certificate signatory.'),
+                        h('button',{type:'submit',className:'primary',disabled:this.state.birProfileSaving},this.state.birProfileSaving?'Saving…':'Save Registered BIR Profile')):
+                    h('div',null,h('p',{className:'hint'},profile.issue||'This registered identity is read-only for your account.'),
+                        h('p',null,'Registered BIR name: ',profile.registered_name||'Not configured'),
+                        h('p',null,'TIN: ',profile.tin||'Not configured'))):null);
+        };
         this.changeProfile = (e) => {
             const id=e.target.value;const o=(this.state.orgHierarchy||[]).find(x=>String(x.id)===id);
             this.setState({edit_org_id:id,edit_name:o?.name||'',edit_code:o?.kind==='SCHOOL'?(o.code||''):'',edit_code_reason:'',edit_address:o?.address||'',edit_email:o?.contact_email||'',edit_phone:o?.contact_phone||'',
                 schoolClassEdit:id,schoolClassEditClass:o?.implementation_class||'',
                 schoolClassEditDate:o?.implementation_effective_from||localToday(),schoolClassEditReason:''});
+            this.loadBirProfile(id);
         };
         this.saveProfile = async e => {
             const org=(this.state.orgHierarchy||[]).find(o=>String(o.id)===String(this.state.edit_org_id));
             const isSchool=org?.kind==='SCHOOL';
+            const isDivision=org?.kind==='DIVISION';
+            const birProfile=isDivision&&String(this.state.birProfileTarget)===String(org.id)?this.state.birProfile:null;
+            if(isDivision && (!birProfile?.editable || this.state.birProfileLoading)){
+                e.preventDefault();
+                this.setState({error:'The Division BIR profile is not ready. Load it and retry so both profiles can save together.'});
+                return;
+            }
             // Saving a phone or address must not trigger an unrelated,
             // possibly unconfigured implementation-classification validation.
             const classChanged=isSchool && (
@@ -1025,13 +1251,27 @@ class App extends React.Component {
             const result=await this.submitOrganization(e,'organization.profile.update',{
                 target_organization_id:Number(this.state.edit_org_id),name:this.state.edit_name.trim(),
                 address:this.state.edit_address.trim(),contact_email:this.state.edit_email.trim(),contact_phone:this.state.edit_phone.trim(),
+                ...(isDivision?{bir_registered:{
+                    registered_name:this.state.birProfileDraft.registered_name.trim(),
+                    tin:this.state.birProfileDraft.tin.trim(),
+                    zip:this.state.birProfileDraft.zip.trim(),
+                    expected_version:Number(birProfile.version_id),
+                    expected_payor_organization_id:Number(birProfile.payor_organization_id)
+                }}:{}),
                 ...(isSchool?{code:this.state.edit_code.trim(),expected_code:org.code,code_change_reason:this.state.edit_code_reason.trim(),
                     ...(classChanged?{classification:this.state.schoolClassEditClass,
                         classification_effective_from:this.state.schoolClassEditDate,
                         classification_reason:this.state.schoolClassEditReason.trim(),
                         expected_classification_version:Number(org.implementation_class_version_id||0)}:{})}:{})
             },'PROFILE_SAVE');
-            if(result){this.setState({edit_code:result.code||'',edit_code_reason:'',schoolClassEditReason:''});await this.loadHierarchy();}
+            if(result){
+                this.setState({edit_code:result.code||'',edit_code_reason:'',schoolClassEditReason:''});
+                await this.loadHierarchy();
+                if(isDivision){
+                    await this.loadBirProfile(String(org.id));
+                    this.setState({tab:'Organization',organizationSection:'division'});
+                }
+            }
         };
         this.changeOwnPassword = async e => {
             e.preventDefault();
@@ -1077,6 +1317,9 @@ class App extends React.Component {
         };
         this.login = async (e) => { e.preventDefault(); this.setState({ busy: true, error: '' }); try {
             const r = await this.api('auth.login', { email: this.state.loginEmail, password: this.state.loginPassword });
+            if(r.password_change_required){
+                window.location.assign('api/password-recovery.php?mode=change');return;
+            }
             this.setState({ csrf: r.csrf, loginPassword: '', sessionStatus: 'checking' }, () => this.session());
         }
         catch (e) {
@@ -1313,7 +1556,7 @@ class App extends React.Component {
                 uid===String(this.state.user?.id||'') && this.state.sessionStatus==='ready';
             // Never retain previous office's tasks during loading.
             this.setState({actionCenterOrg:org,
-                ...(this.state.actionCenterOrg===org ? {} : {actionCenterItems:[],actionCenterBookItems:[],actionCenterTaxItems:[],actionCenterTaxTotal:0,actionCenterCount:0,actionCenterChecked:''}),
+                ...(this.state.actionCenterOrg===org ? {} : {actionCenterTab:'auto',actionCenterItems:[],actionCenterScanItems:[],actionCenterScanCount:0,actionCenterBookItems:[],actionCenterTaxItems:[],actionCenterTaxTotal:0,actionCenterTaxGroupCount:0,actionCenterTransferTasks:[],actionCenterTransferPendingTotal:0,actionCenterTransferAwaiting:[],actionCenterTransferAwaitingTotal:0,actionCenterRemittances:[],actionCenterRemittanceCount:0,actionCenterRetainedNotices:[],actionCenterRetainedNoticeCount:0,actionCenterPasswordResetCount:0,actionCenterCount:0,actionCenterChecked:''}),
                 actionCenterLoading:true,actionCenterError:''});
             try{
                 const response=await fetch('api/action-center.php?organization_id='+encodeURIComponent(org),
@@ -1323,13 +1566,25 @@ class App extends React.Component {
                 const data=result.data||{};
                 if(!isCurrent())return;
                 this.setState({actionCenterOrg:org,actionCenterItems:Array.isArray(data.incoming_transfers)?data.incoming_transfers:[],
+                    actionCenterScanItems:Array.isArray(data.property_scan_assessments)?data.property_scan_assessments:[],
+                    actionCenterScanCount:Number(data.property_scan_actionable_count)||0,
                     actionCenterBookItems:Array.isArray(data.textbook_actions)?data.textbook_actions:[],
                     actionCenterTaxItems:Array.isArray(data.pending_tax_actions)?data.pending_tax_actions:[],
                     actionCenterTaxTotal:Number(data.pending_tax_count)||0,
+                    actionCenterTaxGroupCount:Number(data.pending_tax_group_count)||0,
+                    actionCenterTransferTasks:Array.isArray(data.school_tax_transfer_actions)?data.school_tax_transfer_actions:[],
+                    actionCenterTransferPendingTotal:Number(data.school_tax_transfer_action_count)||0,
+                    actionCenterTransferAwaiting:Array.isArray(data.school_tax_transfers_awaiting_division)?data.school_tax_transfers_awaiting_division:[],
+                    actionCenterTransferAwaitingTotal:Number(data.school_tax_transfers_awaiting_division_count)||0,
+                    actionCenterRemittances:Array.isArray(data.incoming_tax_remittances)?data.incoming_tax_remittances:[],
+                    actionCenterRemittanceCount:Number(data.incoming_tax_remittance_count)||0,
+                    actionCenterRetainedNotices:Array.isArray(data.incoming_retained_tax_notices)?data.incoming_retained_tax_notices:[],
+                    actionCenterRetainedNoticeCount:Number(data.incoming_retained_tax_notice_count)||0,
+                    actionCenterPasswordResetCount:Number(data.pending_password_reset_count)||0,
                     actionCenterCount:Number(data.pending_count)||0,actionCenterLoading:false,
                     actionCenterError:'',actionCenterChecked:String(data.checked_at||'')});
             }catch(error){
-                if(isCurrent())this.setState({actionCenterItems:[],actionCenterBookItems:[],actionCenterTaxItems:[],actionCenterTaxTotal:0,actionCenterCount:0,actionCenterLoading:false,
+                if(isCurrent())this.setState({actionCenterItems:[],actionCenterScanItems:[],actionCenterScanCount:0,actionCenterBookItems:[],actionCenterTaxItems:[],actionCenterTaxTotal:0,actionCenterTaxGroupCount:0,actionCenterTransferTasks:[],actionCenterTransferPendingTotal:0,actionCenterTransferAwaiting:[],actionCenterTransferAwaitingTotal:0,actionCenterRemittances:[],actionCenterRemittanceCount:0,actionCenterRetainedNotices:[],actionCenterRetainedNoticeCount:0,actionCenterPasswordResetCount:0,actionCenterCount:0,actionCenterLoading:false,
                     actionCenterError:String(error.message||'Unable to load pending work. Try Refresh.')});
             }
         };
@@ -1418,6 +1673,198 @@ class App extends React.Component {
             }catch(e){this.setState({taxUtilizationError:e.message});}
             finally{this.setState({taxUtilizationBusy:false});}
         };
+        // Division-wide read-only tax monitoring, separate from the pending Action Center.
+        // Load on entering the Division's Withholding Taxes tab; never on every render.
+        this.divisionTaxFilters = () => {
+            const s=this.state;
+            return {organization_id:Number(s.organization_id),month:s.divisionTaxMonth,
+                from_date:s.divisionTaxFromDate,to_date:s.divisionTaxToDate,
+                school_id:s.divisionTaxSchool,fund_id:s.divisionTaxFund,
+                source_code:s.divisionTaxSource,atc_code:s.divisionTaxAtc,
+                disposition:s.divisionTaxDisposition,notice_status:s.divisionTaxNotice,
+                check_status:s.divisionTaxCheck,fiscal_year:s.divisionTaxYear};
+        };
+        this.loadDivisionTaxReport = async (page=1) => {
+            const org=String(this.state.organization_id||'');
+            const request=this.divisionTaxRequest=(this.divisionTaxRequest||0)+1;
+            if(!org||!this.state.orgs.some(o=>String(o.id)===org&&o.kind==='DIVISION'))return;
+            this.setState({divisionTaxLoading:true,divisionTaxError:'',divisionTaxOrg:org,divisionTaxData:null});
+            try{
+                const data=await this.get('division.tax.report',{...this.divisionTaxFilters(),page},{cache:'no-store'});
+                if(request!==this.divisionTaxRequest||String(this.state.organization_id)!==org)return;
+                this.setState({divisionTaxData:data,divisionTaxLoading:false,divisionTaxError:'',divisionTaxPage:page});
+            }catch(e){
+                if(request===this.divisionTaxRequest&&String(this.state.organization_id)===org)
+                    this.setState({divisionTaxLoading:false,divisionTaxError:e.message||'Division withholding report unavailable.'});
+            }
+        };
+        this.exportDivisionTaxCsv = layout => {
+            if(!this.state.orgs.some(o=>String(o.id)===String(this.state.organization_id)&&o.kind==='DIVISION'))return;
+            const query=new URLSearchParams({route:'division.tax.csv',...this.divisionTaxFilters(),layout});
+            const a=document.createElement('a');
+            a.href='api/index.php?'+query.toString();a.download='IPDAMS_Division_Withholding_'+layout+'.csv';
+            document.body.appendChild(a);a.click();a.remove();
+        };
+        this.divisionWithholdingPanel = () => {
+            const h=React.createElement,s=this.state;
+            const d=s.divisionTaxOrg===String(s.organization_id)?s.divisionTaxData:null;
+            const options=d?.options||{offices:[],funds:[],fund_sources:[],atcs:[]};
+            const total=d?.summary||{};
+            const peso=v=>'₱'+(Number(v)||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+            const choose=(field,label,entries)=>h('label',{className:'field',key:field},
+                h('span',null,label),h('select',{value:s[field],onChange:e=>this.setState(field==='divisionTaxSchool'?{divisionTaxSchool:e.target.value,divisionTaxFund:''}:{[field]:e.target.value})},
+                    ...entries.map(([value,name])=>h('option',{key:value,value},name))));
+            const change=(field,label,opts)=>choose(field,label,[['','All'],...opts]);
+            const filters=h('div',{className:'form-grid'},
+                h('label',{className:'field'},h('span',null,'Document month (alternative to range)'),
+                    h('input',{type:'month',value:s.divisionTaxMonth,
+                        onChange:e=>this.setState({divisionTaxMonth:e.target.value,divisionTaxFromDate:'',divisionTaxToDate:''})})),
+                h('label',{className:'field'},h('span',null,'From Date (DV document date)'),
+                    h('input',{type:'date',value:s.divisionTaxFromDate,max:s.divisionTaxToDate||undefined,
+                        onChange:e=>this.setState({divisionTaxFromDate:e.target.value,divisionTaxMonth:''})})),
+                h('label',{className:'field'},h('span',null,'To Date (inclusive)'),
+                    h('input',{type:'date',value:s.divisionTaxToDate,min:s.divisionTaxFromDate||undefined,
+                        onChange:e=>this.setState({divisionTaxToDate:e.target.value,divisionTaxMonth:''})})),
+                change('divisionTaxSchool','School / office',options.offices.map(o=>[String(o.id),(o.kind==='DIVISION'?'Division · ':'School · ')+o.name])),
+                change('divisionTaxSource','Fund source',options.fund_sources.map(code=>[String(code),code])),
+                change('divisionTaxFund','Specific fund',options.funds
+                    .filter(f=>!s.divisionTaxSchool||String(f.organization_id)===String(s.divisionTaxSchool))
+                    .map(f=>[String(f.id),f.name+' · '+f.source_code+' · FY '+f.fiscal_year])),
+                change('divisionTaxAtc','ATC / tax code',options.atcs.map(code=>[String(code),code])),
+                choose('divisionTaxDisposition','Withholding treatment',
+                    [['ALL','All treatments'],['SCHOOL_UTILIZATION','School-retained / Division settles'],['REMIT','Remittance treatment']]),
+                choose('divisionTaxNotice','Division notice review',
+                    [['ALL','All notices'],['PENDING_REVIEW','Awaiting review'],['REVIEWED','Reviewed'],['NO_NOTICE','No notice recorded']]),
+                choose('divisionTaxCheck','Check status',
+                    [['ALL','All checks'],['RELEASED','Release recorded'],['NOT_RELEASED','No release recorded']]),
+                h('label',{className:'field'},h('span',null,'Fiscal year (optional)'),
+                    h('input',{type:'text',inputMode:'numeric',maxLength:4,placeholder:'e.g. 2026',value:s.divisionTaxYear,
+                        onChange:e=>this.setState({divisionTaxYear:e.target.value})})));
+            const dvRows=d?.rows||[];
+            // Rates are display-only historical values supplied by the same
+            // saved rate version as the School DV. Never re-assess withholding.
+            const rateText=value=>value===null||value===undefined?'—':String(value)+'%';
+            const stacked=(items,render)=>h('div',{className:'dv-tax-stack'},
+                ...items.map(c=>h('div',{className:'dv-tax-line',key:c.id},render(c))));
+            const tableRows=dvRows.map(r=>{
+                const parts=r.components||[];
+                return h('tr',{key:r.dv_id},
+                    h('td',null,h('strong',null,r.dv_number||('#'+r.dv_id)),h('small',{className:'body-muted'},r.document_date||'Date not recorded')),
+                    h('td',null,r.office_name),
+                    h('td',null,r.fund_name+' · '+r.source_code+' · FY '+r.fiscal_year),
+                    h('td',{className:'dv-tax-money'},h('strong',null,peso(r.gross_amount))),
+                    h('td',{className:'dv-tax-money'},stacked(parts,c=>peso(c.tax_base))),
+                    h('td',null,stacked(parts,c=>h('strong',null,c.atc_code))),
+                    h('td',null,stacked(parts,c=>rateText(c.rate_percent))),
+                    h('td',{className:'dv-tax-money'},h('strong',null,peso(r.withheld)),
+                        h('small',{className:'body-muted'},parts.map(c=>c.atc_code+' '+peso(c.amount)).join(' · '))),
+                    h('td',{className:'dv-tax-money'},h('strong',null,peso(r.net_payment))),
+                    h('td',null,String(r.notice_status||'NOT_APPLICABLE').replaceAll('_',' ')),
+                    h('td',null,r.check_released_at?'Released · '+r.check_released_at:'No release recorded'));
+            });
+            return h('section',{className:'surface ipdams-division-tax-register',role:'region','aria-label':'Division withholding tax monitoring'},
+                h('div',{className:'section-head'},h('div',null,h('h3',null,'Division Withholding Tax Register'),
+                    h('p',{className:'body-muted'},'One row per finalized DV. Amounts match the original School DV: saved gross, tax bases, historical rates, deductions and net payment. No tax is recalculated.')),
+                    h('button',{type:'button',className:'outline',disabled:s.divisionTaxLoading,
+                        onClick:()=>this.loadDivisionTaxReport(1)},'Refresh report')),
+                h('p',{className:'hint'},'Select either a document month or a custom From/To Date range (inclusive). Choosing a range clears the month; choosing a month clears the range. Either date may be left blank for an open-ended range. All totals and both CSV exports use the same saved DV document dates and selected filters.'),
+                filters,
+                h('div',{className:'inline-actions'},
+                    h('button',{type:'button',disabled:s.divisionTaxLoading,onClick:()=>this.loadDivisionTaxReport(1)},'Generate filtered report'),
+                    h('button',{type:'button',className:'outline',disabled:s.divisionTaxLoading,onClick:()=>this.setState({
+                        divisionTaxMonth:'',divisionTaxFromDate:'',divisionTaxToDate:'',divisionTaxSchool:'',divisionTaxFund:'',divisionTaxSource:'',divisionTaxAtc:'',
+                        divisionTaxDisposition:'ALL',divisionTaxNotice:'ALL',divisionTaxCheck:'ALL',divisionTaxYear:''
+                    },()=>this.loadDivisionTaxReport(1))},'All periods / clear filters'),
+                    h('button',{type:'button',className:'outline',disabled:!d||s.divisionTaxLoading||d.total_dvs>1500,onClick:()=>this.exportDivisionTaxCsv('DV')},'Download DV CSV'),
+                    h('button',{type:'button',className:'outline',disabled:!d||s.divisionTaxLoading||d.total_dvs>1500,onClick:()=>this.exportDivisionTaxCsv('ATC')},'Download ATC detail CSV')),
+                h('p',{className:'hint'},'ATC/treatment filters select matching DVs; each DV row retains ALL original tax components. Withheld, gross and net use the exact saved School DV figures, without recalculating taxes. CSV exports include matching DVs up to 1,500 per file. The DV CSV is one row per DV; ATC detail CSV is an optional component-level audit export. This is not a completed BIR return.'),
+                s.divisionTaxLoading?h('p',{role:'status'},'Loading Division tax report…'):null,
+                s.divisionTaxError?h('p',{className:'error',role:'alert'},s.divisionTaxError):null,
+                d?h('div',{className:'summary-grid'},
+                    ...[['Total withholding',peso(total.total_withheld)],['Finalized DVs',String(d.total_dvs||0)],
+                        ['Tax components',String(total.component_count||0)]].map(([label,value])=>
+                        h('div',{className:'summary-card',key:label},h('small',null,label),h('strong',null,value)))):null,
+                d?h('div',{className:'table-scroll'},h('table',{className:'data-table'},
+                    h('thead',null,h('tr',null,...['DV / date','School / office','Fund / source',
+                        'Total amount (gross)','Tax base','ATC code','Rate','Amount withheld','Net payment',
+                        'Division review','Check release'].map(title=>h('th',{key:title},title)))),
+                    h('tbody',null,...tableRows,
+                        !dvRows.length?h('tr',null,h('td',{colSpan:11},'No withholding components match these filters.')):null))):null,
+                d?h('div',{className:'inline-actions'},
+                    h('span',{className:'hint'},'Page '+d.page+' of '+(d.total_pages||0)+' · '+d.total_dvs+' matching DV(s)'),
+                    h('button',{type:'button',className:'outline',disabled:s.divisionTaxLoading||d.page<=1,
+                        onClick:()=>this.loadDivisionTaxReport(d.page-1)},'Previous'),
+                    h('button',{type:'button',className:'outline',disabled:s.divisionTaxLoading||d.page>=d.total_pages,
+                        onClick:()=>this.loadDivisionTaxReport(d.page+1)},'Next')):null,
+                d?h('div',{className:'form-grid'},
+                    h('section',{className:'surface'},h('h4',null,'Totals by ATC'),
+                        ...(total.by_atc||[]).map(r=>h('p',{key:r.atc_code},r.atc_code+' · '+peso(r.withheld)+' ('+r.component_count+' component(s))'))),
+                    h('section',{className:'surface'},h('h4',null,'Totals by school / office'),
+                        ...(total.by_office||[]).map(r=>h('p',{key:r.office_id},r.office_name+' · '+peso(r.withheld)+' ('+r.dv_count+' DV(s))'))),
+                    h('section',{className:'surface'},h('h4',null,'Totals by fund source'),
+                        ...(total.by_source||[]).map(r=>h('p',{key:r.source_code},r.source_code+' · '+peso(r.withheld)+' ('+r.dv_count+' DV(s))')))) :null,
+                h('p',{className:'hint'},'Financial control: “Reviewed” means acknowledgment of the Division notice only. Neither the notification nor this report records cash received, a JEV, tax paid to BIR or reconciliation. Use the separately authorized remittance workflow and supporting BIR evidence for settlement.'));
+        };
+
+        // Per-DV retained withholding handoff: an auditable Division notice, not a payment.
+        this.loadTaxHandoff = async () => {
+            const org=String(this.state.organization_id||''),request=this.taxHandoffRequest=(this.taxHandoffRequest||0)+1;
+            if(!org)return;
+            this.setState({taxHandoffLoading:true,taxHandoffError:'',taxHandoffOrg:org,taxHandoffData:null});
+            try{
+                const data=await this.get('tax.handoff.workspace',{organization_id:org});
+                if(request!==this.taxHandoffRequest||org!==String(this.state.organization_id))return;
+                this.setState({taxHandoffData:data,taxHandoffLoading:false,taxHandoffError:''});
+            }catch(error){
+                if(request===this.taxHandoffRequest&&org===String(this.state.organization_id))
+                    this.setState({taxHandoffLoading:false,taxHandoffError:String(error.message||'Unable to load tax notices')});
+            }
+        };
+        this.notifyDivisionOfTax = async dvId => {
+            if(this.state.taxHandoffBusy||this.state.user?.role!=='SCHOOL'||!this.canOperateWorkspace())return;
+            if(!window.confirm('Notify the Division about the ORIGINAL tax withheld on this finalized DV? This creates an accountability notice only. No money is transferred and no BIR payment is recorded.'))return;
+            this.setState({taxHandoffBusy:true,taxHandoffError:''});
+            try{
+                await this.api('tax.handoff.notify',{organization_id:Number(this.state.organization_id),dv_id:Number(dvId)});
+                this.setState({success:'Division notified of withholding on DV #'+dvId+'. No cash or BIR remittance was recorded.'});
+                await this.loadTaxHandoff();this.loadActionCenter();
+            }catch(error){this.setState({taxHandoffError:String(error.message||'Notification failed')});}
+            finally{this.setState({taxHandoffBusy:false});}
+        };
+        this.acknowledgeDivisionTax = async noticeId => {
+            if(this.state.busy||this.state.user?.role!=='DIVISION')return;
+            const input=window.prompt('Division review note (at least 12 characters). This ACKNOWLEDGES receipt of the school withholding notice. It does NOT record money received, a JEV, or BIR remittance.');
+            if(input===null)return;
+            if(input.trim().length<12){this.setState({actionCenterError:'Enter a Division review note of at least 12 characters.'});return;}
+            const result=await this.task('tax.handoff.ack',{notice_id:Number(noticeId),reviewed:true,review_note:input.trim()},{refresh:false});
+            if(!result)return;
+            this.setState({success:'School withholding notice acknowledged for Division follow-up. BIR settlement is still a separate obligation.'});
+            await this.loadActionCenter();
+        };
+        this.retainedTaxHandoffPanel = () => {
+            const h=React.createElement,s=this.state;
+            const data=s.taxHandoffOrg===String(s.organization_id)?s.taxHandoffData:null;
+            const money=v=>'₱'+Number(v||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+            const school=(s.orgs||[]).find(o=>String(o.id)===String(s.organization_id))?.kind==='SCHOOL';
+            const rows=school?(data?.rows||[]):[];
+            return h('section',{className:'surface',role:'region','aria-label':'Per-DV withholding notice to Division'},
+                h('div',{className:'section-head'},h('div',null,h('h3',null,'Division tax accountability — one notice per DV'),
+                    h('p',{className:'hint'},'New finalized Non-IU DVs notify the Division automatically. The original withholding amounts and VAT/WTX codes remain available for audit; check release updates the existing notice status.')),
+                    h('button',{type:'button',className:'outline',disabled:s.taxHandoffLoading||s.taxHandoffBusy,onClick:()=>this.loadTaxHandoff()},'Refresh notices')),
+                h('p',{className:'hint'},'Division-settled school-utilization withholding only. Notification is not a cash transfer, BIR payment, or allocation credit. The ordinary funding difference remains visible until authorized accounting reconciliation. Other remittances use their separate workflow.'),
+                s.taxHandoffLoading?h('p',{role:'status'},'Loading finalized DV withholding…'):null,
+                s.taxHandoffError?h('p',{className:'error',role:'alert'},s.taxHandoffError):null,
+                data?.office_kind==='DIVISION'?h('p',{className:'hint'},'Incoming school notices are shown in Action Center → School Tax Notices.'):null,
+                school&&!s.taxHandoffLoading&&!rows.length?h('p',{className:'hint'},'No finalized Division-settled retained withholding DVs found in the latest register.'):null,
+                ...rows.map(r=>h('article',{className:'tax-use-record',key:'handoff-'+r.dv_id},
+                    h('div',{className:'tax-use-record-top'},h('div',null,h('strong',null,'DV '+(r.dv_number||r.dv_id)+' · '+r.fund_code),
+                        h('small',{className:'body-muted'},r.document_date+' · '+r.component_count+' withholding component(s)')),
+                        h('strong',{className:'tax-use-amount'},money(r.withheld))),
+                    h('div',{className:'tax-use-actions'},r.notice_id?
+                        h('span',{className:'hint'},'Division notified · Notice #'+r.notice_id+(r.check_released_at?' · Check released':' · Check not yet released')):
+                        h('button',{type:'button',className:'outline',disabled:s.taxHandoffBusy||s.user?.role!=='SCHOOL',
+                            onClick:()=>this.notifyDivisionOfTax(r.dv_id)},'Notify Division (older DV only)')))));
+        };
         this.taxUtilizationPanel = () => {
             const h=React.createElement,s=this.state,d=String(s.taxUtilizationOrg)===String(s.organization_id)?s.taxUtilization:null;
             const amt=v=>'₱'+(Number(v)||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1441,24 +1888,35 @@ class App extends React.Component {
                 d?.school_class==='NON_IUS'?h('section',{className:'surface'},
                     h('h3',null,'Withholding by finalized DV'),
                     !rows.length?h('p',{className:'hint'},'No finalized Non-IU DVs have a saved SCHOOL_UTILIZATION withholding disposition in this workspace. New Division settings do not rewrite older vouchers.'):null,
-                    ...rows.map(x=>{
-                        const available=Number(x.remaining_amount)||0;
-                        const matches=targets.filter(t=>Number(t.fund_id)===Number(x.fund_id) && Number(t.dv_id)!==Number(x.dv_id) &&
-                            String(t.document_date)>=String(x.document_date) && String(t.document_date)>String(x.confirmation_date||'9999-12-31') && Number(t.remaining_limit)>0);
-                        return h('article',{className:'tax-use-record',key:x.component_id},
-                            h('div',{className:'tax-use-record-top'},
-                                h('div',null,h('strong',null,'DV '+(x.dv_number||x.dv_id)+' · '+x.atc_code),
-                                    h('div',{className:'body-muted'},x.fund_name+' · FY '+x.fiscal_year+' · '+x.document_date)),
-                                h('div',{className:'tax-use-amount'},h('strong',null,amt(x.amount)),
-                                    h('small',null,x.state==='CONFIRMED_CREDIT'?'Confirmed':'Pending confirmation'))),
-                            h('div',{className:'tax-use-row-stats'},h('span',null,'Reconciled: '+amt(x.utilized_amount)),
-                                h('span',null,'Confirmed remaining: '+amt(x.remaining_amount))),
-                            x.confirmation_authority?h('small',{className:'body-muted'},'Confirmation authority: '+x.confirmation_authority):null,
-                            editable && x.state==='PENDING'?h('div',{className:'tax-use-actions'},
-                                h('button',{type:'button',className:'outline',disabled:s.taxUtilizationBusy,
-                                    onClick:()=>this.setState({taxConfirmFor:Number(x.component_id),taxUseFor:0,taxConfirmBudget:false,taxConfirmCash:false,taxUtilizationError:''})},'Confirm eligible withholding')):null,
-                            null);
-                    })):null,
+                    ...Array.from(rows.reduce((map,x)=>{
+                        const id=String(x.dv_id);
+                        if(!map.has(id))map.set(id,{...x,components:[],total:0,reconciled:0,remaining:0,pending:0});
+                        const g=map.get(id);
+                        g.components.push(x);
+                        g.total+=Number(x.amount)||0;
+                        g.reconciled+=Number(x.utilized_amount)||0;
+                        g.remaining+=Number(x.remaining_amount)||0;
+                        if(x.state==='PENDING')g.pending++;
+                        return map;
+                    },new Map()).values()).map(g=>h('article',{className:'tax-use-record',key:'dv-withholding-'+g.dv_id},
+                        h('div',{className:'tax-use-record-top'},
+                            h('div',null,h('strong',null,'DV '+(g.dv_number||g.dv_id)+' · '+g.fund_name),
+                                h('div',{className:'body-muted'},'FY '+g.fiscal_year+' · '+g.document_date)),
+                            h('div',{className:'tax-use-amount'},h('strong',null,amt(g.total)),
+                                h('small',null,g.pending?g.pending+' pending tax component(s)':'Confirmed · '+g.components.length+' tax component(s)'))),
+                        h('div',{className:'tax-use-row-stats'},h('span',null,'Reconciled: '+amt(g.reconciled)),
+                            h('span',null,'Confirmed remaining: '+amt(g.remaining))),
+                        h('details',{className:'tax-use-breakdown'},
+                            h('summary',{style:{cursor:'pointer',padding:'8px 0'}},'View VAT / WTX breakdown ('+g.components.length+')'),
+                            ...g.components.map(x=>h('div',{key:'atc-'+x.component_id,style:{borderTop:'1px solid #e1e8ed',padding:'8px 0'}},
+                                h('div',{className:'tax-use-record-top'},
+                                    h('strong',null,x.atc_code+' · '+amt(x.amount)),
+                                    h('small',{className:'body-muted'},x.state==='CONFIRMED_CREDIT'?'Confirmed':'Pending confirmation')),
+                                h('div',{className:'body-muted'},'Reconciled '+amt(x.utilized_amount)+' · Remaining '+amt(x.remaining_amount)),
+                                x.confirmation_authority?h('small',{className:'body-muted'},'Confirmation authority: '+x.confirmation_authority):null,
+                                editable && x.state==='PENDING'?h('div',{className:'tax-use-actions'},
+                                    h('button',{type:'button',className:'outline',disabled:s.taxUtilizationBusy,
+                                        onClick:()=>this.setState({taxConfirmFor:Number(x.component_id),taxUseFor:0,taxConfirmBudget:false,taxConfirmCash:false,taxUtilizationError:''})},'Confirm eligible withholding')):null)))))):null,
                 d?.usage?.length?h('section',{className:'surface'},h('h3',null,'Utilization history · Division reporting'),
                     h('p',{className:'hint'},'Historical manually matched utilization is kept for audit only. New use is automatically reflected in Fund Transaction History, without a separate entry.'),
                     ...d.usage.map((u,i)=>h('div',{className:'tax-use-history',key:i},
@@ -1621,11 +2079,11 @@ class App extends React.Component {
             this.divisionContextToken=(this.divisionContextToken||0)+1;
             this.consolToken=(this.consolToken||0)+1;
             this.actionRequest=(this.actionRequest||0)+1;
-            this.setState({ organization_id: orgId, tab: 'Dashboard', inventoryActionOpen:'', propertyHistoricalOpen:false, propertyCatalogOpen:false, propertyCatalogError:'', propertyCatalogForm:{name:'',category:'PPE',unit_id:'',division_class_code:''}, actionCenterOrg:'',actionCenterItems:[],actionCenterBookItems:[],actionCenterCount:0,actionCenterTaxItems:[],actionCenterTaxTotal:0,actionCenterLoading:false,actionCenterError:'',actionCenterChecked:'',fundActionOrg:'',fundActionItems:[],fundActionCount:0,fundActionError:'', lists: {}, dashboard: {}, mooeIssuedDocs:null,mooeIssuedError:'',mooeIssuedBusy:false,
-                accounts: [], eligible: [], eligibleLoading: false, eligibleError: '', eligibleLoadedFor: '',taxTransferOpen:false,taxTransferData:null,taxTransferSelected:{},taxTransferFundId:'',taxTransferBankId:'',taxTransferReference:'',taxTransferReviewId:0,taxTransferReviewKind:'',taxTransferBankConfirmed:false,taxTransferError:'', workspaceFailures: [], divisionClassifications: [], divisionName: '', allocations: {}, details: null, viewType: '', uacsData: {rows:[],total:0,offset:0,limit:80,summary:{total:0,enabled:0,disabled:0}},
+            this.setState({ organization_id: orgId, tab: 'Dashboard', bir2307Dialog:null, inventoryActionOpen:'', propertyHistoricalOpen:false, propertyCatalogOpen:false, propertyCatalogError:'', propertyCatalogForm:{name:'',category:'PPE',unit_id:'',division_class_code:''}, actionCenterOrg:'',actionCenterItems:[],actionCenterScanItems:[],actionCenterScanCount:0,actionCenterBookItems:[],actionCenterCount:0,actionCenterTaxItems:[],actionCenterTaxTotal:0,actionCenterTaxGroupCount:0,actionCenterTransferTasks:[],actionCenterTransferPendingTotal:0,actionCenterTransferAwaiting:[],actionCenterTransferAwaitingTotal:0,actionCenterRemittances:[],actionCenterRemittanceCount:0,actionCenterRetainedNotices:[],actionCenterRetainedNoticeCount:0,actionCenterLoading:false,actionCenterError:'',actionCenterChecked:'',taxReceiptModal:null,taxReceiptReference:'',taxReceiptAmount:'',taxReceiptError:'',fundActionOrg:'',fundActionItems:[],fundActionCount:0,fundActionError:'', lists: {}, dashboard: {}, mooeIssuedDocs:null,mooeIssuedError:'',mooeIssuedBusy:false,
+                accounts: [], eligible: [], eligibleLoading: false, eligibleError: '', eligibleLoadedFor: '',dvSection:'vouchers',taxTransferOpen:false,taxTransferData:null,taxTransferSelected:{},taxTransferFundId:'',taxTransferBankId:'',taxTransferReference:'',taxTransferReviewId:0,taxTransferReviewKind:'',taxTransferBankConfirmed:false,taxTransferError:'', workspaceFailures: [], divisionClassifications: [], divisionName: '', allocations: {}, details: null, viewType: '', uacsData: {rows:[],total:0,offset:0,limit:80,summary:{total:0,enabled:0,disabled:0}},
                 fund_id: '', dv_fund: '', selectedDv: '', ris_pr: '', ris_id: '', ris_line_id: '', ris_lot_id: '', divisionRisLines:[], divisionRisLots:[], consolReport:null,consolBusy:false,consolError:'',consolSchool:'',consolSchools:[],consolScopeId:'',textbookSection:'books',tbLifecycleLoading:false,tbLifecycleBusy:false,tbLifecycleError:'',tbLifecycleNotice:'',tbLifecycleAvailable:[],tbLifecycleTeachers:[],tbTeacherRows:[],tbDisposalRows:[],tbLifecycleReport:null,tbLifecycleReportType:'STOCK',tbLifecycleModal:'',tbLifecycleSelected:null,tbLifecycleForm:{},tbTransfers:[],tbTransferAvailable:[],tbTransferDestinations:[],tbTransferSignatories:null,tbTransferSignerLoading:false,tbTransferLoading:false,tbTransferLoadingDetail:false,tbTransferError:'',tbTransferNotice:'',tbTransferMore:null,tbTransferDetail:null,tbTransferModal:'',tbTransferPath:'ALLOCATION_REQUEST',tbTransferBusy:false,tbTransferCancelReason:'',tbTransferForm:{destination_school_id:'',purpose:'',lines:[{batch_id:'',quantity:'1'}],issued_on:localToday(),actual_delivery_mode:'ISSUER_DELIVERY',issued_by_name:'',issued_by_reason:'',released_to_name:'',dispatch_reference:'',dispatch_remarks:'',short_issue_reason:''},tbTransferRequestForm:{requester_name:'',preferred_delivery_mode:'ISSUER_DELIVERY',preferred_delivery_date:localToday(),delivery_instructions:'',lines:[]},tbTransferDispatchForm:{issued_on:localToday(),actual_delivery_mode:'ISSUER_DELIVERY',issued_by_name:'',issued_by_reason:'',released_to_name:'',dispatch_reference:'',dispatch_remarks:'',short_issue_reason:'',lines:[]},tbTransferReceiveForm:{received_on:localToday(),received_by_name:'',received_by_reason:'',receipt_reference:'',receipt_remarks:'',lines:[]},tbCoReceipts:[],tbCoDetail:null,tbCoLoading:false,tbCoBusy:false,tbCoError:'',tbCoNotice:'',tbCoReview:[],tbCoFormOpen:false,tbCoPickerIndex:-1,tbCoPickerRows:[],tbCoPickerLoading:false,tbCoPickerError:'',tbCoPickerActive:0,tbCatalogOpen:false,tbCatalogDraft:blankTextbookBookProfile(),tbCatalogEditingId:0,tbCatalogExpectedVersion:0,tbCatalogView:null,tbCatalogReason:'',tbCatalogDiscardConfirm:false,tbProfilesShowDiscarded:false,tbProfilesConfirmDiscardId:0,tbProfiles:null,tbProfilesLoading:false,tbProfilesError:'',tbBookLedgerOpen:false,tbBookLedgerOrg:'',tbBookLedgerId:0,tbBookLedgerScope:'OFFICE',tbBookLedger:null,tbBookLedgerLoading:false,tbBookLedgerError:'',tbCoForm:{co_delivery_reference:'',received_on:localToday(),remarks:'',lines:[{isbn:'',expected_quantity:'1',source_batch:'',storage:''}]},tbCoInspectionReference:'',tbCoInspectionNote:'',tbCoInspectionDate:localToday(),tbCoInspectorName:'',tbCoInspectorDesignation:'',tbCoReceivingName:'',tbCoReceivingDesignation:'',tbCoInspectorAttested:false,tbCoPaperCorrectionReason:'',tbCoAcceptanceReference:'',tbCoAcceptanceDate:localToday(),tbCoAttested:false,tbCoRejectionReason:'',tbCoRejectionReference:'',tbCoCancellationReason:'',propertyRecords:{assets:[],accountability:[],received_property:[]},propertyRegister:{rows:[],facets:{items:[],classifications:[],custodians:[],statuses:[]},has_more:false,next_before_id:null},propertyRegisterFilters:{search:'',category:'ALL',classification:'ALL',item_id:'ALL',custodian:'ALL',status:'ALL',source:'ALL'},propertyRegisterLoading:false,propertyRegisterError:'',propertyDetailId:'',propertyDetailOrg:'',propertyDetail:null,propertyDetailLoading:false,propertyDetailError:'',propertyDetailTab:'overview',propertyDetailBusy:false,propertyDetailEditShared:{},propertyDetailEditUnit:{},propertyDetailEditReason:'',propertyDetailEditMode:'UNIT',propertyAssetId:'',propertyAssetIds:[],propertyCustodian:'',propertyCustodianSearch:'',propertyCustodianEmployeeId:'',propertyReceivedId:'',propertyBatchItem:'',propertyBatchCount:'1',propertyBatchDate:'',propertyBatchCost:'',propertyRegistrationNotice:'',propertyBatchUnits:[{}],propertyBatchShared:{brand:'',model:'',acquisition_type:'PURCHASE',original_fund_source:'',useful_life_years:'',historical_po:'',historical_iar:'',historical_dv:'',evidence_note:''},propertyEditAssetId:'',propertyEditPreview:null,propertyEditShared:{},propertyEditUnit:{},propertyEditReason:'',propertyConfirmRegistration:false,divisionModuleGrants:null,divisionModuleGrantsBusy:false,divisionModuleGrantsError:'',divisionContextRegister:null,divisionContextBusy:false,divisionContextError:'',
                 ris_item: '', stock_item: '', purpose: '', requesting_unit: '',
-                prLines: [{ item_id: '', quantity: '1', unit_price: '0.00' }],pr_requestor:'', bank_download_open:false,bank_download_fund:'',bank_download_bank:'',bank_download_existing_id:'',staffData:null,staffLoading:false,mooeData:null,mooeViewerEmail:'',mooeViewerPassword:'',mooeViewerBusy:false,mooeLoading:false,mooeError:'',mooeSchoolId:'',mooeEmployeeId:'',mooeDate:localToday(),mooeBusy:false,mooeNotice:'',mooeHistoricalConfirmed:false,mooeAppointmentReference:'',staffSavingAction:'',staffSavedMessage:'',staffError:'',staffAddOpen:false,staffAddOrg:'',staffFullName:'',staffPosition:'',staffDesignation:'',staffEmployeeNo:'',staffTIN:'',staffAddress:'',staffProfileId:'',staffProfileOrg:'',staffProfileName:'',staffProfileEmployeeNo:'',staffProfileTIN:'',staffProfileAddress:'',staffProfileVersion:0,staffProfileBusy:false,staffEditName:'',staffEditPosition:'',staffEditDesignation:'',staffEditReason:'',staffEditOriginal:null,staffEditProfileOriginal:null,staffShowInactive:false,staffRenameId:'',staffRenameName:'',staffRenameReason:'',staffHeadId:'',staffDvPartA:'',staffDvPartC:'',staffDvPartD:'',staffHeadReason:'',staffCustodianId:'',staffCustodianDate:localToday(),staffCustodianReason:'',staffCustodianAttested:false,staffChair:'',staffCoChair:'',staffMembers:[],staffBacReason:'',staffBacDate:'',staffBacDateReason:'',staffBacAttested:false,travelStage:'REQUEST',travelRequestFormOpen:false,travelDocuments:{requests:[],authorities:[]},travelClaims:{claims:[],required_evidence:{},cost_types:{}},travelClaimsLoading:false,travelClaimError:'',travelClaimUploadKind:'',travelClaimDetail:null,travelClaimEditing:false,travelClaimSubtab:'CLAIMS',travelClaimSearch:'',travelClaimEditorOpen:false,travelClaimExpenseModal:null,travelClaimDraft:emptyTravelClaim(),travelClaimChecks:emptyTravelVerification(),travelClaimDocumentChecks:{},travelCtcOpen:false,travelCtcDraft:emptyTravelCTC(),travelCtcSaving:false,travelCtcContextText:'',travelCtcContextLoading:false,travelCtcContextWarning:'',travelPlans:{plans:[]},travelPlanCursor:null,travelPlanHasMore:false,travelPlanLoading:false,travelPlanAuthorityId:'',travelPlanDetail:null,travelPlanDraft:emptyTravelPlan(),travelPlanExpenseModal:null,travelPlanError:'',travelPlanActionPending:false,travelReviewDetail:null,travelReviewOpen:false,travelReviewEditing:null,travelReviewStatusFilter:'ALL',travelReviewDraft:{sessions:[],decisions:[]},travelReviewReceiptFilter:'ALL',travelReviewError:'',travelReviewLoading:false,travelNoReceiptOpen:false,travelNoReceiptRows:[],travelNoReceiptCursor:null,travelNoReceiptHasMore:false,travelNoReceiptLoading:false,travelNoReceiptError:'',travelNoReceiptScanned:0,travelLoading:false,travelError:'',travelSignatories:null,travelSignatoriesLoading:false,travelSignatoriesError:'',travelBranding:null,travelBrandingLoading:false,travelBrandingError:'',travelBrandingPending:null,travelBrandingReason:'',travelSignatoryIds:{budget_officer:'',division_accountant:'',asds:'',sds:''},travelSignatoryRegion:'',travelSignatorySalutation:'Sir/Madam:',travelSignatoryReason:'',travelRefreshSignatoryId:'',travelRefreshSignatoryReason:'',travelRequest:emptyTravelRequest(),travelEditId:'',travelEditVersion:0,travelEditReason:'',travelAuthorityRequestId:'',travelAuthorityDate:localToday(),travelApprovalReference:'',travelPaperApproved:false,prUnits:[],prUnitsVersion:0,prUnitsLoading:false,prUnitsError:'',prUnitsDraft:'',prUnitsReason:'',prRegisterMonth:'',prRegisterYear:'',workflowRegisterMonth:localToday().slice(5,7),workflowRegisterYear:localToday().slice(0,4),workflowExpandedQuotes:[],workflowQuoteBucket:'UNQUOTED',workflowFormOpen:false,prCreateOpen:false,prCreateBaseline:'',prCreateError:'',dvComposeOpen:false,dvSearch:'',employeeExtraOpen:false,employeeClaimFormOpen:false,employeeClaimReviewId:'',employeeClaimsData:null,employeeClaimsError:'',employeeClaimAttested:false,employeeClaimReviewAttested:false,fundPolicies:null,fundPoliciesError:'',fundPoliciesOrg:'',itemUacsSettings:null,vatSettings:null,itemUacsId:'',itemUacsCode:'',itemUacsReason:'',itemUacsDialog:false,bulkUacsOpen:false,bulkUacsPreview:null,bulkUacsIds:[],bulkUacsClass:'',bulkUacsReason:'', fund_allocation_open:false, prEditOpen:false, prEdit:null, prEditError:'', dvEdit:null,dvEditOriginal:'',dvEditError:'',dvParticularsEdit:null,dvParticularsError:'',dvCancel:null,dvCancelError:'',dvFinalizePreview:null,dvFinalizeDate:'',dvCheckBank:'',dvCheckStock:null,dvCheckLoading:false,dvBankCashVerified:false,checkStockPreview:null,checkLeafConfirmed:false,checkStockList:{rows:[],stats:[]},checkStockLoaded:false,checkStockLoading:false,checkStockError:'',cashBankSection:'prepare',bankRegister:null,bankRegisterLoading:false,bankRegisterError:'',bankRegisterBank:'ALL',bankRegisterFund:'ALL',bankRegisterMonth:localToday().slice(0,7),bankRegisterPage:0,checkProofIssued:null,cashCheckSearch:'',cashCheckStatus:'ALL',cashLeafSearch:'',cashLeafStatus:'ALL',checkBank:'',checkDv:'',checkNo:'',checkbookBank:'',checkbookFirst:'',checkbookLast:'',checkbookReference:'',checkbookVerified:false,dvVoidPreview:null,dvActionError:'',prPickerOpen:'', prPickerResults:[], prQuickAdd:null, prQuickAddError:'',
+                prLines: [{ item_id: '', quantity: '1', unit_price: '0.00' }],pr_requestor:'', bank_download_open:false,bank_download_fund:'',bank_download_bank:'',bank_download_existing_id:'',staffData:null,staffLoading:false,mooeData:null,mooeViewerEmail:'',mooeViewerPassword:'',mooeViewerBusy:false,mooeLoading:false,mooeError:'',mooeSchoolId:'',mooeEmployeeId:'',mooeDate:localToday(),mooeBusy:false,mooeNotice:'',mooeHistoricalConfirmed:false,mooeAppointmentReference:'',staffSavingAction:'',staffSavedMessage:'',staffError:'',staffAddOpen:false,staffAddOrg:'',staffFullName:'',staffPosition:'',staffDesignation:'',staffEmployeeNo:'',staffTIN:'',staffAddress:'',staffProfileId:'',staffProfileOrg:'',staffProfileName:'',staffProfileEmployeeNo:'',staffProfileTIN:'',staffProfileAddress:'',staffProfileVersion:0,staffProfileBusy:false,staffEditName:'',staffEditPosition:'',staffEditDesignation:'',staffEditReason:'',staffEditOriginal:null,staffEditProfileOriginal:null,staffShowInactive:false,staffRenameId:'',staffRenameName:'',staffRenameReason:'',staffHeadId:'',staffDvPartA:'',staffDvPartC:'',staffDvPartD:'',staffHeadReason:'',staffCustodianId:'',staffCustodianDate:localToday(),staffCustodianReason:'',staffCustodianAttested:false,staffChair:'',staffCoChair:'',staffMembers:[],staffBacReason:'',staffBacDate:'',staffBacDateReason:'',staffBacAttested:false,travelStage:'REQUEST',travelRequestFormOpen:false,travelDocuments:{requests:[],authorities:[]},travelClaims:{claims:[],required_evidence:{},cost_types:{}},travelClaimsLoading:false,travelClaimError:'',travelClaimUploadKind:'',travelClaimDetail:null,travelClaimEditing:false,travelClaimSubtab:'CLAIMS',travelClaimSearch:'',travelClaimEditorOpen:false,travelClaimExpenseModal:null,travelClaimDraft:emptyTravelClaim(),travelClaimChecks:emptyTravelVerification(),travelClaimDocumentChecks:{},travelCtcOpen:false,travelCtcDraft:emptyTravelCTC(),travelCtcSaving:false,travelCtcContextText:'',travelCtcContextLoading:false,travelCtcContextWarning:'',travelPlans:{plans:[]},travelPlanCursor:null,travelPlanHasMore:false,travelPlanLoading:false,travelPlanAuthorityId:'',travelPlanDetail:null,travelPlanDraft:emptyTravelPlan(),travelPlanExpenseModal:null,travelPlanError:'',travelPlanActionPending:false,travelReviewDetail:null,travelReviewOpen:false,travelReviewEditing:null,travelReviewStatusFilter:'ALL',travelReviewDraft:{sessions:[],decisions:[]},travelReviewReceiptFilter:'ALL',travelReviewError:'',travelReviewLoading:false,travelNoReceiptOpen:false,travelNoReceiptRows:[],travelNoReceiptCursor:null,travelNoReceiptHasMore:false,travelNoReceiptLoading:false,travelNoReceiptError:'',travelNoReceiptScanned:0,travelLoading:false,travelError:'',travelSignatories:null,travelSignatoriesLoading:false,travelSignatoriesError:'',travelBranding:null,travelBrandingLoading:false,travelBrandingError:'',travelBrandingPending:null,travelBrandingReason:'',travelSignatoryIds:{budget_officer:'',division_accountant:'',asds:'',sds:''},travelSignatoryRegion:'',travelSignatorySalutation:'Sir/Madam:',travelSignatoryReason:'',travelRefreshSignatoryId:'',travelRefreshSignatoryReason:'',travelRequest:emptyTravelRequest(),travelEditId:'',travelEditVersion:0,travelEditReason:'',travelAuthorityRequestId:'',travelAuthorityDate:localToday(),travelApprovalReference:'',travelPaperApproved:false,prUnits:[],prUnitsVersion:0,prUnitsLoading:false,prUnitsError:'',prUnitsDraft:'',prUnitsReason:'',prRegisterMonth:'',prRegisterYear:'',workflowRegisterMonth:localToday().slice(5,7),workflowRegisterYear:localToday().slice(0,4),workflowExpandedQuotes:[],workflowQuoteBucket:'UNQUOTED',workflowFormOpen:false,prCreateOpen:false,prCreateBaseline:'',prCreateError:'',dvComposeOpen:false,dvSearch:'',employeeExtraOpen:false,employeeClaimFormOpen:false,employeeClaimReviewId:'',employeeClaimsData:null,employeeClaimsError:'',employeeClaimAttested:false,employeeClaimReviewAttested:false,fundPolicies:null,fundPoliciesError:'',fundPoliciesOrg:'',itemUacsSettings:null,vatSettings:null,itemUacsId:'',itemUacsCode:'',itemUacsReason:'',itemUacsDialog:false,bulkUacsOpen:false,bulkUacsPreview:null,bulkUacsIds:[],bulkUacsClass:'',bulkUacsReason:'', fund_allocation_open:false, prEditOpen:false, prEdit:null, prEditError:'', dvEdit:null,dvEditOriginal:'',dvEditError:'',dvParticularsEdit:null,dvParticularsError:'',dvCancel:null,dvCancelError:'',dvFinalizePreview:null,dvFinalizeDate:'',dvCheckBank:'',dvCheckStock:null,dvCheckLoading:false,dvBankCashVerified:false,checkStockPreview:null,checkLeafConfirmed:false,checkStockList:{rows:[],stats:[]},checkStockLoaded:false,checkStockLoading:false,checkStockError:'',cashBankSection:'prepare',bankRegister:null,bankRegisterLoading:false,bankRegisterError:'',bankRegisterBank:'ALL',bankRegisterFund:'ALL',bankRegisterMonth:localToday().slice(0,7),bankRegisterPage:0,checkProofIssued:null,actualCheckPrintTarget:null,cashCheckSearch:'',cashCheckStatus:'ALL',cashLeafSearch:'',cashLeafStatus:'ALL',checkBank:'',checkDv:'',checkNo:'',checkbookBank:'',checkbookFirst:'',checkbookLast:'',checkbookReference:'',checkbookVerified:false,dvVoidPreview:null,dvActionError:'',prPickerOpen:'', prPickerResults:[], prQuickAdd:null, prQuickAddError:'',
                 searchResults: [],procurementSection:'PROCESS',workflowStage:'RFQ',workflowExpandedQuotes:[],workflowPR:'',workflowRfqDate:'',workflowCanvasserId:'',workflowCanvasserHistoricalAttested:false,workflowCanvasserHistoricalReference:'',workflowChairHistoricalAttested:false,workflowChairHistoricalReference:'',workflowConsolidate:null,workflowConsolidateLoading:false,workflowConsolidateError:'',workflowConsolidatePrIds:[],workflowConsolidateExcluded:[],workflowRFQEditId:'',workflowRFQEditDate:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditReason:'',workflowRFQEditConfirm:false,workflowRFQEditError:'',workflowRFQEditLoading:false,workflowRFQ:'',workflowSupplier:'',workflowQuoteDate:localToday(),workflowQuoteEvidence:'',workflowQuoteLines:[],workflowAwardRFQ:'',workflowAwardDate:localToday(),workflowQuoteId:'',workflowAwardNote:'',workflowAwardNoteManual:false,workflowAwardApproved:false,workflowAward:'',workflowPoDate:localToday(),workflowPoLines:[],workflowPoDeliveryDate:localToday(),workflowPoDeliveryPlace:'',workflowPoDeliveryTerm:'Door-to-Door Delivery',workflowPoPaymentTerm:'Full Payment upon Delivery',workflowPoPaymentType:'Check',workflowPoMethod:'',workflowPoEdit:null,workflowPoEditError:'',workflowPoEditLoading:false,workflowPO:'',workflowIARLines:[],workflowDelivered:'',workflowAccepted:'',workflowIARInvoice:'',workflowIARInvoiceDate:'',workflowIARPoMeta:null,workflowIarDate:localToday(),workflowIARReviewed:false,workflowIarEdit:null,workflowIarEditLoading:false,workflowIarEditError:'',workflowMessage:'',workflowError:'', success: '', error: '', workspaceLoading: true, atc_dialog: '', atc_selected_code: '', atc_action: '' }, () => this.refresh());
         };
         this.set = (key) => (e) => this.setState({[key]:e.target.value,
@@ -1826,6 +2284,16 @@ class App extends React.Component {
             e.preventDefault();
             const result=await this.task('bank.create',{bank_name:this.state.bank_name.trim(),account_label:this.state.bank_label.trim(),masked_account:this.state.bank_mask.trim()});
             if(result)this.setState({bank_name:'',bank_label:'',bank_mask:''});
+        };
+        this.renameBankLabel = (bank) => {
+            const old=String(bank.account_label||'');
+            const typed=window.prompt('Rename account label for '+String(bank.bank_name||'bank')+' (account ending '+String(bank.masked_account||'')+').\nOnly the display label changes. Fund and payment records are not modified.',old);
+            if(typed===null)return;
+            const label=typed.trim();
+            if(!label||label.length>120){this.setState({error:'Enter an account label of 1–120 characters.'});return;}
+            if(label===old)return;
+            if(!window.confirm('Rename this account label from "'+old+'" to "'+label+'"?\nThe bank account, fund allocations and payment history remain unchanged.'))return;
+            this.task('bank.label.rename',{bank_account_id:Number(bank.id),account_label:label});
         };
         this.editItemSubcategory = (record) => {
             if(record.category!=='SEMI_EXPENDABLE') return;
@@ -4818,14 +5286,23 @@ h('div',{className:'employee-claim-actions'},
                 const labelWithDescription=code=>code
                     ?String(code)+' — '+accountDescription(code)
                     :'No effective original UACS mapping';
+                // Accounting basis is not always the IAR acceptance date.
+                // SIIF/non-MOOE uses the original PR date; legacy MOOE uses the IAR date.
+                const mappingBasisLabel=item=>item.mapping_basis==='IAR_ACCEPTANCE'
+                    ?'IAR acceptance date':'original PR document date';
+                const mappingReferenceDate=item=>String(item.mapping_as_of||item.pr_document_date||'unavailable');
                 const mappingText=item=>item.status==='DV_CORRECTION'
-                    ?'Current DV debit: '+labelWithDescription(item.uacs_code)+' (source item mapping unchanged)'
+                    ?'Current DV debit: '+labelWithDescription(item.uacs_code)+' (original PR and source item mapping unchanged)'
+                    :item.status==='PR_UACS_SNAPSHOT'
+                        ?'Frozen finalized-PR UACS: '+labelWithDescription(item.uacs_code)+' · originally effective '+item.effective_from
                     :item.status==='MAPPED'
-                    ?'Original item mapping: '+labelWithDescription(item.uacs_code)+' · effective '+item.effective_from
+                        ?'Eligible item UACS: '+labelWithDescription(item.uacs_code)+' · effective '+item.effective_from
+                    :item.status==='INVALID_PR_UACS_SNAPSHOT'
+                        ?'Saved finalized-PR UACS snapshot cannot be verified — accountant review required'
                     :item.status==='AMBIGUOUS_MAPPING'
-                        ?'Competing effective mappings — accountant review required'
-                        :'No mapping effective on '+item.iar_accepted_at+
-                            (item.next_effective_from?' · next mapping '+item.next_effective_from+' (not retroactive)':'');
+                        ?'Competing UACS mappings on '+mappingBasisLabel(item)+' '+mappingReferenceDate(item)+' — accountant review required'
+                        :'No approved UACS mapping effective on '+mappingBasisLabel(item)+' '+mappingReferenceDate(item)+
+                            (item.next_effective_from?' · next mapping effective '+item.next_effective_from+' (not retroactive)':'');
                 const correctedCode=item=>String((e?.uacs_allocations||[]).find(x=>Number(x.allocation_id)===Number(item.allocation_id))?.uacs_code||'');
                 const debitOptions=(this.state.accounts||[]).filter(a=>/^(?:502|104|106|108)[0-9]{7}$/.test(String(a.code)));
                 const correctionControl=item=>(e && r.dv_type==='REGULAR')
@@ -4835,24 +5312,25 @@ h('div',{className:'employee-claim-actions'},
                             onChange:event=>update('uacs_allocations',(e.uacs_allocations||[]).map(line=>
                                 Number(line.allocation_id)===Number(item.allocation_id)
                                     ?{...line,uacs_code:event.target.value}:line))},
-                            h('option',{value:''},'Keep original mapping: '+labelWithDescription(item.status==='MAPPED'?item.uacs_code:'')),
+                            h('option',{value:''},'Keep original mapping: '+labelWithDescription(['MAPPED','PR_UACS_SNAPSHOT'].includes(item.status)?item.uacs_code:'')),
                             ...debitOptions.map(a=>h('option',{key:a.code,value:a.code},
                                 labelWithDescription(a.code)))))
                     :null;
                 const itemRow=(item,i)=>h('tr',{key:item.allocation_id||item.item_id+'-'+i},
                     h('td',{'data-label':'PO/IAR item'},item.item_name+' · item #'+item.item_id),
-                    h('td',{'data-label':'Accepted date'},item.iar_accepted_at),
+                    h('td',{'data-label':'Original PR date'},item.pr_document_date||'—'),
+                    h('td',{'data-label':'IAR accepted date'},item.iar_accepted_at||'—'),
                     h('td',{'data-label':'DV amount',className:'dv-journal-money'},amount(item.allocated_amount)),
-                    h('td',{'data-label':'Applicable UACS',className:['MAPPED','DV_CORRECTION'].includes(item.status)?'':'dv-diagnostic-warning'},
+                    h('td',{'data-label':'Applicable UACS',className:['MAPPED','DV_CORRECTION','PR_UACS_SNAPSHOT'].includes(item.status)?'':'dv-diagnostic-warning'},
                         mappingText(item),correctionControl(item)));
                 return h('section',{className:'dv-item-diagnostics','aria-label':'DV item accounting review'},
                     h('h4',null,'Item-level accounting review'),
                     h('p',{className:'hint'},e && r.dv_type==='REGULAR'
                         ?'Correct debit UACS per accepted item. Amounts and original Division item classification stay locked; saved accounting versions are retained.'
-                        :'Source: saved DV allocations and finalized IAR acceptance dates. Corrections are specific to their DV.'),
+                        :'The original PR date determines SIIF/non-MOOE mapping; legacy MOOE uses the IAR acceptance date. Frozen finalized-PR UACS takes precedence. Corrections affect this DV only.'),
                     h('div',{className:'table-scroll dv-mobile-table-wrap'},
                         h('table',{className:'data-table dv-item-table'},
-                            h('thead',null,h('tr',null,...['PO/IAR item','Accepted date','DV amount','Applicable UACS mapping'].map(label=>h('th',{key:label},label)))),
+                            h('thead',null,h('tr',null,...['PO/IAR item','Original PR date','IAR accepted date','DV amount','Applicable UACS mapping'].map(label=>h('th',{key:label},label)))),
                             h('tbody',null,...w.item_diagnostics.map(itemRow)))),
                     Number(w.unmapped_amount)>0?h('p',{className:'notice error',role:'alert'},
                         amount(w.unmapped_amount)+' of saved DV allocations lacks an approved effective UACS mapping. Correct the draft classification before finalization.'):null);
@@ -4871,7 +5349,7 @@ h('div',{className:'employee-claim-actions'},
                 activeDvCheck&&window.IpdamsCheckProof?
                     h(window.IpdamsCheckProof,{organizationId:Number(this.state.organization_id),
                         dv:r,checkNo:activeDvCheck.check_number,amount:activeDvCheck.amount,
-                        payee:activeDvCheck.payee_name||r.business_name_snapshot||r.payee||'',
+                        payee:activeDvCheck.payee_name||'',
                         mode:'ISSUED',startEditor:true,
                         get:(route,body)=>this.get(route,body),
                         task:(route,body)=>this.task(route,body,{refresh:false})}):
@@ -4880,7 +5358,8 @@ h('div',{className:'employee-claim-actions'},
             const bir2307Panel=()=>h('section',{className:'surface dv-shortcut-panel','aria-label':'BIR 2307 preparation status'},
                 h('div',{className:'section-head'},h('h3',null,'BIR Form 2307 · source review'),
                     h('button',{type:'button',className:'outline',onClick:()=>this.setState({dvPrintPanel:null})},'Close')),
-                h('p',{className:'notice',role:'status'},'An official BIR Form 2307 generator is not available in IPDAMS yet. These saved tax details are provided for review only, not as a certificate or proof of tax remittance.'),
+                h('p',{className:'notice',role:'status'},'BIR Form 2307 uses only the selected DV’s original saved withholding components. The linked office head supplies the payor representative and personal TIN. No tax amount is recalculated, and printing never proves remittance.'),
+                h('p',null,h('button',{type:'button',className:'outline',onClick:e=>this.openBir2307Dialog(r.id,e),title:'Preview BIR 2307 A4 for this selected DV'},'Print BIR 2307')),
                 h('div',{className:'pr-detail-fields'},
                     h('div',{className:'pr-detail-field'},h('span',null,'DV / document date'),h('strong',null,(r.display_number||'#'+r.id)+' · '+(r.document_date||'Unrecorded'))),
                     h('div',{className:'pr-detail-field'},h('span',null,'Supplier / payee'),h('strong',null,r.business_name_snapshot||r.payee||'—')),
@@ -4891,7 +5370,7 @@ h('div',{className:'employee-claim-actions'},
                         h('tbody',null,...tax2307Components.map((t,i)=>h('tr',{key:t.id||i},
                             h('td',null,t.atc_code||'—'),h('td',null,money(t.tax_base)),h('td',null,money(t.amount))))))):
                     h('p',{className:'hint'},'No separately classified EWT amounts are recorded for this voucher; do not create Form 2307 from other tax components.'),
-                h('p',{className:'hint'},'The future official form workflow must verify payor/payee TIN and address, quarter and income period, ATC, certifying signatory, template and withholding evidence before enabling Print BIR 2307.'));
+                h('p',{className:'hint'},'Complete the office registered TIN/address, confirm supplier tax identity, and assign the Head of Office to an employee with a recorded personal TIN. The print page checks these fields and payment-release evidence before preparing an unsigned certificate.'));
             const money=x=>Number(x||0).toLocaleString('en-PH',{style:'currency',currency:'PHP'});
             const close=()=>this.closeDvDetail();
             const field=(name,value)=>h('div',{className:'pr-detail-field',key:name},h('span',null,name),h('strong',null,value||'—'));
@@ -5043,7 +5522,7 @@ h('div',{className:'employee-claim-actions'},
                                             h('td',null,x.vendor+' · '+x.receipt_reference+(x.procurement_source_number?' · '+x.procurement_source_type+' '+x.procurement_source_number:'')),h('td',null,money(x.allowed_amount))))))) : null,
                             h('details',{className:'pr-detail-history'},h('summary',null,'Linked documents and internal allocation history'),
                                 h('p',null,'These allocation lines were derived from accepted source records; they are not manually edited.'),
-                                h('ul',null,...linked.map((x,i)=>h('li',{key:i},x.source_type+' #'+x.source_id+' → '+x.target_type+' #'+x.target_id))),
+                                h('ul',null,...linked.map((x,i)=>h('li',{key:i},(x.source_label||x.source_type+' (internal reference #'+x.source_id+')')+' → '+(x.target_label||x.target_type+' (internal reference #'+x.target_id+')')))),
                                 h('p',null,lines.length+' internal allocation lines · '+(d.versions||[]).length+' finalized versions'))),
                         h('footer',{className:'pr-detail-actions'},
                             h('button',{type:'button',className:'outline',onClick:close},'Close'),
@@ -5055,8 +5534,10 @@ h('div',{className:'employee-claim-actions'},
                             r.status==='FINALIZED'&&r.display_number?h('a',{className:'pr-detail-print',target:'_blank',rel:'noopener',href:'api/print.php?organization_id='+encodeURIComponent(this.state.organization_id)+'&type=DV&id='+r.id},'Print DV ↗'):null,
                             r.status==='FINALIZED'?h('button',{type:'button',className:'outline',
                                 onClick:()=>this.setState({dvPrintPanel:'check'})},'Check alignment proof'):null,
-                            r.status==='FINALIZED'&&Number(r.deductions)>0?h('button',{type:'button',className:'outline',
-                                onClick:()=>this.setState({dvPrintPanel:'2307'})},'BIR 2307 readiness'):null))));
+                            r.status==='FINALIZED'&&this.canOperateWorkspace()&&activeDvCheck?h('button',{type:'button',className:'outline',
+                                onClick:()=>this.setState({actualCheckPrintTarget:{check_id:Number(activeDvCheck.id)}})},
+                                'Print Check'):null,
+                            r.status==='FINALIZED'&&Number(r.deductions)>0?h('button',{type:'button',className:'outline',onClick:e=>this.openBir2307Dialog(r.id,e),title:'Preview BIR 2307 A4 for this selected DV'},'Print BIR 2307'):null))));
         };
         this.openDetail = async (type, id, edit=false, shortcut=null) => {
             const ticket=this.documentDetailTicket=(this.documentDetailTicket||0)+1;
@@ -5294,6 +5775,53 @@ h('div',{className:'employee-claim-actions'},
             const editor = (choices,label) => {
                 if (!choices.length) return null;
                 const selected=choices.find(o => String(o.id) === String(this.state.edit_org_id));
+                if(label==='Edit Division Profile'){
+                    const profile=selected && String(this.state.birProfileTarget)===String(selected.id)?this.state.birProfile:null;
+                    const pending=Boolean(this.state.birProfileLoading || this.state.busy);
+                    const birStarted=Boolean(Number(profile?.version_id||0)>0 ||
+                        ['registered_name','tin','zip'].some(key=>String(this.state.birProfileDraft[key]||'').trim()!==''));
+                    const birField=(key,label,placeholder,extra={})=>h('label',{className:'field',key},
+                        h('span',null,label),h('input',{type:'text',value:this.state.birProfileDraft[key]||'',placeholder,
+                        required:birStarted,maxLength:key==='registered_name'?200:key==='tin'?22:6,autoComplete:'off',
+                        ...extra,onChange:e=>this.setState({birProfileDraft:{...this.state.birProfileDraft,[key]:e.target.value}})}));
+                    return h('section',{className:'surface org-bir-unified-436',role:'region','aria-label':'Unified Division and BIR registered profile'},
+                        h('div',{className:'org-bir-heading-436'},
+                            h('h3',null,'Division Office Profile'),
+                            h('p',{className:'body-muted'},'Maintain the Division and its BIR Form 2307 identity in one place. One Save records both changes together.')),
+                        h('form',{onSubmit:this.saveProfile},
+                            h('section',{className:'org-bir-group-436'},
+                                h('div',{className:'org-bir-group-title-436'},h('strong',null,'Office information'),
+                                    h('span',null,'IPDAMS directory')),
+                                h('div',{className:'form-grid'},
+                                    h('label',{className:'field'},h('span',null,'Select profile to edit'),
+                                        h('select',{value:selected?String(selected.id):'',onChange:this.changeProfile},
+                                            h('option',{value:''},'Choose a Division'),
+                                            choices.map(o=>h('option',{key:o.id,value:o.id},o.name+' · '+o.code)))),
+                                    selected?this.field('edit_name','Official Division name','Division name'):null,
+                                    selected?this.field('edit_address','Division address * (also BIR address)','Registered office address'):null,
+                                    selected?this.field('edit_email','Contact email','Email','email'):null,
+                                    selected?this.field('edit_phone','Contact number','Telephone'):null)),
+                            selected?h('section',{className:'org-bir-group-436 org-bir-group-tax-436'},
+                                h('div',{className:'org-bir-group-title-436'},h('strong',null,'BIR registered identity'),
+                                    h('span',null,'Form 2307')),
+                                h('p',{className:'hint'},'The registered name may differ from the Division name. Non-IUS schools inherit these BIR details automatically; IUS schools maintain their own school BIR profiles. Complete all BIR fields before Form 2307 issuance; an unconfigured office can leave them blank while updating its directory details.'),
+                                this.state.birProfileLoading?h('p',{role:'status'},'Loading registered BIR identity…'):null,
+                                this.state.birProfileError?h('p',{className:'workflow-error',role:'alert'},this.state.birProfileError,
+                                    h('button',{type:'button',className:'outline',onClick:()=>this.loadBirProfile(selected.id)},'Retry')):null,
+                                profile?.editable?h('div',{className:'form-grid'},
+                                    birField('registered_name','Registered BIR name','e.g. DEPARTMENT OF EDUCATION'),
+                                    birField('tin','Registered Division TIN','12 or 14 digits'),
+                                    h('label',{className:'field org-bir-address-436'},
+                                        h('span',null,'BIR registered address (from Division address)'),
+                                        h('textarea',{readOnly:true,rows:2,value:this.state.edit_address||'',
+                                            'aria-label':'BIR registered address copied from Division address'})),
+                                    birField('zip','Registered ZIP code','4 to 6 digits',{inputMode:'numeric'})):null,
+                                profile&&!profile.editable?h('p',{className:'workflow-error',role:'alert'},profile.issue||'This registered profile is not editable.'):null):null,
+                            selected?h('div',{className:'org-bir-actions-436'},
+                                h('button',{type:'submit',className:'primary',disabled:pending || !profile?.editable,
+                                    'aria-busy':this.state.busy},this.state.busy?'Saving both profiles…':'Save Division Profile')):
+                                h('p',{className:'hint'},'Select a Division to edit its information.')));
+                }
                 return surface(h('h3',null,label),h('form',{onSubmit:this.saveProfile},
                     h('div',{className:'form-grid'},
                         h('label',{className:'field'},h('span',null,'Select profile to edit'),
@@ -5355,6 +5883,7 @@ h('div',{className:'employee-claim-actions'},
                 if(role === 'SUPER_ADMIN' || role === 'DIVISION') {
                     const editDivisions=rows.filter(o=>o.kind==='DIVISION');
                     panel.push(editor(editDivisions,'Edit Division Profile'));
+                    // Division BIR identity is now embedded in its single profile form.
                 }
                 panel.push(this.table('Division Office directory',['code','name','active'],rows.filter(o=>o.kind==='DIVISION')));
             } else if(section === 'schools') {
@@ -5380,6 +5909,7 @@ h('div',{className:'employee-claim-actions'},
                             this.select('legacy_school_id','Unassigned school',unassigned.map(o=>({id:o.id,name:o.name+' · '+o.code})))),formButton('Link Existing School'))));
                     const canEdit=rows.filter(o=>o.kind==='SCHOOL' && (role==='SUPER_ADMIN'||!!o.parent_division_id));
                     panel.push(editor(canEdit,'Edit School Profile'));
+                    if(canEdit.some(o=>String(o.id)===String(this.state.edit_org_id)))panel.push(this.birProfileEditor(this.state.edit_org_id));
                 }
                 panel.push(this.table('School directory',['code','name','implementation_class','parent_division_id','active'],schools));
             } else if(section === 'school') {
@@ -5392,6 +5922,7 @@ h('div',{className:'employee-claim-actions'},
                         h('p',null,h('strong',null,'Address: '),current.address||'—'),
                         h('p',null,h('strong',null,'Contact: '),current.contact_email||'—')):h('p',{className:'hint'},'School profile unavailable.'),
                     h('p',{className:'body-muted'},'Contact your Division Administrator to request profile changes.')));
+                if(current)panel.push(this.birProfileEditor(current.id));
             } else if(section === 'users') {
                 panel.push(surface(h('h3',null,'User Account Management'),
                     h('p',{className:'body-muted'},'Create accounts within the correct Division or School. Actions remain attributed to your own signed-in identity.')));
@@ -5547,7 +6078,7 @@ h('div',{className:'employee-claim-actions'},
                     h('p',{className:'body-muted'},'Change the password for your current account without changing organization roles or scope.'),
                     h('form',{onSubmit:this.changeOwnPassword},h('div',{className:'form-grid'},
                         this.field('own_current_password','Current password','','password'),
-                        this.field('own_new_password','New password (12+ characters)','','password'),
+                        this.field('own_new_password','New password (at least 8 characters)','','password'),
                         this.field('own_confirm_password','Confirm new password','','password')),formButton('Change My Password'))));
             }
             const tabBar=h('div',{className:'org-tabbar',role:'tablist','aria-label':'Organization sections'},
@@ -6635,8 +7166,13 @@ h('div',{className:'employee-claim-actions'},
                 !financeOptions.some(x=>x[0]===financeSection)?h('button',{type:'button',className:'master-tab',
                     onClick:()=>this.setState({fundSection:'overview',masterEditorOpen:false,bank_download_open:false,
                         fund_allocation_open:false})},'← Overview'):null);
-            if(finance&&financeSection==='withheld')return h('div',{className:'section-stack'},
-                this.header('Withholding taxes','Recorded tax, pending confirmation and reporting.'),financeTabs,this.taxUtilizationPanel());
+            if(finance&&financeSection==='withheld'){
+                const divisionHere=this.state.orgs.some(o=>String(o.id)===String(this.state.organization_id)&&o.kind==='DIVISION');
+                return h('div',{className:'section-stack'},
+                    this.header('Withholding taxes','Recorded tax, Division monitoring and reporting.'),financeTabs,
+                    divisionHere?this.divisionWithholdingPanel():this.taxUtilizationPanel(),
+                    divisionHere?null:this.retainedTaxHandoffPanel());
+            }
             if(finance&&financeSection==='mooe')return h('div',{className:'section-stack'},
                 this.header('Fund downloads','Division releases and one-step recipient confirmation.'),financeTabs,this.mooeMonitorPanel());
             if(finance&&financeSection==='overview')return h('div',{className:'section-stack'},
@@ -6649,6 +7185,21 @@ h('div',{className:'employee-claim-actions'},
                             onClick:()=>this.setState({fundSection:k})},label)))),
                 h('p',{className:'hint'},'Ordinary allocation may be negative when authorized retained withholding finances gross expenses. This is not bank cash; inspect the selected-fund bank book under Sources & Balances.'),
                 this.table('School funds',['name','fiscal_year','authorized_allocation','outstanding_obligations','finalized_dv_gross','available_allocation'],this.state.lists.funds||[]),
+                (()=>{const fundRows=(this.state.lists.funds||[]).filter(f=>Number(f.division_tax_accountability?.withholding_recorded||0)>0);
+                    if(!fundRows.length)return null;
+                    const fmt=n=>'₱'+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+                    return h('section',{className:'surface',role:'region','aria-label':'Division BIR settlement accountability'},
+                        h('h3',null,'Retained withholding · Division BIR accountability'),
+                        h('p',{className:'hint'},'Source: original finalized supplier-DV withholding components marked SCHOOL_UTILIZATION. The Division handles BIR settlement under its recorded policy. School confirmation only attests retained-withholding eligibility; it does not prove a Division receipt or BIR remittance.'),
+                        h('div',{className:'table-scroll'},h('table',{className:'data-table'},
+                            h('thead',null,h('tr',null,...['School fund','Original withholding','School-confirmed retention','Awaiting school confirmation','Ordinary allocation difference'].map(x=>h('th',{key:x},x)))),
+                            h('tbody',null,...fundRows.map(f=>{const a=f.division_tax_accountability;
+                                return h('tr',{key:f.id},h('td',null,f.name+' · FY '+f.fiscal_year),
+                                    h('td',null,fmt(a.withholding_recorded)),h('td',null,fmt(a.retention_confirmed)),
+                                    h('td',null,fmt(a.awaiting_confirmation)),h('td',null,fmt(f.available_allocation)));
+                            })))),
+                        h('p',{className:'hint'},'ACTION: Reconcile the original ATC/DV tax evidence with Division Accounting. Cash used by the school cannot be transferred a second time. Any Division BIR payment, repayment, or authorized offset requires actual documentary evidence and separate approved accounting. The ordinary difference remains visible and is not automatically cleared.'));
+                })(),
                 h('p',{className:'hint'},'Ordinary allocation difference = authorized bank-linked credits and adjustments − finalized gross expenses − obligations. It can be negative under Division-approved retained-withholding use; PR funding is selected by school fund record, but check payment is separately limited by that fund’s available bank cash.'),
                 h('p',{className:'body-muted'},'For new D.O. credits and bank accounts, use the tabs above. Checks and future statement reconciliation remain under Cash & Bank.'));
             const rows=section==='suppliers'?this.state.lists.suppliers||[]:section==='items'?this.state.lists.all_items||[]:section==='funds'?this.state.lists.funds||[]:section==='banks'?this.state.lists.banks||[]:section==='units'?this.state.lists.units||[]:this.state.lists.atcs||[];
@@ -6731,7 +7282,7 @@ h('div',{className:'employee-claim-actions'},
                 input('bank_label','Account label *','School operating account'),
                 input('bank_mask','Masked account reference *','****1234'),
                 h('p',{className:'hint master-wide'},
-                    'Register only an approved account belonging to this school or office. Enter a MASKED account reference, not a complete account number. This register does not receive funds, issue checks, or change the bank balance.'));
+                    'One physical bank account may receive multiple fund sources. The account label is a directory description, not a fund restriction. Enter a MASKED account reference only. No fund cash changes when renaming the label.'));
             const fundAllocationEditor=finance&&financeSection==='allocations'?h('div',{className:'surface reference-editor'},
                 h('div',{className:'section-head'},h('h3',null,'Fund allocation controls'),
                     isAdmin?h('button',{className:'outline',type:'button',onClick:()=>this.setState({fund_allocation_open:true})},'Record allocation / obligation'):null),
@@ -6789,60 +7340,94 @@ h('div',{className:'employee-claim-actions'},
                             h('p',{className:'hint'},'Record only a confirmed bank credit. The credit date is the allocation effective date. Recording a bank download does not reconcile the statement or establish a complete bank balance.'),
                             h('div',{className:'ipr-actions'},h('button',{type:'button',disabled:this.state.busy,onClick:()=>{if(window.confirm('Discard unsaved download details?'))this.setState({bank_download_open:false});}},'Cancel'),
                                 h('button',{type:'submit',className:'primary',disabled:this.state.busy||!(this.state.lists.banks||[]).length},this.state.busy?'Saving…':this.state.bank_download_mode==='LINK'?'Link existing allocation':'Record confirmed credit'))))) : null):null;
+            const canConfigureFunds=isAdmin&&this.canOperateWorkspace();
             const fundPolicyPanel=finance&&financeSection==='funds'?h('div',{className:'section-stack'},
                 this.state.fundPoliciesError?h('div',{className:'notice',role:'alert'},
                     this.state.fundPoliciesError,' ',h('button',{type:'button',className:'outline',
                     disabled:this.state.fundPoliciesLoading,onClick:()=>this.loadFundPolicySettings()},'Retry policy settings')):null,
-                h('section',{className:'surface'},h('h3',null,'Division withholding policies · '+(this.state.fundPolicyClass==='NON_IUS'?'Non-IUS schools':'IUS schools')),
-                    h('p',{className:'hint'},'A confirmed Division download creates school funding and bank credit, but does not approve its tax treatment. The Division must activate its master source and record the effective withholding policy once. No duplicate release or bank credit is needed.'),
-                    isAdmin?h('div',{className:'master-tabs',role:'tablist','aria-label':'School implementation policy'},...[['NON_IUS','Non-IUS Schools'],['IUS','IUS Schools']].map(([key,label])=>h('button',{type:'button',key,className:'master-tab '+(this.state.fundPolicyClass===key?'selected':''),'aria-selected':this.state.fundPolicyClass===key,onClick:()=>this.setState({fundPolicyClass:key,policyDialog:false,fundPolicySource:'',fundPolicyMode:'NOT_CONFIGURED'}),role:'tab'},label))):
-                        h('p',{className:'hint'},'Read-only policy for '+(this.state.fundPolicies?.school_classification?.classification||'unclassified school')+'. Contact Division to update classification or funding rules.'),
-                    this.state.fundPoliciesLoading?h('p',{className:'hint'},'Loading Division fund policies…'):null,
-                    h('div',{className:'table-scroll'},h('table',{className:'master-table'},
-                        h('thead',null,h('tr',null,...['Source','Master status','Tax treatment','Effective from',...(isAdmin?['Next step']:[])].map(t=>h('th',{key:t},t)))),
-                        h('tbody',null,...((this.state.fundPolicies?.sources||[]).map(s=>{
-                            const policy=(this.state.fundPolicies?.policies||[]).find(p=>p.source_code===s.code&&p.school_class===this.state.fundPolicyClass)||{policy:'NOT_CONFIGURED'};
-                            const label=policy.policy==='DIVISION_SETTLES_UTILIZABLE'?'Division settles; authorized retained cash may be utilized':policy.policy==='REMIT_TO_DIVISION'?'School remits to Division':policy.policy==='IUS_REMIT_DIRECT_BIR'?'IUS remits directly to BIR':'Not configured — DV tax calculation blocked';
-                            const requiresCredits=this.state.fundPolicyClass==='NON_IUS'&&s.code!=='MOOE'&&policy.policy!=='NOT_CONFIGURED';
-                            const needsAccounts=requiresCredits&&(!policy.payment_credit_uacs||!policy.withholding_liability_uacs);
-                            const incomplete=!s.active||policy.policy==='NOT_CONFIGURED'||needsAccounts;
-                            const schoolCredit=(this.state.fundPolicies?.linked_division_credits||[])
-                                .filter(r=>String(r.source_code)===String(s.code));
-                            const creditSummary=schoolCredit.length?schoolCredit.map(c=>c.fiscal_year+': '+
-                                '₱'+Number(c.amount||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})).join(' · '):'';
-                            return h('tr',{key:s.code,className:incomplete?'fund-policy-needs-setup':''},
-                                h('td',null,s.name+' ('+s.code+')',creditSummary?h('small',{className:'fund-credit-371'},'Confirmed and linked Division receipt: '+creditSummary):null),
-                                h('td',null,s.active?'Active':'Needs Division review / activation'),
-                                h('td',null,label,needsAccounts?h('small',{className:'fund-policy-371-warning'},'Payment accounting needs Division review'):null),h('td',null,policy.effective_from||'—'),
-                                isAdmin?h('td',null,incomplete?
-                                    h('button',{type:'button',className:'outline fund-policy-setup-btn',disabled:this.state.busy,
-                                        onClick:()=>this.openFundSourceReview(s,policy)},
-                                        !s.active?'Activate / review source':needsAccounts?'Set payment UACS':'Set tax treatment'):
-                                    h('span',{className:'fund-policy-ready'},'Configured')):null);
-                        }))))),
-                    !this.state.fundPolicies?h('p',{className:'hint'},'Open this tab to load Division policies.'):null),
-                isAdmin?h('section',{className:'surface'},h('h3',null,'Division master source directory'),
-                    h('p',{className:'hint'},'Register a source once for the Division. Existing school funds appear as legacy references until explicitly reviewed. Deactivation preserves historic entries and reports.'),
-                    h('button',{type:'button',className:'primary',onClick:()=>{this.fundSourceReviewPending=null;this.setState({sourceDialog:true,sourceCode:'',sourceName:'',sourceActive:true,sourceReason:''});}},'+ Add / edit Division source'),
-                    this.state.sourceDialog?h('div',{className:'ipr-overlay',role:'presentation'},h('div',{className:'ipr-dialog',role:'dialog','aria-modal':'true','aria-label':'Division master source'},
-                        h('h3',null,'Division master source'),
-                        h('p',{className:'hint'},'This registers or activates the Division master source. It does not create another release or bank deposit. Its withholding treatment and payment accounting must be approved separately.'),
-                        h('form',{onSubmit:this.saveDivisionSource},h('div',{className:'form-grid'},
-                        h('label',{className:'field'},h('span',null,'Source code *'),h('input',{required:true,maxLength:60,value:this.state.sourceCode,onChange:this.set('sourceCode'),placeholder:'MOOE / SIIF / SNED'})),
-                        h('label',{className:'field'},h('span',null,'Official source name *'),h('input',{required:true,maxLength:160,value:this.state.sourceName,onChange:this.set('sourceName')})),
-                        h('label',{className:'field'},h('span',null,'Status'),h('select',{value:this.state.sourceActive?'ACTIVE':'INACTIVE',onChange:e=>this.setState({sourceActive:e.target.value==='ACTIVE'})},
-                            h('option',{value:'ACTIVE'},'Active'),h('option',{value:'INACTIVE'},'Inactive — retain history'))),
-                        h('label',{className:'field'},h('span',null,'Reason / authority *'),h('textarea',{required:true,rows:2,maxLength:500,value:this.state.sourceReason,onChange:this.set('sourceReason')}))),
-                        h('button',{type:'submit',className:'primary',disabled:this.state.busy||!this.state.fundPolicies},'Save Division fund source'),
-                        h('button',{type:'button',className:'outline',onClick:()=>{if(window.confirm('Discard unsaved Division source changes?')){this.fundSourceReviewPending=null;this.setState({sourceDialog:false});}}},'Cancel')))):null):null,
-                isAdmin?h('section',{className:'surface'},h('h3',null,'Set withholding treatment · '+(this.state.fundPolicyClass==='NON_IUS'?'Non-IUS':'IUS')),
-                    h('button',{type:'button',className:'primary',onClick:()=>this.setState({policyDialog:true})},'Configure '+(this.state.fundPolicyClass==='NON_IUS'?'Non-IUS':'IUS')+' policy'),
-                    this.state.policyDialog?h('div',{className:'ipr-overlay fund-policy-overlay-372',role:'presentation'},h('div',{className:'ipr-dialog fund-policy-dialog-372',role:'dialog','aria-modal':'true','aria-label':'Withholding fund policy'},
+                h('section',{className:'surface fund-config-395'},
+                    h('div',{className:'section-head'},h('div',null,
+                        h('h3',null,'Fund configuration'),
+                        h('p',{className:'hint'},'Choose the school type, then select a fund. All settings for that fund appear together. Changing configuration never creates a bank credit, changes an existing DV or remits tax.')),
+                        canConfigureFunds?h('button',{type:'button',className:'outline',onClick:()=>this.setState({fundConfigSelected:'__DIRECTORY__',sourceDialog:false,policyDialog:false})},'Manage fund directory'):null),
+                    h('div',{className:'master-tabs',role:'tablist','aria-label':'School fund classification'},
+                        ...[['NON_IUS','Non-IUS Schools'],['IUS','IUS Schools']].map(([key,label])=>
+                            h('button',{type:'button',key,className:'master-tab '+(this.state.fundPolicyClass===key?'selected':''),
+                                'aria-selected':this.state.fundPolicyClass===key,role:'tab',
+                                onClick:()=>this.setState({fundPolicyClass:key,fundConfigSelected:'',policyDialog:false,sourceDialog:false})},label))),
+                    !isAdmin?h('p',{className:'hint'},'Read-only policies for '+(this.state.fundPolicies?.school_classification?.classification||'this school')+'. Only an authorized Division officer can change settings.'):null,
+                    this.state.fundPoliciesLoading?h('p',{className:'hint',role:'status'},'Loading Division fund configuration…'):null,
+                    h('div',{className:'fund-config-grid-395'},...((this.state.fundPolicies?.sources||[]).map(s=>{
+                        const policy=(this.state.fundPolicies?.policies||[]).find(p=>p.source_code===s.code&&p.school_class===this.state.fundPolicyClass)||{};
+                        const needsAccounts=this.state.fundPolicyClass==='NON_IUS'&&s.code!=='MOOE'&&policy.policy&&policy.policy!=='NOT_CONFIGURED'&&(!policy.payment_credit_uacs||!policy.withholding_liability_uacs);
+                        const incomplete=!s.active||!policy.policy||policy.policy==='NOT_CONFIGURED'||needsAccounts;
+                        const payee=this.state.fundPolicies?.check_payees?.[s.code]?.payee;
+                        const selected=this.state.fundConfigSelected===s.code;
+                        return h('button',{key:s.code,type:'button',className:'fund-config-card-395 '+(selected?'selected':'') ,
+                            'aria-pressed':selected,
+                            onClick:()=>{
+                                const conf=this.state.fundPolicies?.check_payees?.[s.code]||{};
+                                this.setState({fundConfigSelected:s.code,fundConfigTab397:'UACS',sourceDialog:false,policyDialog:false,
+                                    taxPayeeSource:s.code,taxPayeeName:conf.payee||'',taxPayeeExpected:Number(conf.version_id||0),taxPayeeNotice:'',taxPayeeError:'',
+                                    fundPolicySource:s.code,fundPolicyMode:policy.policy||'NOT_CONFIGURED',fundPolicyDate:policy.effective_from||localToday(),
+                                    fundPolicyAuthority:policy.authority||'',fundPolicyReason:'',fundPolicyPaymentCredit:policy.payment_credit_uacs||'',
+                                    fundPolicyWithholdingCredit:policy.withholding_liability_uacs||'',policyDialog:false});
+                            }},
+                            h('strong',null,s.name),h('span',{className:'fund-config-code-395'},s.code),
+                            h('span',{className:incomplete?'fund-config-warning-395':'fund-config-ok-395'},
+                                !s.active?'Inactive / review required':incomplete?'Needs configuration':'Policy configured'),
+                            h('small',{className:'fund-config-card-note-396'},policy.policy==='REMIT_TO_DIVISION'?'Division check payee: '+(payee||'Not configured'):policy.policy==='DIVISION_SETTLES_UTILIZABLE'?'School utilization arrangement':policy.policy==='IUS_REMIT_DIRECT_BIR'?'Direct BIR remittance':'Open to review settings'),
+                            h('span',{className:'fund-config-cta-396'},'Configure fund  ›'));
+                    }))),
+                    !(this.state.fundPolicies?.sources||[]).length&&!this.state.fundPoliciesLoading?
+                        h('p',{className:'hint'},'No Division fund sources are registered. An authorized Division officer can use Manage fund directory to register approved funds.'):null,
+                    this.state.fundConfigSelected&&this.state.fundConfigSelected!=='__DIRECTORY__'?
+                        h('div',{className:'ipr-overlay fund-modal-overlay-396',role:'presentation'},
+                            h('div',{className:'ipr-dialog fund-modal-dialog-396',role:'dialog','aria-modal':'true','aria-label':'Fund configuration',tabIndex:-1,onKeyDown:e=>{if(e.key==='Escape'&&!this.state.busy){e.stopPropagation();if(window.confirm('Close fund configuration? Unsaved changes will be discarded.'))this.setState({fundConfigSelected:'',policyDialog:false});}}},
+                                h('div',{className:'fund-modal-eyebrow-396'},'DIVISION FUND CONFIGURATION · '+(this.state.fundPolicyClass==='IUS'?'IUS':'NON-IUS')),
+                                (()=>{
+                        const s=(this.state.fundPolicies?.sources||[]).find(x=>x.code===this.state.fundConfigSelected);
+                        if(!s)return h('p',{className:'hint'},'Select a registered fund.');
+                        const p=(this.state.fundPolicies?.policies||[]).find(x=>x.source_code===s.code&&x.school_class===this.state.fundPolicyClass)||{};
+                        const treatment=p.policy==='REMIT_TO_DIVISION'?'School remits to Division':p.policy==='DIVISION_SETTLES_UTILIZABLE'?'Division settles; retained cash under approved rules':p.policy==='IUS_REMIT_DIRECT_BIR'?'IUS remits directly to BIR':'Not configured';
+                        const receipts=(this.state.fundPolicies?.linked_division_credits||[]).filter(r=>r.source_code===s.code);
+                        return h('div',{className:'fund-config-detail-395'},
+                            h('div',{className:'section-head'},h('h3',null,s.name+' ('+s.code+')'),
+                                h('button',{type:'button',className:'outline',onClick:()=>this.setState({fundConfigSelected:'',policyDialog:false,sourceDialog:false})},'Close window')),
+                            h('div',{className:'fund-config-summary-395'},
+                                h('p',null,h('strong',null,'Master fund: '),s.active?'Active':'Inactive'),
+                                h('p',null,h('strong',null,'Withholding treatment: '),treatment),
+                                h('p',null,h('strong',null,'Effective from: '),p.effective_from||'Not configured'),
+                                h('p',null,h('strong',null,'Payment credit UACS: '),p.payment_credit_uacs||'Not recorded / governed by existing policy'),
+                                h('p',null,h('strong',null,'Tax liability UACS: '),p.withholding_liability_uacs||'Not recorded / governed by existing policy'),
+                                p.policy==='REMIT_TO_DIVISION'?h('p',null,h('strong',null,'Division remittance check payee: '),this.state.fundPolicies?.check_payees?.[s.code]?.payee||'Not configured'):null,
+                                h('p',null,h('strong',null,'Linked Division credits: '),receipts.length?receipts.map(r=>r.fiscal_year+': ₱'+Number(r.amount||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})).join(' · '):'None recorded')),
+                            h('p',{className:'hint fund-config-summary-note-397'},'Choose a tab below to view its settings. No accounting transaction is created by viewing configuration.'));
+                    })(),
+                                canConfigureFunds&&this.state.fundConfigSelected&&this.state.fundConfigSelected!=='__DIRECTORY__'?h('div',{className:'fund-config-tabs-397',role:'tablist','aria-label':'Fund configuration sections'},
+                                    h('button',{type:'button',role:'tab','aria-selected':(this.state.fundConfigTab397||'UACS')==='UACS',className:(this.state.fundConfigTab397||'UACS')==='UACS'?'active':'',onClick:()=>this.setState({fundConfigTab397:'UACS',policyDialog:false})},'Current Settings'),
+                                    h('button',{type:'button',role:'tab','aria-selected':this.state.fundConfigTab397==='POLICY',className:this.state.fundConfigTab397==='POLICY'?'active':'',onClick:()=>this.setState({fundConfigTab397:'POLICY',policyDialog:true})},'Edit Policy & UACS'),
+                                    (this.state.fundPolicies?.policies||[]).some(p=>p.source_code===this.state.fundConfigSelected&&p.school_class===this.state.fundPolicyClass&&p.policy==='REMIT_TO_DIVISION')?
+                                        h('button',{type:'button',role:'tab','aria-selected':this.state.fundConfigTab397==='PAYEE',className:this.state.fundConfigTab397==='PAYEE'?'active':'',onClick:()=>this.setState({fundConfigTab397:'PAYEE',policyDialog:false})},'Check payee'):null):null,
+                                canConfigureFunds&&this.state.fundConfigSelected&&this.state.fundConfigSelected!=='__DIRECTORY__'&&(this.state.fundConfigTab397||'UACS')==='UACS'?h('section',{className:'fund-config-tab-panel-397',role:'tabpanel'},
+                                    h('h3',null,'Current withholding & accounting settings'),
+                                    h('p',{className:'hint'},'Review the effective policy and UACS above. To change approved accounting codes, open the policy editor; the same audited policy save applies.'),
+                                    h('button',{type:'button',className:'primary',onClick:()=>this.setState({fundConfigTab397:'POLICY',policyDialog:true})},'Edit approved policy and UACS')):null,
+                                canConfigureFunds&&this.state.fundConfigSelected&&this.state.fundConfigSelected!=='__DIRECTORY__'&&this.state.fundConfigTab397==='PAYEE'&&(this.state.fundPolicies?.policies||[]).some(p=>p.source_code===this.state.fundConfigSelected&&p.school_class===this.state.fundPolicyClass&&p.policy==='REMIT_TO_DIVISION')?h('section',{className:'surface fund-config-tab-panel-397 fund-payee-panel-398',role:'tabpanel'},h('h3',null,'Check payee for Division withholding remittances'),
+                    this.state.taxPayeeError?h('p',{className:'fund-payee-alert-399 error',role:'alert'},this.state.taxPayeeError):null,
+                    this.state.taxPayeeNotice?h('p',{className:'fund-payee-alert-399 success',role:'status'},this.state.taxPayeeNotice):null,
+                    h('p',{className:'hint'},'Save the exact legal payee for future Division withholding-remittance checks. This is a separate check-payee assignment, not a withholding-policy amendment. No policy-change reason is required here. Existing DVs and checks are not altered.'),
+                    h('form',{onSubmit:this.saveDivisionTaxPayee,className:'form-grid'},
+                        h('p',{className:'hint'},'Selected fund: '+this.state.fundConfigSelected+' · The payee applies to new Division withholding-remittance checks for this fund.'),
+                        h('label',{className:'field'},h('span',null,'Exact payee name on check *'),
+                            h('input',{required:true,maxLength:180,value:this.state.taxPayeeName,onChange:e=>this.setState({taxPayeeName:e.target.value,taxPayeeError:'',taxPayeeNotice:''}),placeholder:'Official receiving entity / payee'})),
+                        h('button',{type:'submit',className:'primary',disabled:this.state.busy||!this.state.taxPayeeSource||!this.state.taxPayeeName.trim()},this.state.busy?'Saving…':'Save check payee'))):null,
+                                canConfigureFunds&&this.state.fundConfigSelected&&this.state.fundConfigSelected!=='__DIRECTORY__'&&this.state.fundConfigTab397==='POLICY'?h('section',{className:'surface fund-config-tab-panel-397',role:'tabpanel'},h('h3',null,'Edit '+(this.state.fundPolicyClass==='NON_IUS'?'Non-IUS':'IUS')+' withholding policy & UACS'),
+                    h('div',{className:'fund-config-policy-inline-396'},
                         h('h3',null,'Division withholding policy'),
                         h('p',{className:'hint'},'Choose the actual Division-approved policy for '+(this.state.fundPolicySource||'this source')+'. No tax treatment is assigned automatically. The effective date must cover the DV and must match the documentary authority.'),
                         h('form',{onSubmit:this.saveDivisionFundPolicy,className:'fund-policy-form-wrap-372'},h('div',{className:'form-grid fund-policy-form-372'},
-                        h('label',{className:'field'},h('span',null,'Source of funds *'),h('select',{required:true,value:this.state.fundPolicySource,onChange:this.set('fundPolicySource')},
-                            h('option',{value:''},'Select approved source'),...((this.state.fundPolicies?.sources||[]).filter(s=>s.active).map(s=>h('option',{key:s.code,value:s.code},s.name+' ('+s.code+')'))))),
+                        h('p',{className:'hint'},'Selected source: '+this.state.fundConfigSelected+' · School type: '+this.state.fundPolicyClass),
                         h('label',{className:'field'},h('span',null,'Withholding cash treatment *'),h('select',{required:true,value:this.state.fundPolicyMode,onChange:this.set('fundPolicyMode')},
                             h('option',{value:'NOT_CONFIGURED'},'Not configured — block utilization'),
                             h('option',{value:'REMIT_TO_DIVISION'},'School remits withheld tax to Division'),
@@ -6868,11 +7453,28 @@ h('div',{className:'employee-claim-actions'},
                             h('p',{className:'hint',role:'status'},'IUS direct BIR remittance: withheld tax is tracked for remittance to BIR, not Division or school utilization. Actual payment/filing must be recorded separately using official BIR evidence.'):null,
                         h('p',{className:'hint fund-policy-audit-372'},'Effective-dated changes are audited. They do not retrospectively rewrite finalized DV totals, recorded tax dispositions or issued checks. Policy configuration is not evidence of BIR payment, tax filing, or a new fund allotment.'),
                         h('div',{className:'fund-policy-actions-372'},
-                            h('button',{type:'button',className:'outline',onClick:()=>{if(window.confirm('Discard unsaved withholding policy changes?'))this.setState({policyDialog:false});}},'Cancel'),
-                            h('button',{type:'submit',className:'primary',disabled:this.state.busy||!this.state.fundPolicies},'Save '+(this.state.fundPolicyClass==='NON_IUS'?'Non-IUS':'IUS')+' policy'))))):null):null
+                            h('button',{type:'button',className:'outline',onClick:()=>{if(window.confirm('Discard unsaved withholding policy changes?'))this.setState({policyDialog:false,fundConfigTab397:'UACS'});}},'Cancel'),
+                            h('button',{type:'submit',className:'primary',disabled:this.state.busy||!this.state.fundPolicies},'Save '+(this.state.fundPolicyClass==='NON_IUS'?'Non-IUS':'IUS')+' policy'))))):null
+                            )):null,
+                    this.state.fundConfigSelected==='__DIRECTORY__'?h('p',{className:'hint'},'Division fund directory. Activate or register a source below; then return to its card to configure its withholding, UACS and check payee.'):null),
+                canConfigureFunds&&this.state.fundConfigSelected==='__DIRECTORY__'?h('section',{className:'surface'},h('h3',null,'Division master source directory'),
+                    h('p',{className:'hint'},'Register a source once for the Division. Existing school funds appear as legacy references until explicitly reviewed. Deactivation preserves historic entries and reports.'),
+                    h('button',{type:'button',className:'primary',onClick:()=>{this.fundSourceReviewPending=null;this.setState({sourceDialog:true,sourceCode:'',sourceName:'',sourceActive:true,sourceReason:''});}},'+ Add / edit Division source'),
+                    this.state.sourceDialog?h('div',{className:'ipr-overlay',role:'presentation'},h('div',{className:'ipr-dialog',role:'dialog','aria-modal':'true','aria-label':'Division master source'},
+                        h('h3',null,'Division master source'),
+                        h('p',{className:'hint'},'This registers or activates the Division master source. It does not create another release or bank deposit. Its withholding treatment and payment accounting must be approved separately.'),
+                        h('form',{onSubmit:this.saveDivisionSource},h('div',{className:'form-grid'},
+                        h('label',{className:'field'},h('span',null,'Source code *'),h('input',{required:true,maxLength:60,value:this.state.sourceCode,onChange:this.set('sourceCode'),placeholder:'MOOE / SIIF / SNED'})),
+                        h('label',{className:'field'},h('span',null,'Official source name *'),h('input',{required:true,maxLength:160,value:this.state.sourceName,onChange:this.set('sourceName')})),
+                        h('label',{className:'field'},h('span',null,'Status'),h('select',{value:this.state.sourceActive?'ACTIVE':'INACTIVE',onChange:e=>this.setState({sourceActive:e.target.value==='ACTIVE'})},
+                            h('option',{value:'ACTIVE'},'Active'),h('option',{value:'INACTIVE'},'Inactive — retain history'))),
+                        h('label',{className:'field'},h('span',null,'Reason / authority *'),h('textarea',{required:true,rows:2,maxLength:500,value:this.state.sourceReason,onChange:this.set('sourceReason')}))),
+                        h('button',{type:'submit',className:'primary',disabled:this.state.busy||!this.state.fundPolicies},'Save Division fund source'),
+                        h('button',{type:'button',className:'outline',onClick:()=>{if(window.confirm('Discard unsaved Division source changes?')){this.fundSourceReviewPending=null;this.setState({sourceDialog:false});}}},'Cancel')))):null):null,
             ):null;
             const cols=section==='suppliers' ?['name','proprietor_name','tax_id','zip_code','business_classification','vat_status','tax_profiles','active']:section==='items'?['name','catalog_scope','category','division_class','item_uacs','property_registry','unit','active']:section==='funds'?['name','source_code','fiscal_year','authorized_allocation','outstanding_obligations','finalized_dv_gross','available_allocation','awaiting_bank_link']:section==='banks'?['bank_name','account_label','masked_account']:section==='units'?['code','name']:['code','description','supply_type','active'];
-            const hasActions=canEdit&&['suppliers','items','atcs'].includes(section);
+            const canRenameBank=section==='banks' && ['SUPER_ADMIN','SCHOOL','DIVISION'].includes(this.state.user?.role);
+            const hasActions=(canEdit&&['suppliers','items','atcs'].includes(section))||canRenameBank;
             const workspace=this.state.orgs.find(o=>String(o.id)===String(this.state.organization_id));
             const itemOwns=r=>r.owner_organization_id!==null&&r.owner_organization_id!==undefined
                 ?String(r.owner_organization_id)===String(this.state.organization_id)
@@ -6889,6 +7491,7 @@ h('div',{className:'employee-claim-actions'},
                     : 'Not linked')
                 : section==='items' && col==='item_uacs' ? (this.latestItemUacs(r.id)?this.latestItemUacs(r.id).uacs_code+' · from '+this.latestItemUacs(r.id).effective_from+(['AUTO_SCHOOL_CONSUMABLE','AUTO_DIVISION_CLASS'].includes(this.latestItemUacs(r.id).source)?' · auto from '+(this.latestItemUacs(r.id).classification_code||'class'):''):'Not mapped')
                 : col==='active'?(Number(r.active)?'Active':'Inactive'):(r[col]??'—'))),hasActions?h('td',{key:'actions'},h('div',{className:'inline-actions'},section==='suppliers'?h('button',{className:'text-btn',type:'button',onClick:()=>this.editSupplier(r)},'Edit'):null,
+                section==='banks'&&canRenameBank?h('button',{className:'text-btn',type:'button',disabled:this.state.busy,onClick:()=>this.renameBankLabel(r)},'Rename label'):null,
                 section==='items'&&isAdmin&&itemOwns(r)?h('button',{className:'text-btn',type:'button',disabled:this.state.busy,
                     onClick:()=>this.openItemUacsDialog(r)},'Manage UACS'):null,
                 section==='items'&&itemOwns(r)&&['PPE','SEMI_EXPENDABLE','TEXTBOOK'].includes(r.category)?h('button',{className:'text-btn',
@@ -7604,7 +8207,7 @@ h('div',{className:'employee-claim-actions'},
                 workflowError:errors.length?'Some procurement lists could not load ('+errors.join(', ')+'). Use Refresh process to try again.':''});
         };
         this.workflowSetStage = stage => {
-            this.setState({workflowStage:stage,workflowFormOpen:false,workflowPoEdit:null,workflowPoEditError:'',workflowIarEdit:null,workflowIarEditError:'',workflowError:'',workflowMessage:'',workflowRFQEditId:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditError:''},()=>this.workflowReload());
+            this.setState({workflowQuoteEditId:'',workflowQuoteEditToken:'',workflowStage:stage,workflowFormOpen:false,workflowPoEdit:null,workflowPoEditError:'',workflowIarEdit:null,workflowIarEditError:'',workflowError:'',workflowMessage:'',workflowRFQEditId:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditError:''},()=>this.workflowReload());
         };
         this.workflowLoadPR = async id => {
             this.setState({workflowPR:id,workflowRfqLines:[],workflowRfqDate:'',workflowCanvasserId:'',workflowCanvasserHistoricalAttested:false,workflowCanvasserHistoricalReference:'',workflowChairHistoricalAttested:false,workflowChairHistoricalReference:'',workflowError:'',workflowConsolidate:null,workflowConsolidateLoading:!!id,workflowConsolidateError:'',workflowConsolidatePrIds:id?[String(id)]:[],workflowConsolidateExcluded:[]});if(!id)return;
@@ -7673,6 +8276,26 @@ h('div',{className:'employee-claim-actions'},
                 if(this.state.organization_id!==org||String(this.state.workflowRFQ)!==String(id))return;
                 this.setState({workflowQuoteLines:(d.lines||[]).map(x=>({pr_line_id:Number(x.pr_line_id),item_name:x.item_name,unit:x.unit,quantity:x.quantity,price:'',compliant:true}))});
             }catch(e){this.setState({workflowError:'Unable to load PR items: '+e.message});}
+        };
+        this.workflowLoadQuoteEdit = async quoteId => {
+            const org=String(this.state.organization_id);
+            this.setState({workflowError:'',workflowMessage:''});
+            try {
+                const response=await this.get('workflow.quote',{quote_id:String(quoteId)});
+                if(String(this.state.organization_id)!==org)return;
+                const quote=response.quote||{};
+                const rfq=(this.state.lists.rfq||[]).find(r=>String(r.id)===String(quote.rfq_id));
+                if(!rfq||Number(rfq.quote_entry_allowed)!==1)
+                    throw Error('This RFQ is no longer open for quotation correction. Refresh the register.');
+                if(!/^[a-f0-9]{64}$/.test(String(response.edit_token||'')))throw Error('Quotation edit version unavailable.');
+                this.setState({workflowStage:'QUOTES',workflowFormOpen:true,workflowRFQ:String(quote.rfq_id),
+                    workflowSupplier:String(quote.supplier_id),workflowQuoteDate:String(quote.offered_at).slice(0,10),
+                    workflowQuoteEvidence:String(quote.evidence_note||''),workflowQuoteEditId:String(quoteId),
+                    workflowQuoteEditToken:response.edit_token,workflowQuoteLines:(response.lines||[]).map(l=>({
+                        pr_line_id:Number(l.pr_line_id),item_name:l.item_name,unit:l.unit,
+                        quantity:l.quantity,price:String(l.offered_price),compliant:Number(l.compliant)===1
+                    })),workflowError:''});
+            } catch(error) {if(String(this.state.organization_id)===org)this.workflowShowError('Cannot edit quotation: '+error.message);}
         };
         // Populate new PO delivery address from the currently selected SCHOOL,
         // never a previously selected school's data or a fixed template address.
@@ -7786,11 +8409,12 @@ h('div',{className:'employee-claim-actions'},
                     if(!chosenRfq||Number(chosenRfq.quote_entry_allowed)!==1)throw Error('This RFQ is already awarded, purchased or needs review. Refresh the quotations register.');
                     const lines=this.state.workflowQuoteLines;
                     if(!lines.length||lines.some(l=>!positive(l.price)))throw Error('Enter a positive offered unit price for every item.');
-                    if((this.state.lists.quotes||[]).some(x=>String(x.rfq_id)===String(this.state.workflowRFQ)&&String(x.supplier_id)===String(this.state.workflowSupplier)))throw Error('This supplier already has a quotation for this RFQ. Do not enter a duplicate.');
+                    if(!this.state.workflowQuoteEditId && (this.state.lists.quotes||[]).some(x=>String(x.rfq_id)===String(this.state.workflowRFQ)&&String(x.supplier_id)===String(this.state.workflowSupplier)))throw Error('This supplier already has a quotation for this RFQ. Do not enter a duplicate.');
                     const rfqDate=(this.state.lists.rfq||[]).find(r=>String(r.id)===String(this.state.workflowRFQ))?.issued_at?.slice(0,10);
                     if(!validPrDate(this.state.workflowQuoteDate)||this.state.workflowQuoteDate>localToday())throw Error('Select a valid, non-future Supplier Quotation date.');
                     if(rfqDate&&this.state.workflowQuoteDate<rfqDate)throw Error('Supplier Quotation date cannot precede the selected RFQ date.');
-                    route='quote.create';data={rfq_id:Number(this.state.workflowRFQ),supplier_id:Number(this.state.workflowSupplier),offered_at:this.state.workflowQuoteDate,evidence_note:this.state.workflowQuoteEvidence.trim(),lines:lines.map(l=>({pr_line_id:l.pr_line_id,price:l.price,compliant:!!l.compliant}))};next='QUOTES';
+                    route=this.state.workflowQuoteEditId?'quote.update':'quote.create';data={...this.state.workflowQuoteEditId?{quote_id:Number(this.state.workflowQuoteEditId),edit_token:this.state.workflowQuoteEditToken}:{rfq_id:Number(this.state.workflowRFQ),supplier_id:Number(this.state.workflowSupplier)},offered_at:this.state.workflowQuoteDate,evidence_note:this.state.workflowQuoteEvidence.trim(),lines:lines.map(l=>({pr_line_id:l.pr_line_id,price:l.price,compliant:!!l.compliant}))};next='QUOTES';
+                    if(this.state.workflowQuoteEditId&&!window.confirm('Save corrected supplier quotation? The previous figures remain in the audit history.'))return;
                 }else if(stage==='AWARD'){
                     const eligible=(this.state.lists.quotes||[]).filter(x=>String(x.rfq_id)===String(this.state.workflowAwardRFQ)&&Number(x.line_count)>0&&Number(x.noncompliant_lines)===0).sort((a,b)=>Number(a.offered_total)-Number(b.offered_total)||Number(a.id)-Number(b.id));
                     // Preserve the original lowest-compliant-price benchmark even
@@ -7858,6 +8482,7 @@ h('div',{className:'employee-claim-actions'},
             // the operator may record further suppliers on the SAME RFQ.
             const submittedOrg=String(this.state.organization_id);
             const submittedRFQ=stage==='QUOTES'?String(this.state.workflowRFQ):'';
+            const submittedQuoteEditId=stage==='QUOTES'?String(this.state.workflowQuoteEditId||''):'';
             const submittedSupplier=stage==='QUOTES'?(this.state.lists.suppliers||[]).find(x=>String(x.id)===String(this.state.workflowSupplier)):null;
             const result=await this.task(route,data,{refresh:false,errorTarget:'workflow'});
             if(!result||String(this.state.organization_id)!==submittedOrg)return;
@@ -7868,10 +8493,10 @@ h('div',{className:'employee-claim-actions'},
                 // clear every quoted price so a previous supplier's offer cannot
                 // accidentally be copied into the next supplier's quotation.
                 this.setState({workflowStage:'QUOTES',workflowQuoteBucket:'QUOTED',workflowRFQ:submittedRFQ,workflowSupplier:'',
-                    workflowQuoteEvidence:'',workflowQuoteLines:this.state.workflowQuoteLines.map(l=>({...l,price:'',compliant:true})),
+                    workflowQuoteEvidence:'',workflowQuoteEditId:'',workflowQuoteEditToken:'',workflowFormOpen:!submittedQuoteEditId,workflowQuoteLines:this.state.workflowQuoteLines.map(l=>({...l,price:'',compliant:true})),
                     workflowAwardRFQ:submittedRFQ,workflowQuoteId:'',workflowAwardNote:'',workflowAwardNoteManual:false,
                     workflowAwardApproved:false,workflowError:'',workflowMessage:'Quotation from '+(submittedSupplier?.name||'supplier')+
-                    ' saved. You can enter another supplier quotation for this RFQ, or choose Prepare Abstract / Award when ready.'});
+                    (submittedQuoteEditId?' corrected. Original quotation number retained; previous amounts are in the audit history.':' saved. You can enter another supplier quotation for this RFQ, or choose Prepare Abstract / Award when ready.')});
                 return;
             }
             this.setState({workflowFormOpen:false,workflowMessage:(result.number?'Document '+result.number:'Record #'+result.id)+' saved successfully.'+(stage==='IAR'&&Number(result.auto_registered_property_units)>0?' '+result.auto_registered_property_units+' physical property unit(s) were registered with permanent tags. Review them under Property Accountability → Review Newly Received before ICS/PAR.':'')+(stage==='IAR'&&(result.deferred_property_iar_lines||[]).length?' Some oversized or fractional accepted property lines need the earlier IAR batch registration process.':'')+' Select the next process tab when ready.',workflowError:''});
@@ -8137,12 +8762,12 @@ h('div',{className:'employee-claim-actions'},
             }else if(s.workflowStage==='QUOTES'){
                 const recorded=quotes.filter(q=>String(q.rfq_id)===String(s.workflowRFQ));
                 const suppliers=(s.lists.suppliers||[]).filter(x=>Number(x.active)&&
-                    !recorded.some(q=>String(q.supplier_id)===String(x.id)));
+                    (!!s.workflowQuoteEditId&&String(s.workflowSupplier)===String(x.id)||!recorded.some(q=>String(q.supplier_id)===String(x.id))));
                 content=h('div',{className:'workflow-quotation-workspace'},
                     h('form',{onSubmit:e=>this.workflowSubmit(e,'QUOTES'),className:'workflow-form'},
-                        h('p',{className:'body-muted'},'Enter quotations from suppliers one at a time. After Save, this screen stays open on the same RFQ. Prepare the Abstract only when you decide that the quotations are ready for evaluation.'),
+                        h('p',{className:'body-muted'},s.workflowQuoteEditId?'Correct the saved supplier quotation before an Award or Purchase Order exists. The original quotation ID and audit history are preserved.':'Enter quotations from suppliers one at a time. After Save, this screen stays open on the same RFQ. Prepare the Abstract only when you decide that the quotations are ready for evaluation.'),
                         h('div',{className:'workflow-fields'},
-                            field('RFQ',select(s.workflowRFQ,v=>this.workflowLoadRFQ(v),'Choose an RFQ still open for quotations',quotableRfqs,rfqQuotationChoice)),
+                            field('RFQ',s.workflowQuoteEditId?h('strong',null,rfqs.find(r=>String(r.id)===String(s.workflowRFQ))?.display_number||'#'+s.workflowRFQ):select(s.workflowRFQ,v=>this.workflowLoadRFQ(v),'Choose an RFQ still open for quotations',quotableRfqs,rfqQuotationChoice)),
                             (()=>{const chosen=rfqs.find(r=>String(r.id)===String(s.workflowRFQ));
                                 if(!chosen)return null;
                                 const c=rfqPrContext(chosen);
@@ -8150,11 +8775,11 @@ h('div',{className:'employee-claim-actions'},
                                     h('strong',null,'Selected PR purpose: '),c.purpose,
                                     h('div',null,h('strong',null,'PR total: '),c.total,' · '+c.prNumber));
                             })(),
-                            field('Supplier',select(s.workflowSupplier,v=>this.setState({workflowSupplier:v}),'Choose a supplier not yet quoted',suppliers,r=>r.name))),
+                            field('Supplier',s.workflowQuoteEditId?h('strong',null,recorded.find(q=>String(q.id)===String(s.workflowQuoteEditId))?.supplier||'Saved supplier'):select(s.workflowSupplier,v=>this.setState({workflowSupplier:v}),'Choose a supplier not yet quoted',suppliers,r=>r.name))),
                         s.workflowRFQ&&quotableRfqs.some(r=>String(r.id)===String(s.workflowRFQ))?h('div',{className:'workflow-blank-rfq-inline'},
                             h('span',null,'Use the same issued RFQ for each supplier.'),
                             h('a',{className:'workflow-blank-rfq-link',href:blankRfqUrl(rfqs.find(r=>String(r.id)===String(s.workflowRFQ))),target:'_blank',rel:'noopener'},'Print Blank RFQ ↗')):null,
-                        s.workflowRFQ&&recorded.length>0&&suppliers.length===0?h('p',{className:'workflow-hint'},'All currently active suppliers already have a recorded quotation for this RFQ.'):null,
+                        s.workflowRFQ&&!s.workflowQuoteEditId&&recorded.length>0&&suppliers.length===0?h('p',{className:'workflow-hint'},'All currently active suppliers already have a recorded quotation for this RFQ.'):null,
                         s.workflowRFQ&&!quotableRfqs.some(r=>String(r.id)===String(s.workflowRFQ))?h('p',{className:'workflow-error',role:'alert'},'This RFQ is no longer accepting quotations. Close this form and refresh the register.'):null,
                         field('Supplier quotation date *',h('input',{type:'date',required:true,max:localToday(),min:String((rfqs.find(r=>String(r.id)===String(s.workflowRFQ))?.issued_at||'')).slice(0,10)||undefined,value:s.workflowQuoteDate,onChange:e=>this.setState({workflowQuoteDate:e.target.value,workflowError:''})}),s.workflowQuoteDate),
                     field('Quotation reference / evidence (optional)',h('input',{type:'text',maxLength:500,placeholder:'If available: quotation number or document reference',value:s.workflowQuoteEvidence,onChange:e=>this.setState({workflowQuoteEvidence:e.target.value})})),
@@ -8171,12 +8796,17 @@ h('div',{className:'employee-claim-actions'},
                                 quotePreviewTotal(s.workflowQuoteLines)===null?h('small',null,'Enter the offered unit price for every item.'):null)):
                             h('p',{className:'workflow-hint'},'Select an RFQ to load its item lines.'),
                         h('p',{className:'workflow-hint'},'Awarded or fully ordered RFQs are read-only in the register and cannot accept another quotation.'),
-                        h('button',{type:'submit',className:'primary',disabled:s.busy||!write||!s.workflowRFQ||!quotableRfqs.some(r=>String(r.id)===String(s.workflowRFQ))},s.busy?'Saving…':'Save Supplier Quotation')),
+                        h('button',{type:'submit',className:'primary',disabled:s.busy||!write||!s.workflowRFQ||!quotableRfqs.some(r=>String(r.id)===String(s.workflowRFQ))},s.busy?'Saving…':s.workflowQuoteEditId?'Save Quotation Correction':'Save Supplier Quotation')),
                     s.workflowRFQ?h('div',{className:'workflow-quotation-review'},
                         h('div',{className:'section-head'},h('h4',null,'Recorded supplier quotations'),h('span',{className:'count'},recorded.length+' saved')),
-                        recorded.length?smallTable(['Supplier','Quoted total','Compliance'],recorded.map(q=>h('tr',{key:q.id},
+                        recorded.length?smallTable(['Supplier','Quoted total','Compliance','Action'],recorded.map(q=>h('tr',{key:q.id},
                             h('td',null,q.supplier),h('td',null,money(q.offered_total)),
-                            h('td',null,Number(q.noncompliant_lines)>0?'Contains noncompliant items':'Compliant')))):
+                            h('td',null,Number(q.noncompliant_lines)>0?'Contains noncompliant items':'Compliant'),
+                            h('td',null,write&&quotableRfqs.some(r=>String(r.id)===String(s.workflowRFQ))?
+                                h('button',{type:'button',className:'outline',disabled:s.busy,
+                                    onClick:()=>this.workflowLoadQuoteEdit(q.id),
+                                    'aria-label':'Edit quotation from '+q.supplier},'Edit Quotation'):
+                                h('span',{className:'workflow-quote-recorded'},'Locked'))))):
                             h('p',{className:'workflow-hint'},'No quotations saved yet for this RFQ.'),
                         h('p',{className:'workflow-hint'},'You may save more quotations at any time. The Abstract will not be prepared automatically.'),
                         recorded.length?h('button',{type:'button',className:'outline',disabled:s.busy,
@@ -8417,7 +9047,7 @@ h('div',{className:'employee-claim-actions'},
             const openQuoteFor=rfqId=>{
                 if(!write||!quotableRfqs.some(r=>String(r.id)===String(rfqId)))return;
                 this.setState({workflowFormOpen:true,workflowRFQ:String(rfqId),workflowSupplier:'',workflowQuoteEvidence:'',
-                    workflowQuoteLines:[],workflowError:'',workflowMessage:''},()=>this.workflowLoadRFQ(String(rfqId)));
+                    workflowQuoteLines:[],workflowQuoteEditId:'',workflowQuoteEditToken:'',workflowError:'',workflowMessage:''},()=>this.workflowLoadRFQ(String(rfqId)));
             };
             const renderQuoteGroup=rfq=>{
                 const key=String(rfq.id);
@@ -8452,7 +9082,9 @@ h('div',{className:'employee-claim-actions'},
                         h('td',null,q.supplier||'Supplier not listed'),
                         h('td',null,'Quoted total: '+money(q.offered_total)),
                         h('td',null,Number(q.noncompliant_lines)>0?'Has noncompliant items':'Compliant'),
-                        h('td',null,h('span',{className:'workflow-quote-recorded'},'Recorded')))):
+                        h('td',null,write&&Number(rfq.quote_entry_allowed)===1?
+                            h('button',{type:'button',className:'outline',onClick:()=>this.workflowLoadQuoteEdit(q.id)},'Edit Quotation'):
+                            h('span',{className:'workflow-quote-recorded'},'Locked')))):
                         [h('tr',{key:'empty-'+key,className:'workflow-quotation-child'},
                             h('td',{colSpan:6,className:'workflow-quote-empty'},'No supplier quotations recorded for this RFQ yet.'))]):[]];
             };
@@ -8474,8 +9106,8 @@ h('div',{className:'employee-claim-actions'},
                 s.workflowStage==='QUOTES'?['RFQ / Quotation','RFQ / Quote Date','PR No. / Supplier','Purpose / Quoted Total','Quotations / Compliance','Actions']:
                 s.workflowStage==='AWARD'?['Award No.','Resolution / Recorded Date','Winning Bidder / RFQ','Purpose','Status','Actions']:
                 ['Document No.',stageDateLabel,'Related document / supplier','Purpose','Status','Actions'];
-            const modalTitle=s.workflowRFQEditId&&s.workflowStage==='RFQ'?'Correct RFQ':'New '+meta.singular;
-            const closeModal=()=>{if(!this.state.busy)this.setState({workflowFormOpen:false,workflowRFQEditId:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditError:'',workflowError:''});};
+            const modalTitle=s.workflowRFQEditId&&s.workflowStage==='RFQ'?'Correct RFQ':s.workflowQuoteEditId&&s.workflowStage==='QUOTES'?'Edit Supplier Quotation':'New '+meta.singular;
+            const closeModal=()=>{if(!this.state.busy)this.setState({workflowFormOpen:false,workflowRFQEditId:'',workflowRFQEditLines:[],workflowRFQEditVersion:0,workflowRFQEditError:'',workflowQuoteEditId:'',workflowQuoteEditToken:'',workflowError:''});};
             // Navigation only: Next never finalizes, approves or submits a document.
             // Forms are modal and do not expose this footer while open.
             const nextStage={RFQ:['QUOTES','Supplier Quotations'],QUOTES:['AWARD','Abstract / Award'],
@@ -8503,7 +9135,7 @@ h('div',{className:'employee-claim-actions'},
                         write?h('button',{type:'button',className:'primary',disabled:s.workflowStage==='QUOTES'&&!quotableRfqs.length,
                             title:s.workflowStage==='QUOTES'&&!quotableRfqs.length?'No RFQ is available for a new supplier quotation.':'',onClick:()=>{
                             const reset=s.workflowStage==='RFQ'?{workflowPR:'',workflowRfqDate:'',workflowRfqLines:[],workflowCanvasserId:'',workflowCanvasserHistoricalAttested:false,workflowCanvasserHistoricalReference:'',workflowChairHistoricalAttested:false,workflowChairHistoricalReference:'',workflowConsolidate:null,workflowConsolidatePrIds:[],workflowConsolidateExcluded:[],workflowConsolidateError:''}:
-                                s.workflowStage==='QUOTES'?{workflowRFQ:'',workflowSupplier:'',workflowQuoteDate:localToday(),workflowQuoteEvidence:'',workflowQuoteLines:[]}:
+                                s.workflowStage==='QUOTES'?{workflowRFQ:'',workflowSupplier:'',workflowQuoteDate:localToday(),workflowQuoteEvidence:'',workflowQuoteLines:[],workflowQuoteEditId:'',workflowQuoteEditToken:''}:
                                 s.workflowStage==='AWARD'?{workflowAwardRFQ:'',workflowAwardDate:localToday(),workflowQuoteId:'',workflowAwardNote:'',workflowAwardNoteManual:false,workflowAwardApproved:false}:
                                 s.workflowStage==='PO'?{workflowAward:'',workflowPoDate:localToday(),workflowPoLines:[],workflowPoDeliveryDate:localToday(),workflowPoDeliveryPlace:this.workflowDefaultDeliveryPlace(),workflowPoDeliveryTerm:'Door-to-Door Delivery',workflowPoPaymentTerm:'Full Payment upon Delivery',workflowPoPaymentType:'Check',workflowPoMethod:''}:
                                 {workflowPO:'',workflowIARLines:[],workflowDelivered:'',workflowAccepted:'',workflowIARInvoice:'',workflowIARInvoiceDate:'',workflowIARPoMeta:null,workflowIarDate:localToday(),workflowIARReviewed:false};
@@ -8706,14 +9338,10 @@ h('div',{className:'employee-claim-actions'},
             const ids=Object.keys(s.taxTransferSelected||{}).filter(k=>s.taxTransferSelected[k]).map(Number);
             const rows=(s.taxTransferData?.eligible||[]).filter(r=>ids.includes(Number(r.id)));
             if(!ids.length||rows.length!==ids.length||rows.some(r=>String(r.fund_id)!==String(s.taxTransferFundId))){
-                this.setState({taxTransferError:'Select actual unpaid tax components from one source fund.'});return;
-            }
-            if(!s.taxTransferBankId || !s.taxTransferBankConfirmed || (s.taxTransferReference||'').trim().length<5){
-                this.setState({taxTransferError:'Choose the Division receiving bank and enter a supporting reference.'});return;
+                this.setState({taxTransferError:'Select eligible withholding components from one source fund and the chosen remittance period.'});return;
             }
             const result=await this.task('tax.transfer.create',{fund_id:Number(s.taxTransferFundId),
-                division_bank_account_id:Number(s.taxTransferBankId),confirmed_receiving_account:true,component_ids:ids,
-                reference:s.taxTransferReference.trim()},{refresh:false});
+                component_ids:ids,reference:(s.taxTransferReference||'').trim()},{refresh:false});
             if(!result || org!==String(this.state.organization_id))return;
             this.setState({taxTransferSelected:{},taxTransferReference:'',taxTransferBankConfirmed:false,taxTransferError:'',
                 success:'Tax-remittance Draft DV #'+result.id+' saved. It does not create another expense or a bank-book debit until DV finalization assigns the physical check.'});
@@ -8728,7 +9356,8 @@ h('div',{className:'employee-claim-actions'},
                 this.setState({taxTransferError:'Enter the actual Division receipt/JEV reference and, when reconciling, an approved accounting authority.'});return;
             }
             const payload=kind==='RECEIVE'
-                ?{transfer_id:id,receipt_reference:ref,received_at:s.taxTransferReceiveDate||localToday()}
+                ?{transfer_id:id,receipt_reference:ref,received_at:s.taxTransferReceiveDate||localToday(),
+                    received_amount:String(s.taxTransferReceiptAmount||'')}
                 :{transfer_id:id,jev_reference:ref,accounting_authority:authority};
             const response=await this.task(kind==='RECEIVE'?'tax.transfer.receive':'tax.transfer.reconcile',payload,{refresh:false});
             if(!response)return;
@@ -8740,9 +9369,17 @@ h('div',{className:'employee-claim-actions'},
             const h=React.createElement,s=this.state;
             const money=v=>'₱'+Number(v||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
             const data=s.taxTransferData||{},school=data.office_kind==='SCHOOL',rows=data.rows||[],eligible=data.eligible||[];
-            const funds=[...new Map(eligible.map(r=>[String(r.fund_id),{id:String(r.fund_id),name:r.fund_name||r.source_code}])).values()];
-            const fundId=String(s.taxTransferFundId||''),visible=eligible.filter(r=>String(r.fund_id)===fundId);
+            const funds=[...new Map([...eligible,...(data.ineligible||[])].map(r=>[String(r.fund_id),{id:String(r.fund_id),name:r.fund_name||r.source_code}])).values()];
+            const fundId=String(s.taxTransferFundId||'');
+            const periodFrom=String(s.taxTransferFromDate||''),periodTo=String(s.taxTransferToDate||'');
+            const periodValid=!periodFrom||!periodTo||periodFrom<=periodTo;
+            const allForFund=eligible.filter(r=>String(r.fund_id)===fundId);
+            const visible=allForFund.filter(r=>periodValid&&(!periodFrom||String(r.document_date||'').slice(0,10)>=periodFrom)&&(!periodTo||String(r.document_date||'').slice(0,10)<=periodTo));
+            const excluded=(data.ineligible||[]).filter(r=>String(r.fund_id)===fundId&&periodValid&&
+                (!periodFrom||String(r.document_date||'').slice(0,10)>=periodFrom)&&(!periodTo||String(r.document_date||'').slice(0,10)<=periodTo));
             const selected=visible.filter(r=>s.taxTransferSelected?.[r.id]);
+            const allVisibleSelected=visible.length>0&&visible.every(r=>!!s.taxTransferSelected?.[r.id]);
+            const byAtc=Object.entries(selected.reduce((groups,r)=>{const code=r.atc_code||'UNSPECIFIED';groups[code]=(groups[code]||0)+Math.round(Number(r.amount||0)*100);return groups;},{})).sort((a,b)=>a[0].localeCompare(b[0]));
             const subtotal=selected.reduce((sum,r)=>sum+Math.round(Number(r.amount||0)*100),0);
             const isDivision=['DIVISION','SUPER_ADMIN'].includes(s.user?.role)&&data.office_kind==='DIVISION';
             const eligibleAction=(!s.taxTransferLoading && !s.busy && this.canOperateWorkspace());
@@ -8750,9 +9387,8 @@ h('div',{className:'employee-claim-actions'},
                 h('div',{className:'tax-transfer-head'},
                     h('div',null,h('h3',null,school?'Withholding taxes → Division':'School withholding transfers · Division receipts'),
                         h('p',{className:'body-muted'},'School DV: Due to BIR debit and Advances for Operating Expenses credit. Check assignment creates one bank-book commitment; release evidences payment. Division Accounting records its receipt and JEV separately.')),
-                    h('button',{type:'button',className:'outline',onClick:()=>this.setState({taxTransferOpen:!s.taxTransferOpen,taxTransferError:''},()=>{
-                        if(this.state.taxTransferOpen)this.loadTaxTransferWorkspace();
-                    })},s.taxTransferOpen?'Close transfers':'Open transfers')),
+                    h('a',{className:'outline',target:'_blank',rel:'noopener noreferrer',
+                        href:'api/withholding-reports.php?organization_id='+encodeURIComponent(s.organization_id)},'Withholding Tax Report')),
                 s.taxTransferOpen?h('div',{className:'tax-transfer-body'},
                     h('div',{className:'tax-transfer-tools'},h('button',{type:'button',className:'outline',disabled:s.taxTransferLoading||s.busy,
                         onClick:this.loadTaxTransferWorkspace},s.taxTransferLoading?'Refreshing…':'Refresh withholding transfers')),
@@ -8760,19 +9396,43 @@ h('div',{className:'employee-claim-actions'},
                     s.taxTransferLoading?h('p',{className:'hint'},'Loading original withholding and Division receipt history…'):null,
                     !s.taxTransferLoading&&school?h('form',{className:'tax-transfer-create',onSubmit:this.createTaxTransferDraft},
                         h('h4',null,'Prepare one school tax-remittance DV'),
-                        h('p',{className:'hint'},'Only unsettled withholding from finalized supplier DVs with released or cleared checks appears. Select several ATCs from the same fund to issue one transfer DV. No tax is recalculated.'),
+                        h('p',{className:'hint'},'Prepare one consolidated remittance for a month or Division-instructed date range. Only unreserved tax components from finalized supplier DVs whose checks are actually released or cleared are eligible. Ineligible withholding is listed separately with reasons; no withholding is recalculated.'),
                         h('div',{className:'tax-transfer-form-grid'},
                             h('label',{className:'field'},h('span',null,'Source of funds *'),h('select',{value:fundId,onChange:e=>this.setState({taxTransferFundId:e.target.value,taxTransferSelected:{},taxTransferError:''})},
                                 h('option',{value:''},'Choose a fund with unremitted tax'),...funds.map(f=>h('option',{key:f.id,value:f.id},f.name)))),
-                            h('label',{className:'field'},h('span',null,'Division receiving bank / check payee *'),
-                                h('select',{value:String(s.taxTransferBankId||''),onChange:e=>this.setState({taxTransferBankId:e.target.value,taxTransferBankConfirmed:false,taxTransferError:''})},
-                                    h('option',{value:''},'Select verified Division receiving account'),
-                                    ...(data.receiving_banks||[]).map(b=>h('option',{key:b.id,value:String(b.id)},b.account_label+' · '+b.bank_name)))),
-                            h('label',{className:'field tax-transfer-reference'},h('span',null,'Actual remittance supporting reference *'),
-                                h('input',{type:'text',maxLength:255,required:true,placeholder:'Tax summary / remittance cover reference',value:s.taxTransferReference||'',onChange:e=>this.setState({taxTransferReference:e.target.value})}))),
-                        h('label',{className:'tax-transfer-attestation'},h('input',{type:'checkbox',checked:!!s.taxTransferBankConfirmed,
-                            onChange:e=>this.setState({taxTransferBankConfirmed:e.target.checked})}),
-                            'I verified the Division receiving bank / check payee for this actual fund and tax remittance. The bank name alone does not determine the UACS.'),
+                            h('label',{className:'field tax-transfer-reference'},h('span',null,'School cover note (optional — Division records OR after payment)'),
+                                h('input',{type:'text',maxLength:255,placeholder:'Optional cover memo; not an Official Receipt',value:s.taxTransferReference||'',onChange:e=>this.setState({taxTransferReference:e.target.value})}))),
+                        fundId?h('p',{className:'hint'},(()=>{const code=allForFund[0]?.source_code||'';
+                            const cfg=s.fundPolicies?.check_payees?.[code];
+                            return 'Check payable to: '+(cfg?.payee||'NOT CONFIGURED')+
+                                (cfg?.payee?' · Division-approved for '+code:' · Ask Division to set this under Fund Configuration before creating a remittance DV');
+                        })()):null,
+                        h('div',{className:'tax-transfer-period-controls'},
+                            h('label',{className:'field'},h('span',null,'Withholding period from'),h('input',{type:'date',value:periodFrom,onChange:e=>this.setState({taxTransferFromDate:e.target.value,taxTransferSelected:{},taxTransferError:''})})),
+                            h('label',{className:'field'},h('span',null,'Through'),h('input',{type:'date',value:periodTo,onChange:e=>this.setState({taxTransferToDate:e.target.value,taxTransferSelected:{},taxTransferError:''})})),
+                            h('button',{type:'button',className:'outline',onClick:()=>{const day=localToday(),start=day.slice(0,7)+'-01';const last=new Date(Date.UTC(Number(day.slice(0,4)),Number(day.slice(5,7)),0)).toISOString().slice(0,10);this.setState({taxTransferFromDate:start,taxTransferToDate:last,taxTransferSelected:{},taxTransferError:''});}},'This month'),
+                            h('button',{type:'button',className:'outline',onClick:()=>this.setState({taxTransferFromDate:'',taxTransferToDate:'',taxTransferSelected:{},taxTransferError:''})},'All periods')),
+                        !periodValid?h('p',{className:'notice error',role:'alert'},'The beginning date must not be later than the ending date.'):null,
+                        h('p',{className:'hint'},'Period uses original supplier DV document dates. All periods can include prior unremitted taxes; Division instructions determine the actual remittance coverage.'),
+
+                        fundId&&periodValid&&visible.length?h('div',{className:'tax-transfer-bulk-bar'},
+                            h('strong',null,visible.length+' eligible withholding component(s) · '+selected.length+' selected'),
+                            h('button',{type:'button',className:'outline',disabled:s.busy||data.eligible_truncated||(!allVisibleSelected&&visible.length>100),
+                                onClick:()=>this.setState({taxTransferSelected:allVisibleSelected?{}:Object.fromEntries(visible.map(r=>[r.id,true])),taxTransferError:''})},
+                                allVisibleSelected?'Clear selection':'Select all for period'),
+                            visible.length>100?h('span',{className:'notice error'},'More than 100 eligible components. The current server permits at most 100 per transfer; do not assume all items have been selected.'):null):null,
+                        data.eligible_truncated?h('p',{className:'notice error',role:'alert'},'The eligibility list reached its 150-record limit. Do not treat Select all as a complete monthly remittance. Ask Finance for a complete report.'):null,
+                        fundId&&excluded.length?h('div',{className:'tax-transfer-excluded'},
+                            h('button',{type:'button',className:'outline',onClick:()=>this.setState({taxTransferShowExcluded:!s.taxTransferShowExcluded})},
+                                (s.taxTransferShowExcluded?'Hide':'Show')+' '+excluded.length+' outstanding but not eligible component(s)'),
+                            s.taxTransferShowExcluded?h('div',{className:'tax-transfer-table-wrap'},
+                                h('p',{className:'hint'},'For information only. These entries cannot be added until eligibility is satisfied.'),
+                                h('table',{className:'data-table tax-transfer-table'},
+                                    h('thead',null,h('tr',null,...['Original DV','ATC','Amount','Why unavailable'].map(x=>h('th',{key:x},x)))),
+                                    h('tbody',null,...excluded.map(r=>h('tr',{key:r.id},
+                                        h('td',null,r.display_number||'DV #'+r.source_dv_id),h('td',null,r.atc_code),
+                                        h('td',null,money(r.amount)),h('td',null,r.reason||'Not eligible')))))):null,
+                            data.ineligible_truncated?h('p',{className:'notice error'},'Ineligible list is truncated; do not assume it includes every outstanding component.'):null):null,
                         visible.length?h('div',{className:'tax-transfer-table-wrap'},h('table',{className:'data-table tax-transfer-table'},
                             h('thead',null,h('tr',null,...['Select','Original DV','ATC','Amount'].map(x=>h('th',{key:x},x)))),
                             h('tbody',null,...visible.map(r=>h('tr',{key:r.id},
@@ -8780,23 +9440,38 @@ h('div',{className:'employee-claim-actions'},
                                 h('td',null,r.display_number||'DV #'+r.source_dv_id),
                                 h('td',null,r.atc_code),h('td',null,money(r.amount))))))):
                             h('p',{className:'hint'},fundId?'No unpaid tax components for this source.':'Select a fund to see its actual saved tax components.'),
-                        h('div',{className:'tax-transfer-total'},h('span',null,'Selected original tax liability'),h('strong',null,money(subtotal/100))),
-                        h('button',{type:'submit',className:'primary',disabled:!eligibleAction||!selected.length||!s.taxTransferBankId||!s.taxTransferBankConfirmed||!s.taxTransferReference?.trim()},'Create Tax-Transfer Draft DV')):null,
+                        h('div',{className:'tax-transfer-total'},h('span',null,'Consolidated original withholding · '+selected.length+' component(s)'),h('strong',null,money(subtotal/100))),
+                        byAtc.length?h('div',{className:'tax-transfer-atc-summary'},
+                            h('strong',null,'Selected amount by tax code'),
+                            ...byAtc.map(([atc,cents])=>h('div',{key:atc,className:'tax-transfer-atc-row'},h('span',null,atc),h('strong',null,money(cents/100))))):null,
+                        h('button',{type:'submit',className:'primary',disabled:!eligibleAction||!periodValid||!selected.length||selected.length>100||data.eligible_truncated||!s.fundPolicies?.check_payees?.[allForFund[0]?.source_code]?.payee},'Create Consolidated Tax-Remittance Draft DV')):null,
+                    isDivision?h('section',{className:'surface',role:'region','aria-label':'Division responsibility for utilized school withholding'},
+                        h('h4',null,'Non-IU retained withholding · Division BIR workpaper'),
+                        h('p',{className:'hint'},'The following tax remains traceable to school supplier DVs under DIVISION_SETTLES_UTILIZABLE. It is not a received school check and cannot be mixed with REMIT_TO_DIVISION transfers. Obtain approved Division tax accounting and BIR remittance evidence separately; no receipt, JEV, or fund transfer is created by this view.'),
+                        (data.division_utilization_workpaper||[]).length?h('div',{className:'tax-transfer-table-wrap'},h('table',{className:'data-table tax-transfer-table'},
+                            h('thead',null,h('tr',null,...['School','Fund / FY','Recorded withheld','Retained confirmation','School confirmation pending'].map(x=>h('th',{key:x},x)))),
+                            h('tbody',null,...data.division_utilization_workpaper.map((r,i)=>h('tr',{key:i},
+                                h('td',null,r.school_name),h('td',null,r.fund_name+' · '+r.fiscal_year),
+                                h('td',null,money(r.withholding_recorded)),
+                                h('td',null,money(r.retention_confirmed)),
+                                h('td',null,money(r.awaiting_confirmation))))))):h('p',{className:'hint'},'No finalized school-utilization withholding recorded for Division schools.')):null,
                     isDivision?h('p',{className:'hint'},'Division receipt is allowed only after the school releases the numbered physical check. A receipt is held under DO Accounting Pending until the approved JEV is recorded. No automatic Division GL or cash deposit is posted.'):null,
                     h('h4',null,'Transfer history'),
                     rows.length?h('div',{className:'tax-transfer-history'},...rows.map(r=>h('article',{className:'tax-transfer-record',key:r.id},
                         h('div',null,h('strong',null,(r.display_number||'Draft DV #'+r.dv_id)+' · '+money(r.gross)),
-                            h('small',null,(r.school_name? r.school_name+' · ':'')+(r.division_bank_label||'Division receiving account')+' · '+(r.check_numbers||'Check not yet assigned'))),
+                            h('small',null,(r.school_name? r.school_name+' · ':'')+(r.division_bank_label||'Division receipt pending; bank determined separately')+' · '+(r.check_numbers||'Check not yet assigned'))),
                         h('span',{className:'tax-transfer-status'},r.status==='DO_ACCOUNTING_PENDING'?'Pending DO accounting':r.status==='CHECK_ASSIGNED'?'Check assigned, not released':r.status==='CHECK_RELEASED'?'Check released; awaiting Division receipt':r.status==='RECONCILED'?'DO JEV reconciled':r.status),
                         school?h('button',{type:'button',className:'outline',onClick:()=>this.openDetail('DV',Number(r.dv_id))},'Open DV'):null,
                         isDivision&&['CHECK_RELEASED','DO_ACCOUNTING_PENDING'].includes(r.status)?h('button',{type:'button',className:'outline',disabled:s.busy,
-                            onClick:()=>this.setState({taxTransferReviewId:Number(r.id),taxTransferReviewKind:r.status==='CHECK_RELEASED'?'RECEIVE':'RECONCILE',taxTransferReference:'',taxTransferAuthority:'',taxTransferError:'',taxTransferReceiveDate:localToday()})},
+                            onClick:()=>this.setState({taxTransferReviewId:Number(r.id),taxTransferReviewKind:r.status==='CHECK_RELEASED'?'RECEIVE':'RECONCILE',taxTransferReference:'',taxTransferAuthority:'',taxTransferReceiptAmount:String(r.gross||''),taxTransferError:'',taxTransferReceiveDate:localToday()})},
                             r.status==='CHECK_RELEASED'?'Acknowledge receipt':'Record approved JEV'):null,
                         isDivision&&Number(s.taxTransferReviewId)===Number(r.id)?h('form',{className:'tax-transfer-review',onSubmit:this.submitTaxTransferReview},
                             h('label',{className:'field'},h('span',null,s.taxTransferReviewKind==='RECEIVE'?'Actual Division receipt reference':'Approved Division JEV reference'),
                                 h('input',{required:true,maxLength:255,value:s.taxTransferReference||'',onChange:e=>this.setState({taxTransferReference:e.target.value})})),
                             s.taxTransferReviewKind==='RECEIVE'?h('label',{className:'field'},h('span',null,'Date received'),
                                 h('input',{type:'date',required:true,max:localToday(),value:s.taxTransferReceiveDate||localToday(),onChange:e=>this.setState({taxTransferReceiveDate:e.target.value})})):null,
+                            s.taxTransferReviewKind==='RECEIVE'?h('label',{className:'field'},h('span',null,'Amount actually received (must equal school remittance)'),
+                                h('input',{type:'number',step:'0.01',min:'0.01',required:true,value:s.taxTransferReceiptAmount||'',onChange:e=>this.setState({taxTransferReceiptAmount:e.target.value})})):null,
                             s.taxTransferReviewKind==='RECONCILE'?h('label',{className:'field'},h('span',null,'Division accounting authority'),
                                 h('input',{required:true,maxLength:255,value:s.taxTransferAuthority||'',onChange:e=>this.setState({taxTransferAuthority:e.target.value})})):null,
                             h('div',{className:'tax-transfer-actions'},h('button',{type:'button',className:'outline',onClick:()=>this.setState({taxTransferReviewId:0,taxTransferReviewKind:''})},'Cancel'),
@@ -8829,21 +9504,53 @@ h('div',{className:'employee-claim-actions'},
             const money=n=>Number.isFinite(Number(n))?'₱'+Number(n).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
             const display=(label,value)=>h('div',{className:'dv-readonly'},h('span',null,label),h('strong',null,value||'—'));
             const readonlySection=(heading,children)=>h('section',{className:'dv-form-panel'},h('h3',null,heading),children);
-            return h('div',{className:'section-stack dv-workspace'},
-                this.header('Disbursement vouchers','Prepare one voucher per source document, edit drafts and review the accounting before finalization.'),
+            const activeDvSection=this.state.dvSection==='transfers'?'transfers':'vouchers';
+            const switchDvSection=(next,focus=false)=>{
+                if(next===activeDvSection)return;
+                this.setState({dvSection:next,...(next==='transfers'?{taxTransferOpen:true}: {})},()=>{
+                    if(focus && typeof document!=='undefined')document.getElementById('dv-tab-'+next)?.focus();
+                });
+            };
+            const dvTabs=[
+                {id:'vouchers',label:'Disbursement Vouchers',description:'Prepare, review and manage DVs'},
+                {id:'transfers',label:'Withholding Transfers',description:'School remittances and Division receipts'}
+            ];
+            return h('div',{className:'section-stack dv-workspace dv-workspace-429'},
+                this.header('Disbursements','Manage disbursement vouchers and withholding transfers in separate workspaces.'),
                 this.state.fundPoliciesError?h('div',{className:'notice',role:'alert',style:{padding:'12px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px'}},
                     h('span',null,this.state.fundPoliciesError),
                     h('button',{type:'button',className:'outline',disabled:this.state.fundPoliciesLoading,
                         onClick:()=>this.loadFundPolicySettings()},'Retry policy settings')):null,
+                h('nav',{className:'dv-workspace-tabs',role:'tablist','aria-label':'Disbursement workspaces'},
+                    ...dvTabs.map((item,index)=>h('button',{
+                        key:item.id,id:'dv-tab-'+item.id,type:'button',role:'tab',
+                        className:'dv-workspace-tab'+(item.id===activeDvSection?' is-active':''),
+                        'aria-selected':item.id===activeDvSection,
+                        'aria-controls':'dv-panel-'+item.id,
+                        tabIndex:item.id===activeDvSection?0:-1,
+                        onClick:()=>switchDvSection(item.id),
+                        onKeyDown:e=>{
+                            if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+                            e.preventDefault();
+                            const next=e.key==='Home'?0:e.key==='End'?dvTabs.length-1:
+                                (index+(e.key==='ArrowRight'?1:-1)+dvTabs.length)%dvTabs.length;
+                            switchDvSection(dvTabs[next].id,true);
+                        }},
+                        h('span',{className:'dv-workspace-tab-title'},item.label),
+                        h('span',{className:'dv-workspace-tab-description'},item.description),
+                        item.id==='vouchers'?h('span',{className:'dv-workspace-tab-count'},(this.state.lists.dv||[]).length+' DVs'):null))),
+                activeDvSection==='transfers'?h('section',{className:'dv-workspace-panel',id:'dv-panel-transfers',role:'tabpanel',
+                    'aria-labelledby':'dv-tab-transfers'},this.taxTransferPanel()):null,
+                activeDvSection==='vouchers'?h('section',{className:'dv-workspace-panel',id:'dv-panel-vouchers',role:'tabpanel',
+                    'aria-labelledby':'dv-tab-vouchers'},
                 h('div',{className:'surface dv-start-panel'},
-                    h('div',null,h('h3',null,'Disbursement voucher register'),
+                    h('div',null,h('h3',null,'Prepare or continue a DV'),
                         h('p',{className:'body-muted'},'Select an existing draft to continue editing. A Purchase Order or PR cannot start a second DV.')),
                     h('div',{className:'dv-start-actions',style:{display:'flex',gap:'8px',flexWrap:'wrap'}},
                         h('button',{type:'button',className:'primary',disabled:this.state.busy||!this.canOperateWorkspace()||
                             (this.state.user?.role==='SUPER_ADMIN'&&this.state.superAdminViewOnly),
                             onClick:()=>this.setState({dvComposeOpen:true,employeeExtraOpen:false,dvSearch:'',dv_type:'REGULAR',travelDvEmployeeFilter:'',travelDvChecked:{},travelDvApprovalAmounts:{}},()=>this.loadEligible('REGULAR'))},'+ Prepare DV'),
                         null)),
-                this.taxTransferPanel(),
                 h('section',{className:'surface dv-register-desktop dv-register-compact','aria-label':'Disbursement voucher register'},
                     h('div',{className:'section-head'},h('h3',null,'Disbursement voucher register'),
                         h('span',{className:'count'},(this.state.lists.dv||[]).length+' records')),
@@ -8862,17 +9569,23 @@ h('div',{className:'employee-claim-actions'},
                                     h('td',{className:'dv-reg-money'},money(dv.deductions)),
                                     h('td',{className:'dv-reg-money'},money(dv.net)),
                                     h('td',null,h('span',{className:'status '+(dv.status||'')},dv.status||'—')),
-                                    h('td',{className:'dv-reg-actions'},
-                                        h('button',{type:'button',className:'text-btn',onClick:()=>this.openDetail('DV',Number(dv.id))},'Details'),
-                                        dv.status==='FINALIZED'&&dv.display_number?h('a',{className:'text-btn',target:'_blank',rel:'noopener',
-                                            href:'api/print.php?organization_id='+encodeURIComponent(this.state.organization_id)+'&type=DV&id='+dv.id},'Print DV ↗'):null,
-                                        dv.status==='FINALIZED'?h('button',{type:'button',className:'text-btn',
-                                            onClick:()=>this.openDetail('DV',Number(dv.id),false,'check')},'Check proof'):null,
-                                        dv.status==='FINALIZED'&&Number(dv.deductions)>0?h('button',{type:'button',className:'text-btn',
-                                            onClick:()=>this.openDetail('DV',Number(dv.id),false,'2307')},'BIR 2307 readiness'):null,
-                                        dv.status==='DRAFT'&&this.canOperateWorkspace()?h('button',{type:'button',className:'text-btn',onClick:()=>this.openDetail('DV',Number(dv.id),true)},'Edit Draft'):null,
-                                        dv.status==='DRAFT'&&this.canOperateWorkspace()?h('button',{type:'button',className:'text-btn',disabled:this.state.busy,onClick:()=>this.openDvFinalization(dv)},'Finalize'):null,
-                                        dv.status==='FINALIZED'&&this.canOperateWorkspace()?h('button',{type:'button',className:'text-btn',disabled:this.state.busy,onClick:()=>this.openDvVoid(dv)},'Void issued DV'):null)))
+                                    h('td',{className:'dv-reg-actions'},h('div',{className:'dv-reg-action-group'},
+                                        dvRegisterAction(h,'details','Details',{onClick:()=>this.openDetail('DV',Number(dv.id))}),
+                                        dv.status==='FINALIZED'&&dv.display_number?dvRegisterAction(h,'printer','Print DV',{
+                                            target:'_blank',rel:'noopener noreferrer',
+                                            href:'api/print.php?organization_id='+encodeURIComponent(this.state.organization_id)+'&type=DV&id='+dv.id},'a'):null,
+                                        dv.status==='FINALIZED'?dvRegisterAction(h,'proof','Check proof',{
+                                            onClick:()=>this.openDetail('DV',Number(dv.id),false,'check')}):null,
+                                        dvCheckAction(h,dv,this.state.lists.checks,this.canOperateWorkspace(),
+                                            target=>this.setState({actualCheckPrintTarget:target})),
+                                        dv.status==='FINALIZED'&&Number(dv.deductions)>0?dvRegisterAction(h,'bir2307','Print BIR 2307',{
+                                            onClick:e=>this.openBir2307Dialog(dv.id,e)}):null,
+                                        dv.status==='DRAFT'&&this.canOperateWorkspace()?dvRegisterAction(h,'edit','Edit draft',{
+                                            onClick:()=>this.openDetail('DV',Number(dv.id),true)}):null,
+                                        dv.status==='DRAFT'&&this.canOperateWorkspace()?dvRegisterAction(h,'finalize','Finalize',{
+                                            disabled:this.state.busy,onClick:()=>this.openDvFinalization(dv)}):null,
+                                        dv.status==='FINALIZED'&&this.canOperateWorkspace()?dvRegisterAction(h,'void','Void issued DV',{
+                                            disabled:this.state.busy,onClick:()=>this.openDvVoid(dv)}):null))))
                                 :h('tr',null,h('td',{colSpan:8,className:'empty'},'No vouchers yet. Choose Prepare DV to start one.')))))),
                 h('section',{className:'surface dv-register-mobile','aria-label':'Disbursement voucher register'},
                     h('div',{className:'section-head'},h('h3',null,'Disbursement voucher register'),
@@ -8892,23 +9605,26 @@ h('div',{className:'employee-claim-actions'},
                                     h('div',null,h('dt',null,'Withholding'),h('dd',null,money(dv.deductions))),
                                     h('div',null,h('dt',null,'Net'),h('dd',null,money(dv.net)))),
                                 h('div',{className:'dv-mobile-card-actions'},
-                                    h('button',{type:'button',className:'outline',
-                                        onClick:()=>this.openDetail('DV',Number(dv.id))},'View details'),
-                                    dv.status==='FINALIZED'?h('a',{className:'outline',target:'_blank',rel:'noopener',
-                                        href:'api/print.php?organization_id='+encodeURIComponent(this.state.organization_id)+'&type=DV&id='+dv.id},'Print DV ↗'):null,
-                                    dv.status==='FINALIZED'?h('button',{type:'button',className:'outline',
-                                        onClick:()=>this.openDetail('DV',Number(dv.id),false,'check')},'Check proof'):null,
-                                    dv.status==='FINALIZED'&&Number(dv.deductions)>0?h('button',{type:'button',className:'outline',
-                                        onClick:()=>this.openDetail('DV',Number(dv.id),false,'2307')},'BIR 2307 readiness'):null,
-                                    dv.status==='DRAFT'&&this.canOperateWorkspace()
-                                        ?h('button',{type:'button',className:'primary',
-                                            onClick:()=>this.openDetail('DV',Number(dv.id),true)},'Edit draft')
-                                        :null,
-                                    dv.status==='DRAFT'&&this.canOperateWorkspace()?h('button',{type:'button',className:'outline',disabled:this.state.busy,onClick:()=>this.openDvFinalization(dv)},'Finalize'):null,
-                                    dv.status==='FINALIZED'&&this.canOperateWorkspace()?h('button',{type:'button',className:'outline',disabled:this.state.busy,onClick:()=>this.openDvVoid(dv)},'Void issued DV'):null))))
+                                    dvRegisterAction(h,'details','Details',{
+                                        onClick:()=>this.openDetail('DV',Number(dv.id))}),
+                                    dv.status==='FINALIZED'?dvRegisterAction(h,'printer','Print DV',{
+                                        target:'_blank',rel:'noopener noreferrer',
+                                        href:'api/print.php?organization_id='+encodeURIComponent(this.state.organization_id)+'&type=DV&id='+dv.id},'a'):null,
+                                    dv.status==='FINALIZED'?dvRegisterAction(h,'proof','Check proof',{
+                                        onClick:()=>this.openDetail('DV',Number(dv.id),false,'check')}):null,
+                                    dvCheckAction(h,dv,this.state.lists.checks,this.canOperateWorkspace(),
+                                        target=>this.setState({actualCheckPrintTarget:target})),
+                                    dv.status==='FINALIZED'&&Number(dv.deductions)>0?dvRegisterAction(h,'bir2307','Print BIR 2307',{
+                                        onClick:e=>this.openBir2307Dialog(dv.id,e)}):null,
+                                    dv.status==='DRAFT'&&this.canOperateWorkspace()?dvRegisterAction(h,'edit','Edit draft',{
+                                        onClick:()=>this.openDetail('DV',Number(dv.id),true)}):null,
+                                    dv.status==='DRAFT'&&this.canOperateWorkspace()?dvRegisterAction(h,'finalize','Finalize',{
+                                        disabled:this.state.busy,onClick:()=>this.openDvFinalization(dv)}):null,
+                                    dv.status==='FINALIZED'&&this.canOperateWorkspace()?dvRegisterAction(h,'void','Void issued DV',{
+                                        disabled:this.state.busy,onClick:()=>this.openDvVoid(dv)}):null))))
                         :h('p',{className:'hint'},'No vouchers yet. Choose Prepare DV to start one.'),
                     (this.state.lists.dv||[]).length>50?h('p',{className:'hint'},
-                        'Showing the first 50 vouchers. Older records are not displayed in this register.'):null),
+                        'Showing the first 50 vouchers. Older records are not displayed in this register.'):null)):null,
                 this.state.dvFinalizePreview&&this.state.tab==='Disbursements'?
                     (()=>{const p=this.state.dvFinalizePreview,r=p.record||{},a=p.accounting_readiness||{},w=p.advance_liquidation||{};
                         const money=n=>Number(n||0).toLocaleString('en-PH',{style:'currency',currency:'PHP'});
@@ -9760,13 +10476,15 @@ h('div',{className:'employee-claim-actions'},
             if(['SCHOOL','SUPER_ADMIN','DIVISION'].includes(this.state.user?.role))tabs.push(['lifecycle','Condition & Disposal']);
             // v0.2.240: discoverable, compact report tab; server continues to enforce authorization.
             if(this.state.user?.role!=='VIEWER')tabs.splice(1,0,['reports','Reports']);
+            if(this.state.user?.role!=='VIEWER'&&!schoolScopedDivision(this.state))tabs.push(['stickers','Property Stickers']);
             // Keep the original section identifiers and role-specific visibility, but
             // present them in short workflow groups instead of one overflowing strip.
             const propertyGroupDefs=[
                 {id:'records',label:'Register & Review',description:'Assets, verification and history',sections:['assets','special_assets','received_assets','edit','register','historical']},
                 {id:'custody',label:'Custody & Returns',description:'ICS/PAR, transfers and returns',sections:['issue','slips','transfers','incoming','returns']},
                 {id:'conditions',label:'Condition & Disposal',description:'Condition and disposal approvals',sections:['lifecycle']},
-                {id:'reports',label:'Reports',description:'Property reports and COA annexes',sections:['reports']}
+                {id:'reports',label:'Reports',description:'Property reports and COA annexes',sections:['reports']},
+                {id:'stickers',label:'Property Stickers',description:'9-up printing and templates',sections:['stickers']}
             ];
             const propertyGroups=propertyGroupDefs.map(group=>({...group,
                 tabs:tabs.filter(([id])=>group.sections.includes(id))})).filter(group=>group.tabs.length);
@@ -9823,6 +10541,62 @@ h('div',{className:'employee-claim-actions'},
                         entry.details?.before||entry.details?.after?
                         h('p',{className:'asset-modal-muted'},'Correction recorded. Full values are retained in the audit log.'):
                         h('p',{className:'asset-modal-muted'},'Original system event recorded.');
+                };
+                // v0.2.412: QR inspection audit events already contain immutable
+                // proposal/decision snapshots. Render selected evidence explicitly;
+                // never reinterpret the stored event as a new property update.
+                const scanAuditLabel=type=>({
+                    PROPERTY_SCAN_ASSESSMENT_SUBMITTED:'Physical inspection recorded · pending confirmation',
+                    PROPERTY_SCAN_ASSESSMENT_APPROVED:'Physical inspection confirmed · condition applied',
+                    PROPERTY_SCAN_ASSESSMENT_REJECTED:'Physical inspection discarded · no condition change'
+                })[type]||null;
+                const scanAuditDetails=entry=>{
+                    const event=String(entry.event_type||'');
+                    if(!scanAuditLabel(event))return null;
+                    const isSubmitted=event==='PROPERTY_SCAN_ASSESSMENT_SUBMITTED';
+                    const isApproved=event==='PROPERTY_SCAN_ASSESSMENT_APPROVED';
+                    const raw=entry.details&&typeof entry.details==='object'?entry.details:{};
+                    const proposal=isSubmitted?raw:(raw.proposal&&typeof raw.proposal==='object'?raw.proposal:{});
+                    const decision=!isSubmitted&&raw.decision&&typeof raw.decision==='object'?raw.decision:{};
+                    const dateValue=value=>{
+                        if(value===null||value===undefined||value==='')return '—';
+                        const string=String(value);
+                        // Keep the source's original date if its timezone or format is unknown.
+                        if(!/^\d{4}-\d\d-\d\dT/.test(string))return string;
+                        const date=new Date(string);
+                        return Number.isNaN(date.valueOf())?string:date.toLocaleString('en-PH',{
+                            timeZone:'Asia/Manila',year:'numeric',month:'short',day:'numeric',
+                            hour:'numeric',minute:'2-digit',hour12:true});
+                    };
+                    const rows=[
+                        ['Date physically inspected',proposal.inspected_on],
+                        ['Inspector / assessor',entry.actor],
+                        ['Condition before inspection',proposal.from_condition],
+                        ['Proposed condition',proposal.proposed_condition],
+                        ['Physical inspection attested',proposal.physically_inspected===true?'Yes, attested by assessor':
+                            proposal.physically_inspected===false?'No':null],
+                        ['Inspection findings',proposal.remarks],
+                        ['Evidence / inspection reference',proposal.inspection_reference],
+                        ['Inspection submitted',dateValue(proposal.submitted_at)],
+                        ['Assessment record version',proposal.request_version]
+                    ];
+                    if(!isSubmitted)rows.push(
+                        [isApproved?'Confirmed on':'Discarded on',dateValue(decision.decided_at)],
+                        [isApproved?'Confirmed by':'Discarded by',entry.actor],
+                        [isApproved?'Confirmation note / basis':'Discard reason',decision.decision_reason],
+                        ['Recorded outcome',isApproved?'Condition updated to '+(proposal.proposed_condition||'recorded proposed condition'):
+                            'Assessment discarded; official property condition unchanged']
+                    );
+                    const field=(label,value)=>h('div',{className:'asset-scan-audit-field',key:label},
+                        h('dt',null,label),h('dd',null,val(value)));
+                    return h('section',{className:'asset-scan-audit-details','aria-label':'Physical inspection evidence'},
+                        h('p',{className:'asset-scan-audit-outcome '+(isApproved?'is-confirmed':isSubmitted?'is-pending':'is-discarded')},
+                            isApproved?'Confirmed by the original assessor. The official property condition was updated.':
+                                isSubmitted?'Inspection saved for later confirmation; no official condition change at this stage.':
+                                    'The original assessor discarded this inspection proposal; the official condition was not changed.'),
+                        h('dl',{className:'asset-scan-audit-fields'},...rows.filter(([,value])=>
+                            value!==null&&value!==undefined&&value!=='').map(([label,value])=>field(label,value))),
+                        h('p',{className:'asset-scan-audit-source'},'Audit event: '+event+' · Recorded by '+val(entry.actor)));
                 };
                 const tabs=[['overview','Overview'],['acquisition','Acquisition'],['batch','Registration batch'],['history','Custody & audit'],...(!schoolScopedDivision(this.state)&&['SCHOOL','SUPER_ADMIN'].includes(this.state.user?.role)?[['edit','Edit property']]:[])];
                 const onDialogKey=e=>{
@@ -9940,12 +10714,16 @@ h('div',{className:'employee-claim-actions'},
                                             h('p',null,val(x.from_custodian)+' → '+val(x.to_custodian)),x.reason?h('p',null,x.reason):null))),
                                 h('h4',null,'Audited history · newest first'),
                                 !(d.history||[]).length?empty('No audit entries','Corrections and initial registration events will appear here.'):
-                                    h('div',{className:'asset-modal-event-list'},...(d.history||[]).map((x,i)=>h('details',{className:'asset-modal-audit-event',key:i},
-                                        h('summary',null,h('strong',null,x.event_type==='PROPERTY_DETAILS_CORRECTED'?'Property details corrected':x.event_type==='HISTORICAL_PROPERTY_REGISTERED'?'Historical property registered':x.event_type),
+                                    h('div',{className:'asset-modal-event-list'},...(d.history||[]).map((x,i)=>h('details',{className:'asset-modal-audit-event',key:i,open:i===0&&!!scanAuditLabel(x.event_type)},
+                                        h('summary',null,h('strong',null,scanAuditLabel(x.event_type)||
+                                            (x.event_type==='PROPERTY_DETAILS_CORRECTED'?'Property details corrected':
+                                                x.event_type==='HISTORICAL_PROPERTY_REGISTERED'?'Historical property registered':x.event_type)),
                                             h('span',null,val(x.created_at)+' · '+val(x.actor))),
                                         h('div',{className:'asset-modal-event-body'},
-                                            x.details?.reason?h('p',null,'Reason: '+x.details.reason):null,
-                                            auditChanges(x)))))):null),
+                                            scanAuditLabel(x.event_type)?scanAuditDetails(x):
+                                                h('div',{className:'asset-modal-audit-legacy'},
+                                                    x.details?.reason?h('p',null,'Reason: '+String(x.details.reason)):null,
+                                                    auditChanges(x))))))):null),
                         h('footer',{className:'asset-modal-footer'},
                             h('span',null,tab==='edit'?'Edits are saved with a correction reason and audit trail.':'Finalized source and custody records remain protected.'),
                             h('button',{type:'button',className:'outline',onClick:this.closePropertyDetails},'Close window'))));
@@ -10324,6 +11102,16 @@ h('div',{className:'employee-claim-actions'},
                             h('strong',{style:{fontSize:'14px'}},'Annex '+code.replace('A','A.')),
                             h('span',{style:{fontSize:'12px',fontWeight:400}},name)))),
                     h('p',{className:'hint',style:{marginTop:'12px'}},'Only the selected annex opens in the floating window. Close the preview to choose another report or change the dates. These are preliminary review reports, not certified COA forms.')),
+                stickers:()=>h('section',{className:'surface ipdams-property-stickers-workspace'},
+                    h('div',{className:'ipdams-action-top'},h('div',null,
+                        h('h3',null,'Property Sticker Printing'),
+                        h('p',{className:'body-muted'},'Select registered assets, choose the approved office background and print nine portrait stickers per 8.5 × 13-inch sheet. Printing does not change property records.'))),
+                    h('iframe',{className:'ipdams-sticker-embedded-frame',title:'Property Sticker Printing',
+                        src:'api/property-stickers.php?embedded=1&organization_id='+encodeURIComponent(this.state.organization_id),
+                        loading:'lazy'}),
+                    h('p',{className:'hint'},'Printing opens your browser print dialog for the sticker sheet. For a separate window, ',
+                        h('a',{href:'api/property-stickers.php?organization_id='+encodeURIComponent(this.state.organization_id),
+                            target:'_blank',rel:'noopener noreferrer'},'open the sticker generator'),'.')),
                 lifecycle:()=>this.state.superAdminViewOnly&&this.state.user?.role==='SUPER_ADMIN'?h('p',{className:'hint'},'Property disposal forms are not available in read-only Office Viewer. Review the Asset Register and reports.'):h('div',{className:'property-transfer-tab'},
                     h('p',{className:'hint'},'Low-value: school-only unserviceable and disposal. High-value: separate Division Supply Officer approval for each step. Active inventory closes only after documented disposal.'),
                     h('iframe',{title:'Property Condition and Disposal',
@@ -13632,24 +14420,94 @@ h('div',{className:'employee-claim-actions'},
             const h=React.createElement,s=this.state;
             const current=s.actionCenterOrg===String(s.organization_id);
             const items=current?s.actionCenterItems:[];
+            const scanItems=current?s.actionCenterScanItems||[]:[];
             const bookTasks=current?s.actionCenterBookItems||[]:[];
             const taxTasks=current?s.actionCenterTaxItems||[]:[];
+            const transferTasks=current?s.actionCenterTransferTasks||[]:[];
+            const transferAwaiting=current?s.actionCenterTransferAwaiting||[]:[];
+            const incomingTax=current?s.actionCenterRemittances||[]:[];
+            const retainedNotices=current?s.actionCenterRetainedNotices||[]:[];
             const checked=current?s.actionCenterChecked:'';
+            const fundTasks=s.fundActionOrg===String(s.organization_id)?(s.fundActionItems||[]):[];
+            const taxGrouped=Object.values(taxTasks.reduce((groups,item)=>{
+                const key=String(item.dv_number)+'|'+String(item.task)+'|'+String(item.fund_code);
+                if(!groups[key])groups[key]={...item,components:[],total:0};
+                groups[key].components.push(item);
+                groups[key].total+=Number(item.amount||0);
+                return groups;
+            },{}));
+            const office=(s.orgs||[]).find(o=>String(o.id)===String(s.organization_id));
+            const isDivision=office?.kind==='DIVISION';
+            const actionableTaxGroups=current?Number(s.actionCenterTaxGroupCount)||0:0;
+            const actionTabs=[
+                {id:'property',label:'Property',description:'Transfers and inspection reviews',count:items.length+(current?Number(s.actionCenterScanCount)||0:0)},
+                ...(!isDivision?[{id:'funds',label:'Fund Downloads',description:'Bank-credit verification',count:fundTasks.length}]:[]),
+                {id:'withholding',label:'Withholding',description:'Unstarted tax follow-up',count:actionableTaxGroups},
+                ...(!isDivision?[{id:'transfers',label:'School Remittances',description:'Transfer DV progress',count:current?Number(s.actionCenterTransferPendingTotal)||0:0}]:[]),
+                ...(isDivision?[{id:'receipts',label:'Division Receipts',description:'Released school checks',count:current?Number(s.actionCenterRemittanceCount)||0:0}]:[]),
+                ...(isDivision?[{id:'retained-notices',label:'School Tax Notices',description:'Automatic finalized-DV withholding notices',count:current?Number(s.actionCenterRetainedNoticeCount)||0:0}]:[]),
+                ...(isDivision&&['DIVISION','SUPER_ADMIN'].includes(s.user?.role)?[{id:'password-resets',label:'Password Resets',description:'Division / Super Admin approvals',count:current?Number(s.actionCenterPasswordResetCount)||0:0}]:[]),
+                {id:'textbooks',label:'Textbooks',description:'Allocations and disposal',count:bookTasks.length}
+            ];
+            const actionTab=actionTabs.some(t=>t.id===s.actionCenterTab)?s.actionCenterTab:
+                (actionTabs.find(t=>t.count>0)||actionTabs[0]).id;
+            const pendingGroups=actionTabs.reduce((total,tab)=>total+tab.count,0);
+            const actionPanel=(id,children)=>h('div',{className:'ipdams-action-tab-panel',
+                id:'action-panel-'+id,role:'tabpanel','aria-labelledby':'action-tab-'+id,
+                hidden:actionTab!==id},...children);
             return h('div',{className:'section-stack ipdams-action-center'},
                 this.header('Action Center','Pending work addressed to the currently selected school or Division Office.'),
-                h('section',{className:'surface'},
-                    h('div',{className:'ipdams-action-top'},
-                        h('div',null,h('h2',null,'Incoming property transfers'),
-                            h('p',null,'Showing only verified, awaiting-receipt transfers addressed to this office.')),
+                h('section',{className:'surface ipdams-action-workspace'},
+                    h('div',{className:'ipdams-action-overview'},
+                        h('div',null,h('h2',null,'Pending work overview'),
+                            h('p',null,'Separate property, fund, withholding and textbook tasks for this office.')),
                         h('button',{type:'button',className:'outline',disabled:s.actionCenterLoading,onClick:this.loadActionCenter},
                             s.actionCenterLoading?'Checking…':'Refresh actions')),
                     h('p',{className:'ipdams-action-summary',role:'status','aria-live':'polite'},
-                        s.actionCenterLoading?'Checking property, funds and withholding tasks…':
-                        current&&!s.actionCenterError?(s.actionCenterCount+(s.fundActionOrg===String(s.organization_id)?s.fundActionCount:0))+' actions pending':
-                        'Pending transfers have not been verified.'),
+                        s.actionCenterLoading?'Checking pending actions…':
+                        !current||s.actionCenterError?'Pending actions could not be verified.':
+                        pendingGroups+' actionable '+(pendingGroups===1?'group':'groups')+' · '+
+                        (items.length+(current?Number(s.actionCenterScanCount)||0:0))+' property · '+fundTasks.length+' fund · '+
+                        actionableTaxGroups+' withholding '+(actionableTaxGroups===1?'DV':'DVs')+
+                        ' ('+taxTasks.length+' tax '+(taxTasks.length===1?'component':'components')+') · '+
+                        (current?Number(s.actionCenterTransferPendingTotal)||0:0)+' school remittance DV(s) awaiting action · '+
+                        bookTasks.length+' textbook · '+(current?Number(s.actionCenterRemittanceCount)||0:0)+' incoming school tax remittance(s) · '+
+                        (current?Number(s.actionCenterRetainedNoticeCount)||0:0)+' school withholding notice(s) awaiting review'),
+                    h('nav',{className:'ipdams-action-tabs',role:'tablist','aria-label':'Action Center task categories'},
+                        ...actionTabs.map((t,index)=>h('button',{type:'button',role:'tab',
+                            key:t.id,id:'action-tab-'+t.id,'aria-selected':actionTab===t.id,
+                            'aria-controls':'action-panel-'+t.id,
+                            tabIndex:actionTab===t.id?0:-1,
+                            className:'ipdams-action-tab'+(actionTab===t.id?' is-active':''),
+                            onClick:()=>this.setState({actionCenterTab:t.id}),
+                            onKeyDown:e=>{
+                                if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+                                e.preventDefault();
+                                const next=e.key==='Home'?0:e.key==='End'?actionTabs.length-1:
+                                    (index+(e.key==='ArrowRight'?1:-1)+actionTabs.length)%actionTabs.length;
+                                const nextId=actionTabs[next].id;
+                                this.setState({actionCenterTab:nextId},()=>document.getElementById('action-tab-'+nextId)?.focus());
+                            }},
+                            h('span',{className:'ipdams-action-tab-title'},t.label),
+                            t.count>0?h('span',{className:'ipdams-action-tab-count','aria-label':t.count+' actionable groups'},
+                                t.count>99?'99+':t.count):null,
+                            h('small',null,t.description)))),
                     s.actionCenterError?h('p',{className:'ipdams-action-error',role:'alert'},s.actionCenterError):null,
-                    !s.actionCenterError&&!s.actionCenterLoading&&items.length===0
-                        ?h('div',{className:'ipdams-action-empty'},'No pending incoming property transfers for this office.') : null,
+                    actionPanel('property',[
+                    h('div',{className:'ipdams-action-top'},
+                        h('div',null,h('h2',null,'Incoming property transfers'),
+                            h('p',null,'Showing only verified, awaiting-receipt transfers addressed to this office.'))),
+                    scanItems.length?h('h3',null,'Your property inspections awaiting confirmation'):null,
+                    ...scanItems.map(req=>h('article',{className:'ipdams-action-row',key:'property-scan-'+req.asset_id},
+                        h('div',{className:'ipdams-action-row-content'},
+                            h('strong',null,'Property '+req.property_number+' · '+req.proposed_condition),
+                            h('small',null,'Previously: '+(req.from_condition||'Unspecified')+' · Inspected '+req.inspected_on),
+                            h('small',null,req.can_decide?'Review your inspection findings before applying the new condition':'Awaiting confirmation by the original assessor')),
+                        req.can_decide?h('a',{className:'ipdams-action-open',target:'_blank',rel:'noopener noreferrer',
+                            href:'api/property-scan.php?mode=review&organization_id='+encodeURIComponent(req.organization_id)+'&asset_id='+encodeURIComponent(req.asset_id)},
+                            'Review and confirm inspection'):null)),
+                    !s.actionCenterError&&!s.actionCenterLoading&&items.length===0&&scanItems.length===0
+                        ?h('div',{className:'ipdams-action-empty'},'No pending property transfers or inspection reviews for this office.') : null,
                     ...items.map(item=>h('article',{className:'ipdams-action-row',key:item.id},
                         h('div',{className:'ipdams-action-row-content'},
                             h('strong',null,item.type+' '+item.number),
@@ -13657,7 +14515,8 @@ h('div',{className:'employee-claim-actions'},
                             h('small',null,item.can_accept?'Ready for inspection by your appointed receiving custodian':'Awaiting inspection by the authorized receiving Property Custodian')),
                         h('a',{className:'ipdams-action-open',target:'_blank',rel:'noopener noreferrer',
                             href:'api/property-transfer-intake.php?organization_id='+encodeURIComponent(s.organization_id)+'&accept_id='+encodeURIComponent(item.id)},
-                            item.can_accept?'Inspect / Accept':'View pending transfer'))),
+                            item.can_accept?'Inspect / Accept':'View pending transfer')))]),
+                    actionPanel('funds',[
                     h('div',{className:'ipdams-action-top'},
                         h('div',null,h('h2',null,'Incoming fund downloads'),
                             h('p',null,'Division notices awaiting the school’s bank-credit verification.'))),
@@ -13676,25 +14535,127 @@ h('div',{className:'employee-claim-actions'},
                                     :'Verify the actual bank credit amount and reference before confirming.')),
                             h('button',{type:'button',className:'ipdams-action-open',
                                 onClick:()=>this.setState({tab:'Fund Management',fundSection:'mooe',
-                                    mooeConfirmFor:0,mooeCorrectionFor:0})},'Review fund download'))),
-                    h('div',{className:'ipdams-action-top'},h('div',null,h('h2',null,'Withholding requiring follow-up'),
-                        h('p',null,'Finalized DV taxes awaiting school-utilization confirmation or remittance evidence.'))),
-                    !taxTasks.length&&!s.actionCenterLoading&&!s.actionCenterError?
-                        h('div',{className:'ipdams-action-empty'},'No unconfirmed or unremitted finalized withholding in this office.'):null,
-                    ...taxTasks.map(item=>h('article',{className:'ipdams-action-row',key:'tax-'+item.component_id},
+                                    mooeConfirmFor:0,mooeCorrectionFor:0})},'Review fund download')))]),
+                    actionPanel('password-resets',[
+                        h('h2',null,'Password reset approvals'),
+                        h('p',null,'Requests from this Division and its schools. An authorized Division user or Super Admin can approve with one click; self-approval is blocked.'),
+                        h('p',null,(current?Number(s.actionCenterPasswordResetCount)||0:0)+' pending requests'),
+                        h('a',{className:'ipdams-action-open',
+                            href:'api/password-recovery.php?mode=review&division_id='+encodeURIComponent(s.organization_id),
+                            target:'_blank',rel:'noopener noreferrer'},'Review / Approve password requests')]),
+                    actionPanel('retained-notices',[
+                        h('div',{className:'ipdams-action-top'},h('div',null,h('h2',null,'Incoming school withheld-tax notices'),
+                            h('p',null,'Each notice comes from an individual finalized DV. Review original withholding; acknowledgement is not a bank receipt, JEV or BIR payment.'))),
+                        !retainedNotices.length&&!s.actionCenterLoading?h('p',{className:'ipdams-action-empty'},'No new retained-tax notices awaiting Division review.'):null,
+                        ...retainedNotices.map(r=>h('article',{className:'ipdams-action-row ipdams-action-tax',key:'retained-notice-'+r.notice_id},
+                            h('div',{className:'ipdams-action-row-content'},
+                                h('strong',null,r.school_name+' · DV '+(r.dv_number||r.dv_id)),
+                                h('small',null,'Withheld '+Number(r.amount||0).toLocaleString('en-PH',{style:'currency',currency:'PHP'})+
+                                    ' · '+r.fund_code+' · DV date '+r.document_date),
+                                h('small',null,(r.components||[]).map(x=>x.atc_code+' '+Number(x.amount||0).toLocaleString('en-PH',{style:'currency',currency:'PHP'})).join(' · ')),
+                                h('small',null,r.payment_stage==='CHECK_RELEASE_RECORDED'?'Check release recorded · awaiting Division tax review; BIR settlement is separate':'DV finalized · check not released · awaiting Division tax review; BIR settlement is separate')),
+                            s.user?.role==='DIVISION'?h('button',{type:'button',className:'ipdams-action-open',disabled:s.busy,
+                                onClick:()=>this.acknowledgeDivisionTax(r.notice_id)},'Acknowledge liability notice'):null)),
+                        current&&Number(s.actionCenterRetainedNoticeCount)>retainedNotices.length?
+                            h('p',{className:'hint'},'More notices exist than shown. Contact Division Accounting for paginated review.'):null]),
+                    actionPanel('receipts',[
+                    this.state.user?.role==='DIVISION'||(this.state.user?.role==='SUPER_ADMIN'&&this.state.orgs?.find(x=>String(x.id)===String(s.organization_id))?.kind==='DIVISION')
+                    ?h('section',{className:'ipdams-division-tax-receipts'},
+                        h('div',{className:'ipdams-action-top'},h('div',null,h('h2',null,'Incoming school tax remittances'),
+                            h('p',null,'Released school checks awaiting the Division receiving officer’s actual OR / transaction acknowledgment. No bank deposit is assumed.'))),
+                        !incomingTax.length&&!s.actionCenterLoading?h('p',{className:'ipdams-action-empty'},'No released school tax transfers awaiting Division receipt.'):null,
+                        ...incomingTax.map(r=>h('article',{className:'ipdams-action-row',key:'tax-receipt-'+r.transfer_id},
+                            h('div',{className:'ipdams-action-row-content'},
+                                h('strong',null,r.school_name+' · ₱'+Number(r.gross||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})),
+                                h('small',null,'DV '+(r.dv_number||r.dv_id)+' · '+r.fund_code+' · '+r.component_count+' tax component(s)'),
+                                h('small',null,'Check '+(r.check_number||'—')+' · Released, awaiting OR / receipt reference')),
+                            h('button',{type:'button',className:'ipdams-action-open',onClick:()=>this.setState({taxReceiptModal:{transfer_id:Number(r.transfer_id),organization_id:String(s.organization_id),
+                                dv_number:r.dv_number,school_name:r.school_name,amount:String(r.gross),
+                                fund_code:r.fund_code,check_number:r.check_number},
+                            taxReceiptReference:'',taxReceiptDate:localToday(),taxReceiptAmount:String(r.gross),taxReceiptError:''})},'Record Division receipt'))),
+                        s.actionCenterRemittanceCount>incomingTax.length?h('p',{className:'notice error'},'More incoming transfers than shown; open Division withholding transfers for the full register.'):null)
+                    :null]),
+                    s.taxReceiptModal?h('div',{className:'ipdams-tax-receipt-overlay',role:'presentation'},
+                        h('section',{className:'ipdams-tax-receipt-dialog',role:'dialog','aria-modal':'true','aria-label':'Record Division tax remittance receipt'},
+                            h('h3',null,'Acknowledge actual Division receipt'),
+                            h('p',{className:'hint'},(s.taxReceiptModal.school_name||'School')+' · DV '+(s.taxReceiptModal.dv_number||'')+
+                                ' · '+(s.taxReceiptModal.fund_code||'')+' · Check '+(s.taxReceiptModal.check_number||'—')),
+                            h('p',{className:'hint'},'Acknowledge an actual OR/transaction only after receipt. This does not record a Division bank deposit or BIR payment.'),
+                            s.taxReceiptError?h('p',{className:'notice error',role:'alert'},s.taxReceiptError):null,
+                            h('form',{onSubmit:async e=>{
+                                e.preventDefault();const t=this.state;
+                                if(t.busy||!t.taxReceiptModal||String(t.taxReceiptModal.organization_id)!==String(t.organization_id))return;
+                                const ref=(t.taxReceiptReference||'').trim();
+                                const due=Math.round(Number(t.taxReceiptModal.amount||0)*100);
+                                const received=Math.round(Number(t.taxReceiptAmount||0)*100);
+                                if(!ref||!Number.isSafeInteger(received)||received!==due){
+                                    this.setState({taxReceiptError:'Enter the actual Division receipt reference and confirm the exact amount. Do not adjust the school DV.'});return;
+                                }
+                                const result=await this.task('tax.transfer.receive',{
+                                    transfer_id:Number(t.taxReceiptModal.transfer_id),receipt_reference:ref,
+                                    received_amount:String(t.taxReceiptAmount),received_at:t.taxReceiptDate||localToday()
+                                },{refresh:false});
+                                if(!result){this.setState({taxReceiptError:this.state.error||'Division receipt could not be saved.'});return;}
+                                this.setState({taxReceiptModal:null,taxReceiptError:'',success:'Division receipt acknowledged. Accounting reconciliation remains pending.'});
+                                await this.loadActionCenter();
+                            }},
+                                h('label',{className:'field'},h('span',null,'Official Receipt / authorized transaction reference *'),
+                                    h('input',{required:true,maxLength:255,autoFocus:true,value:s.taxReceiptReference||'',onChange:e=>this.setState({taxReceiptReference:e.target.value,taxReceiptError:''})})),
+                                h('label',{className:'field'},h('span',null,'Actual receipt date *'),
+                                    h('input',{type:'date',required:true,max:localToday(),value:s.taxReceiptDate||localToday(),onChange:e=>this.setState({taxReceiptDate:e.target.value})})),
+                                h('label',{className:'field'},h('span',null,'Amount actually received *'),
+                                    h('input',{type:'number',min:'0.01',step:'0.01',required:true,value:s.taxReceiptAmount||'',onChange:e=>this.setState({taxReceiptAmount:e.target.value})})),
+                                h('div',{className:'ipdams-tax-receipt-buttons'},
+                                    h('button',{type:'button',className:'outline',onClick:()=>this.setState({taxReceiptModal:null,taxReceiptError:''})},'Cancel'),
+                                    h('button',{type:'submit',className:'primary',disabled:s.busy},'Confirm actual receipt'))))):null,
+                    actionPanel('transfers',[
+                    (transferTasks.length||transferAwaiting.length)?h('div',{className:'ipdams-action-top'},
+                        h('div',null,h('h2',null,'School tax-transfer DV progress'),
+                            h('p',null,'One item per consolidated transfer DV. Reserved original withholding is not counted again as an unstarted remittance.'))):null,
+                    ...transferTasks.map(t=>h('article',{className:'ipdams-action-row ipdams-action-tax',key:'school-tax-transfer-'+t.transfer_id},
                         h('div',{className:'ipdams-action-row-content'},
-                            h('strong',null,'DV '+item.dv_number+' · '+item.atc_code+' · ₱'+
-                                Number(item.amount||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})),
-                            h('small',null,item.fund_code+' · '+item.document_date+' · '+
-                                (item.task==='CONFIRM_WITHHOLDING'?'Withholding pending school confirmation':'Tax liability awaiting remittance evidence'))),
+                            h('strong',null,'Transfer DV '+(t.dv_number||t.dv_id)+' · ₱'+Number(t.gross||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})),
+                            h('small',null,t.fund_code+' · '+t.component_count+' original tax component(s)'),
+                            h('small',null,t.status==='DRAFT'?'Draft — complete and finalize the remittance DV':'Finalized — prepare, sign and release the physical check')),
                         h('button',{type:'button',className:'ipdams-action-open',
-                            onClick:()=>{const forSchool=item.task==='CONFIRM_WITHHOLDING';
+                            onClick:()=>t.status==='DRAFT'
+                                ?this.setState({tab:'Disbursements',dvSection:'transfers',taxTransferOpen:true,taxTransferError:''})
+                                :this.setState({tab:'Cash & Bank',cashBankSection:t.check_number?'register':'prepare'})},
+                            t.status==='DRAFT'?'Open transfer DV':'Manage remittance check'))),
+                    ...transferAwaiting.map(t=>h('article',{className:'ipdams-action-row ipdams-action-tax',key:'school-tax-awaiting-'+t.transfer_id},
+                        h('div',{className:'ipdams-action-row-content'},
+                            h('strong',null,'Transfer DV '+(t.dv_number||t.dv_id)+' · ₱'+Number(t.gross||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})),
+                            h('small',null,t.fund_code+' · Check '+(t.check_number||'—')),
+                            h('small',null,'Check released — awaiting actual Division receipt. No additional school remittance DV is needed.')),
+                        h('button',{type:'button',className:'ipdams-action-open',onClick:()=>this.setState({tab:'Disbursements',dvSection:'transfers',taxTransferOpen:true})},
+                            'View transfer status'))),
+                    (s.actionCenterTransferPendingTotal>transferTasks.length||s.actionCenterTransferAwaitingTotal>transferAwaiting.length)
+                        ?h('p',{className:'hint'},'More tax transfers exist than shown. Open the transfer register for the complete history.'):null]),
+                    actionPanel('withholding',[
+                    h('div',{className:'ipdams-action-top'},h('div',null,h('h2',null,'Withholding requiring follow-up'),
+                        h('p',null,'Only original tax components not yet placed in an active transfer DV appear here. Creating a transfer DV moves them to its own progress section; a software update alone does not settle withholding.'))),
+                    !taxTasks.length&&!s.actionCenterLoading&&!s.actionCenterError?
+                        h('div',{className:'ipdams-action-empty'},'No original withholding awaiting new school action. Existing tax-transfer DVs have their own progress section above.'):null,
+                    ...taxGrouped.map(group=>h('article',{className:'ipdams-action-row ipdams-action-tax',key:'tax-'+group.dv_number+'-'+group.task+'-'+group.fund_code},
+                        h('div',{className:'ipdams-action-row-content'},
+                            h('strong',null,'DV '+group.dv_number+' · ₱'+group.total.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})),
+                            h('small',null,group.components.map(c=>c.atc_code+' ₱'+Number(c.amount||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})).join('   ·   ')),
+                            h('small',null,group.fund_code+' · '+group.document_date+' · '+
+                                (group.task==='CONFIRM_WITHHOLDING'?'Awaiting withholding confirmation':'Remittance follow-up'))),
+                        h('button',{type:'button',className:'ipdams-action-open',
+                            onClick:()=>{const forSchool=group.task==='CONFIRM_WITHHOLDING';
                                 this.setState({tab:forSchool?'Fund Management':'Disbursements',
-                                    ...(forSchool?{fundSection:'withheld'}:{})});}},
-                            item.task==='CONFIRM_WITHHOLDING'?'Review withholding':'Open DVs'))),
+                                    ...(forSchool?{fundSection:'withheld'}:{dvSection:'transfers',taxTransferOpen:true,taxTransferError:''})});}},
+                            group.task==='CONFIRM_WITHHOLDING'?'Review withholding':'Manage withholding'))),
                     s.actionCenterTaxTotal>taxTasks.length?h('p',{className:'hint'},
                         'Showing the latest '+taxTasks.length+' of '+s.actionCenterTaxTotal+
                         ' unresolved tax components. Use the withholding register for the full audit trail.'):null,
+                    h('div',{className:'ipdams-action-top'},
+                        h('div',null,h('h2',null,'Withholding tax reports & school utilization oversight'),
+                            h('p',null,'View read-only taxes withheld by fund, period, tax code and authorized school.'))),
+                    h('a',{className:'ipdams-action-open',target:'_blank',rel:'noopener noreferrer',
+                        href:'api/withholding-reports.php?organization_id='+encodeURIComponent(s.organization_id)},'Open Withholding Tax Report')]),
+                    actionPanel('textbooks',[
                     h('div',{className:'ipdams-action-top'},h('h2',null,'Textbook transfers and Division disposal review')),
                     !s.actionCenterError&&!s.actionCenterLoading&&bookTasks.length===0
                         ?h('div',{className:'ipdams-action-empty'},'No pending textbook allocations, outgoing requests or physical receipts.'):null,
@@ -13709,7 +14670,7 @@ h('div',{className:'employee-claim-actions'},
                             (item.task==='DISPOSAL_REVIEW'?'disposal':'transfers')},
                             item.task==='DISPOSAL_REVIEW'?'Open disposal review':'Open textbook transfers'))),
                     checked?h('p',{className:'body-muted'},'Last checked: '+checked.replace('T',' ').slice(0,19)+' (Manila time)'):null,
-                    h('p',{className:'body-muted'},'Textbook allocations, requests and receipts are documentary actions. Named paper signatories do not log in or approve electronically. Property-transfer acceptance retains its own rules.')));
+                    h('p',{className:'body-muted'},'Textbook allocations, requests and receipts are documentary actions. Named paper signatories do not log in or approve electronically. Property-transfer acceptance retains its own rules.')])));
         };
         this.otherView = () => {
             const tab = this.state.tab;
@@ -13736,7 +14697,7 @@ h('div',{className:'employee-claim-actions'},
                 const checkText=String(s.cashCheckSearch||'').trim().toLowerCase();
                 const filteredChecks=registeredChecks.filter(x=>(s.cashCheckStatus==='ALL'||x.status===s.cashCheckStatus)&&(!checkText||[x.check_number,x.dv_number,x.payee_name,x.status].some(v=>String(v??'').toLowerCase().includes(checkText))));
                 const current=s.cashBankSection||'prepare';
-                const tabs=[['prepare','Prepare Check'],['inventory','Checkbook Inventory'],['register','Check Register'],['reconciliation','Bank Reconciliation'],['ledger','Bank Transactions'],['funds','Fund Balance Register'],['banks','Bank Accounts']];
+                const tabs=[['prepare','Prepare Check'],['inventory','Checkbook Inventory'],['register','Check Register'],['reconciliation','Bank Reconciliation'],['ledger','Bank Transactions'],['funds','Fund Balance Register'],['banks','Bank Accounts'],['reports','Financial Reports']];
                 const tabButton=([key,label])=>h('button',{key,id:'cb-tab-'+key,type:'button',role:'tab',
                     className:'cb-tab'+(key===current?' is-active':''),'aria-controls':'cb-panel-'+key,
                     'aria-selected':key===current,tabIndex:key===current?0:-1,
@@ -13794,6 +14755,28 @@ h('div',{className:'employee-claim-actions'},
                         ...filteredLeaves.filter(x=>['SPOILED','VOID'].includes(x.status)&&!x.issued_check_id).slice(0,5).map(x=>
                             React.createElement('button',{key:'correct-'+x.id,type:'button',className:'outline',
                                 onClick:()=>this.correctUnissuedCheckLeaf(x)},'Correct unused physical serial '+x.serial+' to AVAILABLE')));
+                const checkStatusOptions={ISSUED:['SIGNED','STOPPED'],SIGNED:['RELEASED','STOPPED'],RELEASED:['CLEARED','STOPPED','STALE']};
+                const chosenCheck=registeredChecks.find(c=>String(c.id)===String(s.checkStatusSelected||''))||null;
+                const allowedCheckStatuses=chosenCheck?(checkStatusOptions[chosenCheck.status]||[]):[];
+                const selectedCheckNext=allowedCheckStatuses.includes(s.checkStatusNext)?s.checkStatusNext:(allowedCheckStatuses[0]||'');
+                const recordCheckStatus=async e=>{
+                    e.preventDefault();
+                    if(!this.canOperateWorkspace()||s.busy||!chosenCheck||!selectedCheckNext)return;
+                    // Both the floating action and existing form use one audited server operation.
+                    // Reconfirm the selected transition against the current register state.
+                    if(s.checkSigningDialogOpen&&(!allowedCheckStatuses.includes(s.checkStatusNext)||!chosenCheck)){
+                        this.setState({checkStatusError:'This transition is no longer available. Refresh the register.'});return;
+                    }
+                    const evidence=String(s.checkStatusEvidence||'').trim();
+                    if(evidence.length>190){this.setState({checkStatusError:'Supporting reference must be 190 characters or fewer.'});return;}
+                    if(!s.checkStatusAttested){this.setState({checkStatusError:'Confirm that this physical or bank event actually occurred.'});return;}
+                    const result=await this.task('check.status',{check_id:Number(chosenCheck.id),status:selectedCheckNext,evidence_reference:evidence,event_confirmed:true},{refresh:false});
+                    if(!result)return;
+                    this.setState({checkStatusSelected:'',checkStatusNext:'',checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:'',checkSigningDialogOpen:false,
+                        success:'Check '+chosenCheck.check_number+' recorded as '+selectedCheckNext+'. '+(evidence?'Reference and audit trail saved.':'User attestation recorded without an evidence reference; audit trail saved.')});
+                    await this.refresh();
+                    if(selectedCheckNext==='RELEASED')this.loadTaxTransferWorkspace();
+                };
                 const registerCard=()=>h('section',{className:'surface cb-panel-surface'},
                     h('div',{className:'cb-panel-header'},h('div',null,h('h3',null,'Issued check register'),h('p',{className:'hint'},'Review the check numbers and their linked DV records. Cancelled and replaced records remain accountable.'))),
                     h('div',{className:'cb-filters'},
@@ -13801,11 +14784,96 @@ h('div',{className:'employee-claim-actions'},
                         h('label',{className:'field'},h('span',null,'Status'),h('select',{value:s.cashCheckStatus,onChange:e=>this.setState({cashCheckStatus:e.target.value})},
                             ...['ALL',...new Set(registeredChecks.map(x=>x.status).filter(Boolean))].map(v=>h('option',{key:v,value:v},v==='ALL'?'All statuses':v))))),
                     registeredChecks.length
-                        ?(filteredChecks.length?this.table('Check register',['check_number','dv_number','payee_name','payee_basis','amount','status'],filteredChecks):
+                        ?(filteredChecks.length?h('div',{className:'surface table-box'},
+                            h('div',{className:'section-head'},h('h3',null,'Check register'),h('span',{className:'count'},filteredChecks.length,' records')),
+                            h('div',{className:'table-scroll'},h('table',null,
+                                h('thead',null,h('tr',null,...['Check number','DV number','Payee','Payee basis','Amount','Status','Action'].map(col=>h('th',{key:col},col)))),
+                                h('tbody',null,...filteredChecks.slice(0,50).map(c=>h('tr',{key:c.id},
+                                    ...['check_number','dv_number','payee_name','payee_basis','amount'].map(k=>h('td',{key:k},c[k]??'—')),
+                                    h('td',null,h('span',{className:'status '+c.status},c.status)),
+                                    h('td',null,h('div',{className:'cb-check-print-buttons'},
+                                        ['ISSUED','SIGNED','RELEASED','CLEARED'].includes(c.status)&&this.canOperateWorkspace()?h('button',{
+                                            type:'button',className:'outline',title:'Print Check on approved stationery',
+                                            'aria-label':'Print Check '+c.check_number,
+                                            onClick:()=>this.setState({actualCheckPrintTarget:{check_id:Number(c.id)}})
+                                        },'Print Check'):null,
+                                        (checkStatusOptions[c.status]||[]).length&&this.canOperateWorkspace()?h('button',{
+                                            type:'button',className:'outline',disabled:!!s.busy,
+                                            'aria-label':'Manage check '+c.check_number,
+                                            onClick:()=>this.setState({checkStatusSelected:String(c.id),checkStatusNext:(checkStatusOptions[c.status]||[])[0]||'',checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:'',checkSigningDialogOpen:true})
+                                        },'Manage Check'):h('span',{className:'hint'},(checkStatusOptions[c.status]||[]).length?'Authorized operators only':'No available action'))))))))):
                             h('p',{className:'cb-empty'},'No checks match these filters. Try another check number, payee, or status.'))
                         :h('div',{className:'cb-empty'},'No issued check records yet. Finalize a DV and prepare its check in the Prepare Check tab.',
                             h('button',{type:'button',className:'outline',onClick:()=>this.setState({cashBankSection:'prepare'})},'Go to Prepare Check')),
-                    h('p',{className:'hint'},'Search and status filters affect only this view; they do not change issued check records.'));
+                    h('p',{className:'hint'},'Select Manage Check beside an eligible check to record signing, release, bank clearing, or other authorized events in a floating window. The existing event form remains below.'),
+                    h('div',{className:'cb-check-status-actions'},
+                        h('h4',null,'Record a check event'),
+                        h('p',{className:'hint'},'ISSUED → SIGNED → RELEASED → CLEARED. Test and repeat prints do not change check status. Every actual print attempt is logged; signing, release and bank clearing must be recorded separately.'),
+                        h('label',{className:'field'},h('span',null,'Choose check'),
+                            h('select',{value:String(s.checkStatusSelected||''),onChange:e=>this.setState({checkStatusSelected:e.target.value,checkStatusNext:'',checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:''})},
+                                h('option',{value:''},'Select a check'),
+                                ...filteredChecks.map(c=>h('option',{key:c.id,value:String(c.id)},c.check_number+' · DV '+(c.dv_number||c.dv_id)+' · '+c.status)))),
+                        chosenCheck?h('div',{className:'cb-selected-check-summary'},
+                            h('strong',null,'Check '+chosenCheck.check_number+' · '+chosenCheck.status),
+                            h('p',null,'DV '+(chosenCheck.dv_number||chosenCheck.dv_id)+' · '+chosenCheck.payee_name+' · ₱'+Number(chosenCheck.amount||0).toLocaleString('en-PH',{minimumFractionDigits:2})),
+                            h('p',{className:'hint',role:'status'},checkLifecycleNext(chosenCheck.status)),
+                            !allowedCheckStatuses.length?h('p',{className:'hint'},'No direct status transition is available for this record. Closed, stopped and replaced checks require an authorized separate workflow.'):null):null,
+                        chosenCheck&&allowedCheckStatuses.length?h('form',{onSubmit:recordCheckStatus},
+                            h('div',{className:'form-grid'},
+                                h('label',{className:'field'},h('span',null,'Actual check event *'),
+                                    h('select',{required:true,value:selectedCheckNext,onChange:e=>this.setState({checkStatusNext:e.target.value,checkStatusAttested:false,checkStatusError:''})},
+                                        ...allowedCheckStatuses.map(next=>h('option',{key:next,value:next},next==='SIGNED'?'Signed by authorized signatories':next==='RELEASED'?'Released to verified recipient':next==='CLEARED'?'Cleared by bank':next==='STOPPED'?'Stopped (requires documented authority)':'Stale per bank/check rules')))),
+                                h('label',{className:'field'},h('span',null,'Supporting reference (optional)'),
+                                    h('input',{maxLength:190,value:s.checkStatusEvidence||'',onChange:e=>this.setState({checkStatusEvidence:e.target.value,checkStatusError:''}),
+                                        placeholder:selectedCheckNext==='CLEARED'?'Bank statement / reconciliation reference':selectedCheckNext==='RELEASED'?'Signed release acknowledgement reference':'Signed document / authority reference'}))),
+                            h('label',{className:'cb-check-status-confirm'},
+                                h('input',{type:'checkbox',checked:!!s.checkStatusAttested,onChange:e=>this.setState({checkStatusAttested:e.target.checked,checkStatusError:''})}),
+                                'I confirm that this check event actually occurred. (Reference is optional.)'),
+                            s.checkStatusError?h('p',{role:'alert',className:'notice error'},s.checkStatusError):null,
+                            h('button',{type:'submit',className:'primary',disabled:!this.canOperateWorkspace()||s.busy||!s.checkStatusAttested},
+                                'Record '+selectedCheckNext+' event')):null),
+                    s.checkSigningDialogOpen&&chosenCheck&&allowedCheckStatuses.length?h('div',{
+                        className:'modal-backdrop',
+                        style:{position:'fixed',inset:0,zIndex:1400,display:'flex',alignItems:'center',justifyContent:'center',padding:'16px',background:'rgba(15,34,53,.64)'},
+                        onMouseDown:e=>{if(e.target===e.currentTarget&&!s.busy)this.setState({checkSigningDialogOpen:false,checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:''});}
+                    },h('section',{
+                        className:'modal',role:'dialog','aria-modal':'true','aria-labelledby':'check-action-dialog-title',
+                        style:{display:'flex',flexDirection:'column',width:'min(520px,100%)',maxHeight:'92vh',overflow:'auto',background:'var(--surface,#fff)',borderRadius:'14px',padding:'22px',boxShadow:'0 22px 65px rgba(0,0,0,.28)'},
+                        onKeyDown:e=>{if(e.key==='Escape'&&!s.busy)this.setState({checkSigningDialogOpen:false,checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:''});}
+                    },
+                        h('div',{style:{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:'12px'}},
+                            h('div',null,h('h3',{id:'check-action-dialog-title',style:{margin:'0 0 7px'}},'Manage Check '+chosenCheck.check_number),
+                                h('p',{className:'hint'},'DV '+(chosenCheck.dv_number||chosenCheck.dv_id)+' · '+(chosenCheck.payee_name||'Payee')+' · ₱'+Number(chosenCheck.amount||0).toLocaleString('en-PH',{minimumFractionDigits:2}))),
+                            h('button',{type:'button',className:'outline','aria-label':'Close check action window',disabled:!!s.busy,
+                                onClick:()=>this.setState({checkSigningDialogOpen:false,checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:''})},'×')),
+                        h('p',{className:'hint'},'Current status: '+chosenCheck.status+'. Only record events that actually occurred and are supported by evidence.'),
+                        h('p',{className:'hint',role:'status'},checkLifecycleNext(chosenCheck.status)),
+                        h('form',{onSubmit:recordCheckStatus},
+                            h('label',{className:'field'},h('span',null,'Action *'),
+                                h('select',{required:true,value:selectedCheckNext,
+                                    onChange:e=>this.setState({checkStatusNext:e.target.value,checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:''})},
+                                    ...allowedCheckStatuses.map(next=>h('option',{key:next,value:next},next==='SIGNED'?'Record Check Signing':next==='RELEASED'?'Record Check Release':next==='CLEARED'?'Record Bank Clearing':next==='STOPPED'?'Stop Check (authorized)':next==='STALE'?'Mark Stale (authorized)':next)))),
+                            h('p',{className:'hint',role:'status'},
+                                selectedCheckNext==='SIGNED'?'Confirm that authorized signatories physically signed this check.':
+                                selectedCheckNext==='RELEASED'?'Important: RELEASING the check records the actual payment against the fund ledger. Verify handover to the authorized payee.':
+                                selectedCheckNext==='CLEARED'?'Verify actual bank clearing from the bank statement or reconciliation evidence.':
+                                selectedCheckNext==='STOPPED'?'Stopping a check requires documented authorization. Do not use this to dismiss a withholding reminder.':
+                                selectedCheckNext==='STALE'?'Record stale status only when supported by the applicable bank/check rules.':''),
+                            h('label',{className:'field'},h('span',null,'Supporting evidence reference (optional)'),
+                                h('input',{maxLength:190,autoFocus:true,value:s.checkStatusEvidence||'',
+                                    placeholder:selectedCheckNext==='CLEARED'?'Bank statement / reconciliation reference':selectedCheckNext==='RELEASED'?'Release log / payee acknowledgment':selectedCheckNext==='SIGNED'?'Signed check / authority reference':'Written authority / supporting document',
+                                    onChange:e=>this.setState({checkStatusEvidence:e.target.value,checkStatusError:''})})),
+                            h('label',{className:'cb-check-status-confirm'},
+                                h('input',{type:'checkbox',checked:!!s.checkStatusAttested,
+                                    onChange:e=>this.setState({checkStatusAttested:e.target.checked,checkStatusError:''})}),
+                                'I confirm that this check event actually occurred. (Reference is optional.)'),
+                            s.checkStatusError?h('p',{role:'alert',className:'notice error'},s.checkStatusError):null,
+                            h('div',{style:{display:'flex',justifyContent:'flex-end',gap:'8px',flexWrap:'wrap',marginTop:'14px'}},
+                                h('button',{type:'button',className:'outline',disabled:!!s.busy,
+                                    onClick:()=>this.setState({checkSigningDialogOpen:false,checkStatusEvidence:'',checkStatusAttested:false,checkStatusError:''})},'Cancel'),
+                                h('button',{type:'submit',className:'primary',disabled:!!s.busy||!this.canOperateWorkspace()||!s.checkStatusAttested},
+                                    s.busy?'Recording…':'Record '+selectedCheckNext+' Event')))))
+                        :null);
                 const bankCard=()=>h('section',{className:'surface cb-panel-surface'},
                     h('div',{className:'cb-panel-header'},h('div',null,h('h3',null,'Bank account directory'),h('p',{className:'hint'},'School bank accounts are maintained through Fund Management.'))),
                     banks.length?this.table('Bank account directory',['bank_name','account_label','masked_account'],banks):
@@ -13948,7 +15016,16 @@ h('div',{className:'employee-claim-actions'},
                                 mode:'UNISSUED',get:(route,body)=>this.get(route,body),
                                 task:(route,body)=>this.task(route,body,{refresh:false})}):null)
                             :current==='inventory'?inventoryCard():current==='register'?registerCard():
-                            current==='reconciliation'?reconciliationCard():current==='ledger'?bankBookCard():current==='funds'?fundBookCard():bankCard(),
+                            current==='reconciliation'?reconciliationCard():current==='ledger'?bankBookCard():current==='funds'?fundBookCard():
+                            current==='reports'?h('div',{className:'surface'},
+                                h('h3',null,'Cash, bank and fund liquidation reports'),
+                                h('p',{className:'hint'},'Six read-only COA-format draft workpapers. Choose the authorized fund, bank and month; review source exceptions before certifying printed reports.'),
+                                h('iframe',{title:'Cash and Fund Liquidation Reports',
+                                    key:'cash-reports-'+s.organization_id,
+                                    src:'api/cash-fund-reports.php?organization_id='+encodeURIComponent(s.organization_id),
+                                    loading:'lazy',style:{width:'100%',height:'1020px',maxWidth:'100%',border:'1px solid #d6e4eb',borderRadius:'12px'}}),
+                                h('a',{href:'api/cash-fund-reports.php?organization_id='+encodeURIComponent(s.organization_id),
+                                    target:'_blank',rel:'noopener noreferrer'},'Open reports in a separate printable page')):bankCard(),
                         current==='register'?h('div',{className:'cb-proof-register-list'},
                             h('h3',null,'Check printing proofs'),
                             h('p',{className:'hint'},'Review the frozen payee and amount for each issued record before the eventual official check print operation.'),
@@ -13959,7 +15036,7 @@ h('div',{className:'employee-claim-actions'},
                             dv:(s.lists.dv||[]).find(d=>String(d.id)===String(s.checkProofIssued.dv_id))||null,
                             checkNo:s.checkProofIssued.check_number,amount:s.checkProofIssued.amount,
                             payee:s.checkProofIssued.payee_name||'',mode:'ISSUED',
-                            close:()=>this.setState({checkProofIssued:null}),
+                            close:()=>this.setState({checkProofIssued:null,actualCheckPrintTarget:null}),
                             get:(route,body)=>this.get(route,body),task:(route,body)=>this.task(route,body,{refresh:false})}):null));
                 } catch (displayError) {
                     console.error('Cash & Bank display error (no check or bank mutation)',displayError);
@@ -14038,6 +15115,7 @@ h('div',{className:'employee-claim-actions'},
         this.actionTimer=window.setInterval(()=>{
             if(!document.hidden && this.state.sessionStatus==='ready')this.loadActionCenter();
         },120000);
+        window.addEventListener('message',this.bir2307ReceiveMessage);
         this.session();
     }
     render() {
@@ -14057,6 +15135,12 @@ h('div',{className:'employee-claim-actions'},
                     React.createElement('h1', null, 'Unable to restore your workspace'),
                     React.createElement('p', { className: 'body-muted' }, this.state.sessionError || 'Session verification is temporarily unavailable.'),
                     React.createElement('button', { type: 'button', className: 'primary', onClick: () => this.setState({ sessionStatus: 'checking', sessionError: '', error: '' }, () => this.session()) }, 'Try again')));
+        if(this.state.passwordChangeRequired)
+            return React.createElement('div',{className:'setup-screen'},
+                React.createElement('div',{className:'setup-shell'},
+                    React.createElement('h1',null,'Password change required'),
+                    React.createElement('p',null,'Your Division-approved temporary password can only be used to set a new password.'),
+                    React.createElement('a',{href:'api/password-recovery.php?mode=change'},'Change temporary password now')));
         if (!this.state.user)
             return React.createElement("div", { className: "login-screen ipdams-login-v135" },
                 React.createElement("section", { className: "login-side", "aria-label": "IPDAMS platform introduction" },
@@ -14089,6 +15173,7 @@ h('div',{className:'employee-claim-actions'},
                                     this.state.loginPasswordVisible ? "Hide" : "Show"))),
                         this.state.error ? React.createElement("div", { className: "error", role: "alert" }, this.state.error) : null,
                         React.createElement("button", { className: "primary full", disabled: this.state.busy, type: "submit" }, "Sign in securely →"),
+                        React.createElement('a',{href:'api/password-recovery.php?mode=request',className:'ipdams-forgot-password'},'Forgot password? Request Division assistance'),
                         React.createElement("small", null, "Accounts are provisioned by authorized administrators. No public registration."))));
         if (!this.state.orgs.length) {
             const isAdmin=this.state.user?.role==='SUPER_ADMIN';
@@ -14113,9 +15198,9 @@ h('div',{className:'employee-claim-actions'},
         const activeWorkspace = this.state.orgs.find(o => String(o.id) === String(this.state.organization_id));
         return React.createElement("div", { className: "shell" },
             React.createElement("aside", { className: "sidebar" },
-                React.createElement("button", { type:"button", className:"brand", onClick:()=>this.goDashboard(),
-                    title:"Go to Dashboard", "aria-label":"Go to Dashboard",
-                    style:{border:"0",background:"transparent",cursor:"pointer",color:"inherit",textAlign:"left",font:"inherit"} },
+                React.createElement("a", { href:"index.php", className:"brand ipdams-home-link", onClick:(event)=>this.goDashboardFromBrand(event),
+                    title:"Go to Dashboard", "aria-label":"IPDAMS — Go to Dashboard",
+                    style:{border:"0",background:"transparent",cursor:"pointer",color:"inherit",textAlign:"left",font:"inherit",textDecoration:"none"} },
                     React.createElement("div", { className: "brand-square" },
                         React.createElement("img", { className: "ipdams-brand-icon", src: "api/branding.php?kind=icon", alt: "" })),
                     React.createElement("div", null,
@@ -14172,13 +15257,17 @@ h('div',{className:'employee-claim-actions'},
                     React.createElement("button", { "aria-label": "Sign out", title: "Sign out", className: "logout", onClick: this.logout }, "\u21AA"))),
             React.createElement("main", null,
                 React.createElement("div", { className: "topbar" },
-                    React.createElement("button", { type:"button", className:"mobile-brand", onClick:()=>this.goDashboard(),
+                    React.createElement("a", { href:"index.php", className:"mobile-brand ipdams-home-link", onClick:(event)=>this.goDashboardFromBrand(event),
                         title:"Go to Dashboard", "aria-label":"IPDAMS — Go to Dashboard",
-                        style:{border:"0",background:"transparent",cursor:"pointer",color:"inherit",font:"inherit"} }, "IPDAMS"),
-                    React.createElement("button", { type:"button", className:"ipdams-header-logo", onClick:()=>this.goDashboard(),
+                        style:{border:"0",background:"transparent",cursor:"pointer",color:"inherit",font:"inherit",textDecoration:"none"} }, "IPDAMS"),
+                    React.createElement("a", { href:"index.php", className:"ipdams-header-logo ipdams-home-link", onClick:(event)=>this.goDashboardFromBrand(event),
                         title:"Go to Dashboard", "aria-label":"IPDAMS logo — Go to Dashboard",
-                        style:{border:"0",background:"transparent",cursor:"pointer",color:"inherit",font:"inherit"} },
+                        style:{border:"0",background:"transparent",cursor:"pointer",color:"inherit",font:"inherit",textDecoration:"none"} },
                         React.createElement("img", { src: "api/branding.php?kind=header", alt: "IPDAMS — by Loy" })),
+                    React.createElement('button', {
+                        type:'button',className:'ipdams-mobile-logout',
+                        'aria-label':'Logout',title:'Log out of IPDAMS',onClick:this.logout
+                    },'Logout'),
                     React.createElement("div", { className: "topbar-school" },
                         React.createElement("span", { className: "muted" }, this.state.user?.role === "SUPER_ADMIN" ? (this.state.superAdminViewOnly ? "View any Division or school" : "Admin workspace") : "Viewing"),
                         React.createElement("select", { "aria-label": "Active organization", value: this.state.organization_id, onChange: this.orgChange, disabled: this.state.busy || this.state.workspaceLoading }, this.state.orgs.map((o) => React.createElement("option", { key: o.id, value: o.id }, (o.kind === 'DIVISION' ? 'Division: ' : 'School: ') + o.name))),
@@ -14248,6 +15337,14 @@ h('div',{className:'employee-claim-actions'},
                                 React.createElement("h4", null, "Manual signed-copy attestations"),
                                 React.createElement("pre", null, JSON.stringify(this.state.details.manual_signature_records, null, 2))),
                             React.createElement("a", { className: "print-link", target: "_blank", rel: "noopener", href: 'api/print.php?organization_id=' + this.state.organization_id + '&type=' + this.state.viewType + '&id=' + this.state.details.record.id }, "Open print snapshot \u2197")))) : null,
+                    this.bir2307DialogView(),
+                    this.state.actualCheckPrintTarget&&this.canOperateWorkspace()&&window.IpdamsActualCheckPrinter?
+                        React.createElement(window.IpdamsActualCheckPrinter,{
+                            key:String(this.state.organization_id)+'-'+JSON.stringify(this.state.actualCheckPrintTarget),
+                            organizationId:Number(this.state.organization_id),target:this.state.actualCheckPrintTarget,
+                            get:(route,body)=>this.get(route,body),
+                            task:(route,body)=>this.task(route,body,{refresh:false}),
+                            close:()=>this.setState({actualCheckPrintTarget:null})}):null,
                     React.createElement("footer", null, "IPDAMS Development Build \u00B7 Government templates and financial rules require owner validation \u00B7 Asia/Manila"))));
     }
 }

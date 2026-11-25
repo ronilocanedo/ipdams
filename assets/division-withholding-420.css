@@ -1,0 +1,30 @@
+/* v0.2.420 - Division tax monitoring, presentation only. */
+.ipdams-division-tax-register{min-width:0}
+.ipdams-division-tax-register .form-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px 14px}
+.ipdams-division-tax-register .field{margin:0}
+.ipdams-division-tax-register .field input,
+.ipdams-division-tax-register .field select{width:100%;min-width:0}
+.ipdams-division-tax-register .inline-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:13px 0}
+.ipdams-division-tax-register .summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
+.ipdams-division-tax-register .summary-card{border:1px solid #dbe8eb;border-radius:9px;background:#f3f9f8;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ipdams-division-tax-register .summary-card small{font-size:12px;color:#456879}
+.ipdams-division-tax-register .summary-card strong{font-size:20px;color:#173852;overflow-wrap:anywhere}
+.ipdams-division-tax-register .table-scroll{width:100%;max-width:100%;overflow-x:auto}
+.ipdams-division-tax-register .data-table{border-collapse:collapse;width:100%;min-width:880px;font-size:13px}
+.ipdams-division-tax-register .data-table th,
+.ipdams-division-tax-register .data-table td{padding:10px 9px;border-bottom:1px solid #e0ebee;text-align:left;vertical-align:top}
+.ipdams-division-tax-register .data-table th{background:#f4f8fa;color:#476578;font-weight:700}
+.ipdams-division-tax-register .data-table td small{display:block;margin-top:4px}
+.ipdams-division-tax-register .data-table details{max-width:320px}
+.ipdams-division-tax-register .data-table summary{cursor:pointer;color:#087b7a;font-weight:600}
+.ipdams-division-tax-register .data-table details div{padding:4px 0;overflow-wrap:anywhere}
+.ipdams-division-tax-register .form-grid section.surface{padding:12px;margin:10px 0;min-width:0}
+@media(max-width:720px){.ipdams-division-tax-register .summary-grid{grid-template-columns:1fr}.ipdams-division-tax-register .summary-card strong{font-size:18px}}
+
+/* v0.2.428: show distinct historical ATC tax bases/rates in one DV row. */
+.ipdams-division-tax-register .data-table{min-width:1330px}
+.ipdams-division-tax-register .data-table .dv-tax-money{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ipdams-division-tax-register .data-table .dv-tax-money small{max-width:200px;white-space:normal;line-height:1.4}
+.ipdams-division-tax-register .dv-tax-stack{display:flex;flex-direction:column;gap:6px}
+.ipdams-division-tax-register .dv-tax-line{white-space:nowrap;min-height:20px}
+.ipdams-division-tax-register .table-scroll:focus-visible{outline:3px solid #087b7a;outline-offset:2px}

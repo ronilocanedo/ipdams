@@ -307,9 +307,164 @@ function settingsVerifyTaxTransferMigration(PDO $db,string $id): void {
         'Approved tax-transfer foreign keys are missing. Do not use this schema.',409);
 }
 
+/** v0.2.401: one explicitly approved existing-column nullability relaxation.
+ * No bank is fabricated: old bank IDs remain unchanged; new transfers may have NULL.
+ * Because MariaDB DDL is not transactional, schema evidence and a full SQL backup
+ * are mandatory before v0.2.402 is approved. */
+function settingsTaxTransferOptionalBankDdl(): string {
+    return 'ALTER TABLE school_tax_transfers DROP FOREIGN KEY fk_stt_div_bank, MODIFY COLUMN division_bank_account_id BIGINT UNSIGNED NULL DEFAULT NULL, ADD CONSTRAINT fk_stt_div_bank_v0402 FOREIGN KEY (division_bank_account_id) REFERENCES bank_accounts(id), ADD UNIQUE KEY uq_stt_division_receipt (division_id, receipt_reference)';
+}
+function settingsVerifyOptionalBankColumn(PDO $db,bool $after): void {
+    $stmt=$db->prepare("SELECT COLUMN_TYPE,IS_NULLABLE,COLUMN_DEFAULT FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='school_tax_transfers' AND COLUMN_NAME='division_bank_account_id'");
+    $stmt->execute();$column=$stmt->fetch(PDO::FETCH_ASSOC);
+    $columnType=strtolower(preg_replace('/\([0-9]+\)/','',(string)($column['COLUMN_TYPE']??'')));
+    demand($column && $columnType==='bigint unsigned' &&
+        ($column['IS_NULLABLE']===($after?'YES':'NO')) &&
+        ($column['COLUMN_DEFAULT']===null || strtoupper((string)$column['COLUMN_DEFAULT'])==='NULL'),
+        'Tax-transfer bank column schema mismatch. Stop and request technical review.',409);
+    $foreignKeys=$db->query("SELECT CONSTRAINT_NAME,REFERENCED_COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
+        WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='school_tax_transfers'
+        AND COLUMN_NAME='division_bank_account_id' AND REFERENCED_TABLE_NAME='bank_accounts'")->fetchAll(PDO::FETCH_ASSOC);
+    $requiredFk=$after?'fk_stt_div_bank_v0402':'fk_stt_div_bank';
+    demand(count($foreignKeys)===1 &&
+        ($foreignKeys[0]['CONSTRAINT_NAME']??'')===$requiredFk &&
+        ($foreignKeys[0]['REFERENCED_COLUMN_NAME']??'')==='id',
+        'Expected Division-bank foreign key name and reference must be preserved.',409);
+    $indexes=$db->query("SELECT COLUMN_NAME,SEQ_IN_INDEX,NON_UNIQUE FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='school_tax_transfers'
+        AND INDEX_NAME='uq_stt_division_receipt' ORDER BY SEQ_IN_INDEX")->fetchAll(PDO::FETCH_ASSOC);
+    if($after){
+        demand(count($indexes)===2 && $indexes[0]['COLUMN_NAME']==='division_id'
+            && $indexes[1]['COLUMN_NAME']==='receipt_reference'
+            && (int)$indexes[0]['NON_UNIQUE']===0 && (int)$indexes[1]['NON_UNIQUE']===0,
+            'Division receipt reference unique index must be preserved.',409);
+    }else{
+        demand(count($indexes)===0,'Unexpected existing Division receipt index; review before migration.',409);
+        $duplicates=$db->query("SELECT COUNT(*) FROM
+            (SELECT division_id,receipt_reference FROM school_tax_transfers
+            WHERE receipt_reference IS NOT NULL
+            GROUP BY division_id,receipt_reference HAVING COUNT(*)>1) repeated")->fetchColumn();
+        demand((int)$duplicates===0,'Duplicate historical Division receipt references require accounting review before migration.',409);
+    }
+}
 /** Only curated, additive statements may run from update ZIPs. Never accept DROP, UPDATE or DELETE. */
 function settingsMigrationPath(string $path): bool {
     return (bool)preg_match('#^migrations/[0-9]{8}_[a-z0-9_]{3,60}\.sql$#',$path);
+}
+/** Exact, restricted password-recovery DDL whitelist. No general CREATE TABLE privilege. */
+function settingsPasswordRecoveryMigrationStatements(): array {
+    return [
+        '20261122_password_reset_requests' => <<<'IPDAMS_RECOVERY_REQUESTS_DDL'
+CREATE TABLE IF NOT EXISTS password_reset_requests (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  division_id BIGINT UNSIGNED NOT NULL,
+  school_id BIGINT UNSIGNED NULL,
+  status ENUM('PENDING','APPROVED','COMPLETED','REJECTED','EXPIRED') NOT NULL DEFAULT 'PENDING',
+  requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  decided_at DATETIME NULL,
+  approved_by BIGINT UNSIGNED NULL,
+  temporary_credential_stamp CHAR(64) NULL,
+  identity_verification_note VARCHAR(500) NULL,
+  expires_at DATETIME NULL,
+  completed_at DATETIME NULL,
+  INDEX ix_prr_division_status (division_id,status,requested_at),
+  INDEX ix_prr_user_status (user_id,status,id),
+  CONSTRAINT fk_prr_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_prr_div FOREIGN KEY (division_id) REFERENCES organizations(id),
+  CONSTRAINT fk_prr_school FOREIGN KEY (school_id) REFERENCES organizations(id),
+  CONSTRAINT fk_prr_approver FOREIGN KEY (approved_by) REFERENCES users(id)
+) ENGINE=InnoDB
+IPDAMS_RECOVERY_REQUESTS_DDL,
+        '20261122_password_reset_attempts' => <<<'IPDAMS_RECOVERY_ATTEMPTS_DDL'
+CREATE TABLE IF NOT EXISTS password_reset_attempts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ip_hash CHAR(64) NOT NULL,
+  identifier_hash CHAR(64) NOT NULL,
+  attempted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX ix_pra_ip_recent (ip_hash,attempted_at),
+  INDEX ix_pra_identifier_recent (identifier_hash,attempted_at)
+) ENGINE=InnoDB
+IPDAMS_RECOVERY_ATTEMPTS_DDL,
+    ];
+}
+/** Schema verification occurs after CREATE TABLE and also on replay; fail closed. */
+function settingsVerifyPasswordRecoveryMigration(PDO $db,string $migrationKey): void {
+    $tables=[
+        '20261122_password_reset_requests'=>[
+            'table'=>'password_reset_requests',
+            'columns'=>[
+                'id'=>['bigint','NO'],'user_id'=>['bigint','NO'],'division_id'=>['bigint','NO'],
+                'school_id'=>['bigint','YES'],'status'=>['enum','NO'],'requested_at'=>['datetime','NO'],
+                'decided_at'=>['datetime','YES'],'approved_by'=>['bigint','YES'],
+                'temporary_credential_stamp'=>['char','YES'],
+                'identity_verification_note'=>['varchar','YES'],'expires_at'=>['datetime','YES'],
+                'completed_at'=>['datetime','YES'],
+            ],
+            'indexes'=>[
+                'PRIMARY'=>'id',
+                'ix_prr_division_status'=>'division_id,status,requested_at',
+                'ix_prr_user_status'=>'user_id,status,id',
+            ],
+            'foreign_keys'=>[
+                'fk_prr_user'=>['user_id','users','id'],
+                'fk_prr_div'=>['division_id','organizations','id'],
+                'fk_prr_school'=>['school_id','organizations','id'],
+                'fk_prr_approver'=>['approved_by','users','id'],
+            ],
+        ],
+        '20261122_password_reset_attempts'=>[
+            'table'=>'password_reset_attempts',
+            'columns'=>[
+                'id'=>['bigint','NO'],'ip_hash'=>['char','NO'],
+                'identifier_hash'=>['char','NO'],'attempted_at'=>['datetime','NO'],
+            ],
+            'indexes'=>[
+                'PRIMARY'=>'id',
+                'ix_pra_ip_recent'=>'ip_hash,attempted_at',
+                'ix_pra_identifier_recent'=>'identifier_hash,attempted_at',
+            ],
+            'foreign_keys'=>[],
+        ],
+    ];
+    demand(isset($tables[$migrationKey]),'Unrecognized password recovery migration',409);
+    $spec=$tables[$migrationKey];$table=$spec['table'];
+    $stmt=$db->prepare("SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
+    $stmt->execute([$table]);
+    demand(strcasecmp((string)$stmt->fetchColumn(),'InnoDB')===0,'Password recovery table engine is missing or invalid: '.$table,409);
+    $stmt=$db->prepare("SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE,COLUMN_TYPE,EXTRA
+        FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?");
+    $stmt->execute([$table]);$columns=[];
+    foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)$columns[$row['COLUMN_NAME']]=$row;
+    demand(count($columns)===count($spec['columns']),'Password recovery table has unexpected columns: '.$table,409);
+    foreach($spec['columns'] as $name=>$check){
+        $found=$columns[$name]??null;
+        demand($found!==null && $found['DATA_TYPE']===$check[0] && $found['IS_NULLABLE']===$check[1],
+            'Password recovery schema mismatch: '.$table.'.'.$name,409);
+    }
+    demand(str_contains(strtolower((string)$columns['id']['EXTRA']),'auto_increment'),
+        'Password recovery ID is not auto-incrementing',409);
+    if($table==='password_reset_requests') {
+        demand($columns['status']['COLUMN_TYPE']==="enum('PENDING','APPROVED','COMPLETED','REJECTED','EXPIRED')",
+            'Password recovery status values are not approved',409);
+    }
+    $stmt=$db->prepare("SELECT INDEX_NAME,GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',') AS index_columns
+        FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? GROUP BY INDEX_NAME");
+    $stmt->execute([$table]);$indexes=[];
+    foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)$indexes[$row['INDEX_NAME']]=$row['index_columns'];
+    foreach($spec['indexes'] as $name=>$list)
+        demand(($indexes[$name]??'')===$list,'Password recovery index missing or different: '.$table.'.'.$name,409);
+    if($spec['foreign_keys']) {
+        $stmt=$db->prepare("SELECT CONSTRAINT_NAME,COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND REFERENCED_TABLE_NAME IS NOT NULL");
+        $stmt->execute([$table]);$foreignKeys=[];
+        foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $row)
+            $foreignKeys[$row['CONSTRAINT_NAME']]=[$row['COLUMN_NAME'],$row['REFERENCED_TABLE_NAME'],$row['REFERENCED_COLUMN_NAME']];
+        foreach($spec['foreign_keys'] as $name=>$parts)
+            demand(($foreignKeys[$name]??null)===$parts,'Password recovery foreign key is missing: '.$name,409);
+    }
 }
 function settingsMigrationSql(string $content): string {
     demand(strlen($content)>0 && strlen($content)<=SETTINGS_MAX_MIGRATION_SQL,'Migration SQL file is empty or too large');
@@ -335,12 +490,18 @@ function settingsMigrationSql(string $content): string {
     $approvedTravelTimeline=in_array(preg_replace('/\s+/',' ',trim($statement)),settingsTravelTimelineMigrationStatements(),true);
     $approvedTravelDv=in_array(preg_replace('/\s+/',' ',trim($statement)),settingsTravelDvMigrationStatements(),true);
     $approvedTaxTransfer=in_array(preg_replace('/\s+/',' ',trim($statement)),settingsTaxTransferMigrationStatements(),true);
-    demand($addColumn||$insertUacs||$createCheckStock||$approvedPropertyLink||$approvedTravelTimeline||$approvedTravelDv||$approvedTaxTransfer,
-        'Only approved additive migrations (including exact tax-transfer, property-link, travel timeline and travel DV DDL) are supported');
+    $approvedNullableBank=hash_equals(settingsTaxTransferOptionalBankDdl(),preg_replace('/\s+/',' ',trim($statement)));
+    $approvedPasswordRecovery=in_array(preg_replace('/\s+/',' ',trim($statement)),
+        array_map(static fn(string $ddl)=>preg_replace('/\s+/',' ',trim($ddl)),settingsPasswordRecoveryMigrationStatements()),true);
+    demand($addColumn||$insertUacs||$createCheckStock||$approvedPropertyLink||$approvedTravelTimeline||$approvedTravelDv||$approvedTaxTransfer||$approvedNullableBank||$approvedPasswordRecovery,
+        'Only explicitly allowlisted migrations are supported');
     return $statement;
 }
 function settingsMigrationVerifyResult(PDO $db,string $sql): void {
     $normalized=preg_replace('/\s+/',' ',trim($sql));
+    if(hash_equals(settingsTaxTransferOptionalBankDdl(),$normalized)){
+        settingsVerifyOptionalBankColumn($db,true);return;
+    }
     foreach(settingsPropertyLinkMigrationStatements() as $migrationKey=>$approved){
         if(hash_equals($approved,$normalized)){
             settingsVerifyPropertyLinkMigration($db,$migrationKey);return;
@@ -358,6 +519,11 @@ function settingsMigrationVerifyResult(PDO $db,string $sql): void {
     }
     foreach(settingsTaxTransferMigrationStatements() as $id=>$approved){
         if(hash_equals($approved,$normalized)){settingsVerifyTaxTransferMigration($db,$id);return;}
+    }
+    foreach(settingsPasswordRecoveryMigrationStatements() as $id=>$ddl){
+        if(hash_equals(preg_replace('/\s+/',' ',trim($ddl)),$normalized)){
+            settingsVerifyPasswordRecoveryMigration($db,$id);return;
+        }
     }
     if(str_starts_with($sql,'CREATE TABLE IF NOT EXISTS checkbook_leaves ')){
         $c=$db->query("SELECT COLUMN_NAME,DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='checkbook_leaves'")->fetchAll(PDO::FETCH_ASSOC);
@@ -410,6 +576,8 @@ function settingsApplyMigrations(PDO $db,ZipArchive $zip,array $manifest,int $ui
             }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
         }else{
             // DDL auto-commits in MariaDB. Never claim that file rollback reverses it.
+            if(hash_equals(settingsTaxTransferOptionalBankDdl(),preg_replace('/\s+/',' ',trim($statement))))
+                settingsVerifyOptionalBankColumn($db,false);
             $db->exec($statement);
             $insert=$db->prepare('INSERT INTO ipdams_schema_migrations (migration_id,checksum,release_version) VALUES (?,?,?)');
             $insert->execute([$id,$entry['sha256'],$manifest['version']]);

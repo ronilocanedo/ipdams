@@ -39,3 +39,8 @@
 .check-proof-advanced{padding:8px 0;border-top:1px solid #d7e2e8}
 .check-proof-advanced summary{cursor:pointer;font-weight:650}
 @media print{.check-proof-field[role="button"],.check-proof-field[aria-pressed="true"]{outline:none!important;background:transparent!important;color:#1c3442!important}}
+
+/* v0.2.444: show where alignment values came from without altering the paper layout */
+.check-proof-source{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 18px;padding:10px 12px;border:1px solid #d6e5e9;background:#f4f9fa;border-radius:8px;font-size:.82rem;color:#21465a}
+.check-proof-source strong{width:100%;color:#123c52}
+@media print{.check-proof-source{display:none!important}}

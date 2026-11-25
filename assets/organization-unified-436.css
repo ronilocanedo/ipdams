@@ -1,0 +1,17 @@
+/* v0.2.436: clean Property Accountability-inspired unified Division profile. */
+.org-bir-unified-436 { padding: clamp(12px, 2vw, 22px) !important; }
+.org-bir-unified-436 .org-bir-heading-436 { margin-bottom: 15px; }
+.org-bir-unified-436 .org-bir-heading-436 h3 { margin: 0 0 5px; }
+.org-bir-unified-436 .org-bir-heading-436 p { margin: 0; }
+.org-bir-unified-436 .org-bir-group-436 { padding: 15px; margin: 0 0 12px; border: 1px solid #d6e2e9; border-radius: 10px; background: #f8fafb; min-width: 0; }
+.org-bir-unified-436 .org-bir-group-tax-436 { background: #f1f8f8; border-color: #9bd0d0; }
+.org-bir-unified-436 .org-bir-group-title-436 { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; margin: 0 0 12px; padding: 0 0 10px; border-bottom: 1px solid #d8e6e9; color: #155f68; }
+.org-bir-unified-436 .org-bir-group-title-436 strong { font-size: 1rem; }
+.org-bir-unified-436 .org-bir-group-title-436 span { font-size: .74rem; color: #527486; }
+.org-bir-unified-436 .form-grid { gap: 12px; }
+.org-bir-unified-436 .field { min-width: 0; }
+.org-bir-unified-436 .field input, .org-bir-unified-436 .field select, .org-bir-unified-436 .field textarea { min-width: 0; width: 100%; box-sizing: border-box; }
+.org-bir-unified-436 .org-bir-address-436 textarea[readonly] { background: #eaf1f3; color: #385769; border-style: dashed; resize: none; }
+.org-bir-unified-436 .org-bir-actions-436 { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; border-top: 1px solid #d8e6e9; padding-top: 15px; margin-top: 5px; }
+.org-bir-unified-436 .org-bir-actions-436 > button { min-height: 44px; }
+@media(max-width: 640px) { .org-bir-unified-436 .org-bir-group-436 {padding: 12px;} .org-bir-unified-436 .form-grid { grid-template-columns: minmax(0,1fr) !important; } .org-bir-unified-436 .org-bir-actions-436 > button {width:100%;} }
