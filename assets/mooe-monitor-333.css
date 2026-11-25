@@ -1,0 +1,19 @@
+/* IPDAMS 0.2.333: compact monitored MOOE release form. */
+.mooe-monitor-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:12px 0}
+.mooe-monitor .field{min-width:0}
+.mooe-monitor .field input,.mooe-monitor .field select{width:100%;min-width:0}
+.mooe-monitor-row{padding:12px 0;border-bottom:1px solid #dbe6ee;display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.mooe-monitor-main{display:flex;flex:1 1 310px;flex-direction:column;gap:4px;min-width:0}
+.mooe-monitor-main>span{overflow-wrap:anywhere;font-size:13px}
+.mooe-monitor-status{width:fit-content;padding:3px 8px;border-radius:6px;background:#eef4f5;color:#326777}
+.mooe-monitor-status.received{background:#e5f5ec;color:#1c6644}
+.mooe-monitor-status.discrepancy{background:#fff2dc;color:#94641e}
+.mooe-monitor-confirm{width:100%;padding:14px;background:#f6f9fb;border:1px solid #dce8ed;border-radius:8px}
+.mooe-monitor-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+
+/* v0.2.335: compact, clearly confirmed school bank evidence */
+.fund-download-check{display:flex;align-items:center;gap:9px;margin:10px 0;font-size:13px;cursor:pointer}
+.fund-download-check input[type=checkbox]{width:17px!important;height:17px!important;min-width:17px;flex:none;margin:0}
+.mooe-monitor-row>.outline{flex:0 0 auto}
+.mooe-monitor-row>.mooe-monitor-confirm{flex:1 0 100%}
+.mooe-monitor-status.reconfirmation_required{background:#fff0df;color:#855309}

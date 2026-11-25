@@ -1,0 +1,130 @@
+/* v0.2.273 — shared book directory and authorized profile editor */
+.textbook-book-profile-form{display:block;margin:12px 0;border:1px solid var(--border,#d7e0e8);border-radius:12px;padding:14px;background:var(--surface,#fff)}
+.textbook-profile-group{margin:9px 0;border:1px solid #dbe4ea;border-radius:8px;padding:9px 11px;background:rgba(248,250,252,.7)}
+.textbook-profile-group>summary{font-weight:650;cursor:pointer;padding:3px 0;list-style-position:inside}
+.textbook-profile-group[open]>summary{margin-bottom:10px}
+.textbook-profile-list{margin:13px 0 18px;padding:12px;border:1px solid #dce5ed;border-radius:10px}
+.textbook-profile-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 3px;border-bottom:1px solid #e5ebf1;flex-wrap:wrap}
+.textbook-profile-row:last-child{border-bottom:none}
+.textbook-profile-row>div{flex:1;min-width:210px;overflow-wrap:anywhere}
+.textbook-profile-row>.outline{white-space:nowrap}
+@media(max-width:640px){.textbook-book-profile-form{padding:10px}.textbook-profile-row>div{min-width:100%}}
+
+/* v0.2.275: deliberate draft discard controls; no destructive delete */
+.textbook-profile-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center;flex:0 1 auto!important;min-width:0!important}
+.textbook-profile-discard{margin:12px 0;padding:10px;border:1px solid #e6d7b2;border-radius:8px}
+.textbook-profile-discard-confirm{padding:4px 0}
+.textbook-profile-discard-confirm p{margin:2px 0 8px}
+.textbook-profile-inline-confirm{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.textbook-profile-archived-toggle{display:inline-flex;gap:6px;align-items:center;cursor:pointer;font-size:12px}
+.textbook-profile-archived-toggle input{width:auto;height:auto}
+
+
+/* v0.2.276: compact section navigation, visually distinct registers and floating workflows. */
+.textbook-workspace{--tb-ink:#102f4d;--tb-border:#b7c8d7;--tb-contrast:#eaf1f8;}
+.textbook-tabbar{display:flex;align-items:flex-end;flex-wrap:wrap;gap:5px;padding:5px 5px 0;border-bottom:2px solid #bacad9;background:#f3f7fb;border-radius:9px 9px 0 0;}
+.textbook-tabbar .textbook-tab{appearance:none;border:1px solid transparent;border-bottom:3px solid transparent;border-radius:7px 7px 0 0;background:transparent;color:#3c5063;padding:9px 14px;font-size:13px;font-weight:650;line-height:1.15;cursor:pointer;min-height:37px;white-space:nowrap;box-shadow:none;}
+.textbook-tabbar .textbook-tab:hover{background:#e4edf6;color:#153754;}
+.textbook-tabbar .textbook-tab.is-active{background:#fff;color:#123a5d;border-color:#b7c8d7;border-bottom-color:#175a89;box-shadow:0 -1px 2px #d3dee833;}
+.textbook-tabbar .textbook-tab:focus-visible{outline:3px solid #317fac;outline-offset:2px;}
+.textbook-tab-panel{margin-top:12px;min-width:0;}
+.textbook-tab-content{display:grid;gap:12px;min-width:0;}
+.textbook-workspace .textbook-register-section{padding:16px;min-width:0;}
+.textbook-workspace .textbook-register-section>.section-head{align-items:center;gap:8px;flex-wrap:wrap;}
+.textbook-workspace .textbook-register-section>.section-head h3{margin-right:auto;color:var(--tb-ink);}
+.textbook-workspace-notice,.textbook-workspace-error,.textbook-form-error{border:1px solid #b7d8c0;border-left:4px solid #21774e;border-radius:8px;padding:10px 12px;background:#eff9f3;color:#20543d;}
+.textbook-workspace-error,.textbook-form-error{background:#fff5f4;color:#9f3030;border-color:#efc6c3;border-left-color:#9f3030;}
+.textbook-search-row{display:flex;gap:9px;align-items:end;flex-wrap:wrap;margin:13px 0 10px;}
+.textbook-search-row>.field{flex:1 1 300px;min-width:0;}
+.textbook-register-tools{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 10px;margin:9px 0;background:#f0f5fa;border:1px solid #d2deeb;border-radius:7px;}
+.textbook-subtle-count{font-size:12px;color:#40576c;}
+.textbook-table-scroll,.textbook-workspace .table-scroll{max-width:100%;overflow:auto;border:1px solid var(--tb-border);border-radius:7px;}
+.textbook-workspace .textbook-data-table,.textbook-workspace .table-scroll table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;color:#233c53;font-size:13px;}
+.textbook-workspace .textbook-data-table{min-width:710px;}
+.textbook-workspace .textbook-data-table th,.textbook-workspace .table-scroll th{padding:10px 12px;text-align:left;vertical-align:middle;color:#fff;background:#173f60;border-right:1px solid #416883;border-bottom:2px solid #0f314d;font-size:12px;font-weight:700;letter-spacing:.015em;white-space:nowrap;}
+.textbook-workspace .textbook-data-table th:last-child,.textbook-workspace .table-scroll th:last-child{border-right:none;}
+.textbook-workspace .textbook-data-table td,.textbook-workspace .table-scroll td{padding:10px 12px;vertical-align:top;border-bottom:1px solid #c7d6e3;border-right:1px solid #e1e8ef;overflow-wrap:anywhere;line-height:1.5;}
+.textbook-workspace .textbook-data-table td:last-child,.textbook-workspace .table-scroll td:last-child{border-right:none;}
+.textbook-workspace .textbook-data-table tbody tr:nth-child(even),.textbook-workspace .table-scroll tbody tr:nth-child(even){background:#eef4fa;}
+.textbook-workspace .textbook-data-table tbody tr:nth-child(odd),.textbook-workspace .table-scroll tbody tr:nth-child(odd){background:#fff;}
+.textbook-workspace .textbook-data-table tbody tr:hover,.textbook-workspace .table-scroll tbody tr:hover{background:#deebf6;}
+.textbook-workspace .textbook-data-table tbody tr:last-child td,.textbook-workspace .table-scroll tbody tr:last-child td{border-bottom:none;}
+.textbook-profile-table td:first-child{min-width:230px;}
+.textbook-cell-secondary,.textbook-receipt-ready{display:block;font-size:11px;margin-top:3px;color:#496479;}
+.textbook-receipt-ready{color:#1d734c;font-weight:650;}
+.textbook-status{display:inline-flex;align-items:center;line-height:1.35;font-size:11px;font-weight:700;background:#e8eef5;color:#34516b;border:1px solid #c1cfdb;border-radius:5px;padding:4px 7px;white-space:normal;}
+.textbook-status-verified,.textbook-status-accepted{color:#13593a;background:#e4f4e9;border-color:#a9d8b9;}
+.textbook-status-draft,.textbook-status-submitted,.textbook-status-inspected{color:#775114;background:#fcf0d9;border-color:#e8c885;}
+.textbook-status-discarded,.textbook-status-rejected,.textbook-status-cancelled{color:#814140;background:#fdebe8;border-color:#e8b7b2;}
+.textbook-row-actions,.textbook-inline-confirm{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.textbook-row-actions button{font-size:12px;padding:6px 9px;margin:0;white-space:nowrap;}
+.textbook-inline-confirm{border:1px solid #e2bb84;background:#fff8ec;border-radius:6px;padding:4px;}
+.textbook-pagination{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:12px;}
+.textbook-legacy-directory{padding:14px;}
+.textbook-legacy-directory>summary{font-size:14px;font-weight:700;color:#123a5d;cursor:pointer;padding:4px;}
+.textbook-legacy-directory .table-box,.textbook-workspace .textbook-stock-table .table-box,.textbook-workspace .textbook-tab-content>.surface .table-box{margin-top:10px;padding:0;border:none;box-shadow:none;background:transparent;}
+.textbook-next-phase{font-size:12px;color:#52718c;padding:8px 12px;border-left:3px solid #8badc7;background:#f2f7fa;margin:0;}
+.textbook-modal-backdrop{position:fixed;z-index:2600;inset:0;background:rgba(10,27,43,.64);display:flex;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto;}
+.textbook-modal-dialog{box-sizing:border-box;position:relative;width:min(970px,100%);max-height:92vh;overflow:auto;background:#fff;border:1px solid #8da9bf;border-radius:12px;box-shadow:0 20px 65px rgba(5,19,32,.3);color:#1c344a;padding:16px 20px 22px;outline:none;}
+.textbook-modal-dialog:focus-visible{outline:3px solid #4e98cc;}
+.textbook-modal-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:2px solid #bad0df;padding:2px 0 12px;margin-bottom:15px;position:sticky;top:-16px;background:#fff;z-index:1;}
+.textbook-modal-heading strong{color:#153e5c;font-size:17px;}
+.textbook-modal-close{white-space:nowrap;}
+.ipdams-textbook-dialog-open{overflow:hidden;}
+.textbook-modal-dialog .textbook-book-profile-form{border:none;background:transparent;padding:0;margin:0;box-shadow:none;}
+.textbook-modal-dialog .textbook-receipt-review>.surface{box-shadow:none;border:none;padding:0;}
+.textbook-modal-dialog .textbook-book-profile-form>.section-head{margin-bottom:8px;}
+.textbook-modal-dialog .textbook-profile-group{background:#f4f7fa;border-color:#cad8e5;}
+.textbook-modal-dialog .textbook-profile-group>summary{color:#244d6b;}
+.textbook-book-detail-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 14px;margin:10px 0;}
+.textbook-book-detail-list>div{border:1px solid #d0dfec;background:#f5f8fb;border-radius:7px;padding:8px 10px;}
+.textbook-book-detail-list dt{font-size:11px;font-weight:700;text-transform:capitalize;color:#4d6680;}
+.textbook-book-detail-list dd{margin:2px 0 0;overflow-wrap:anywhere;color:#153b59;}
+@media(max-width:680px){.textbook-tabbar{gap:2px;padding:3px 3px 0}.textbook-tabbar .textbook-tab{padding:8px 9px;font-size:12px}.textbook-modal-backdrop{padding:0}.textbook-modal-dialog{width:100%;border-radius:0;max-height:100vh;min-height:100vh;padding:12px}.textbook-modal-heading{top:-12px}.textbook-register-section{padding:12px!important}}
+
+/* Keep tabs compact even when the legacy responsive navigation forces column buttons. */
+.textbook-workspace nav.textbook-tabbar{display:flex!important;flex-flow:row nowrap!important;justify-content:flex-start!important;align-items:stretch!important;gap:3px!important;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
+.textbook-workspace nav.textbook-tabbar button.textbook-tab{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;max-width:none!important;min-width:max-content!important;margin:0!important;padding:9px 12px!important;}
+.textbook-workspace .textbook-profile-table tbody tr.textbook-profile-row{display:table-row;}
+.textbook-discard-dialog{padding:4px 0 8px;}
+.textbook-dialog-subtitle{margin:0 0 10px;color:#193b58;}
+@media(max-width:680px){.textbook-workspace nav.textbook-tabbar button.textbook-tab{padding:8px 10px!important;font-size:12px!important}}
+
+/* v0.2.278 — responsive global ISBN/author/title picker for actual CO receipts. */
+.textbook-co-book-picker{position:relative;min-width:0;grid-column:auto;}
+.textbook-co-book-query{width:100%;box-sizing:border-box;}
+.textbook-co-book-query:focus-visible{outline:3px solid #0b8b80;outline-offset:2px;}
+.textbook-co-book-results{position:absolute;left:0;right:0;top:calc(100% - 3px);z-index:12;
+    max-height:min(340px,45vh);overflow-y:auto;background:#fff;border:2px solid #5c8fb4;
+    border-radius:0 0 9px 9px;box-shadow:0 15px 32px rgba(15,41,66,.20);}
+.textbook-co-book-option{display:flex!important;flex-direction:column;align-items:flex-start!important;
+    width:100%;text-align:left;white-space:normal;border:0;border-bottom:1px solid #c9d9e6;
+    border-radius:0!important;background:#fff!important;color:#163957!important;
+    font-size:13px;line-height:1.35;padding:11px 13px!important;gap:3px;margin:0!important;cursor:pointer;}
+.textbook-co-book-option:hover,.textbook-co-book-option.is-active{background:#e8f3fb!important;}
+.textbook-co-book-option:focus-visible{outline:3px solid #0b8b80;outline-offset:-3px;}
+.textbook-co-book-option strong{display:block;font-size:13px;color:#163957;}
+.textbook-co-book-option small{display:block;color:#4b657a;font-size:12px;line-height:1.45;}
+.textbook-co-book-option em{font-size:11px;color:#725414;font-style:normal;}
+.textbook-co-book-isbn{font-size:12px;color:#176c69;font-weight:650;overflow-wrap:anywhere;}
+.textbook-co-book-hint,.textbook-co-book-error{padding:12px;margin:0;color:#48657b;font-size:12px;line-height:1.5;}
+.textbook-co-book-error{color:#a83b37;}
+.textbook-co-book-selected{display:flex;align-items:center;justify-content:space-between;gap:9px;
+    margin-top:7px;padding:10px;border:1px solid #8fc9bd;border-left:4px solid #148276;
+    background:#effaf7;border-radius:7px;}
+.textbook-co-book-selected strong{color:#164c47;}
+.textbook-co-book-selected small{display:block;color:#466a64;line-height:1.45;}
+.textbook-co-book-selected button{white-space:nowrap;}
+@media(max-width:680px){.textbook-co-book-picker{grid-column:1/-1;}
+    .textbook-co-book-results{max-height:42vh;}
+    .textbook-co-book-selected{flex-wrap:wrap;}
+}
+
+/* v0.2.279: CO textbook IAR and separately signed inspectorate evidence */
+.textbook-co-iar-summary{padding:10px 14px;margin:10px 0 14px;border:1px solid #a5c8cf;border-left:4px solid #197c88;border-radius:8px;background:#f2f9fb;color:#183d4d;}
+.textbook-co-iar-summary strong{display:block;margin-bottom:6px;}
+.textbook-co-iar-summary .row-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.textbook-co-iar-summary small{display:block;margin-top:6px;color:#456477;}
+.textbook-co-iar-link{font-size:12px;font-weight:700;white-space:nowrap;text-decoration:underline;text-underline-offset:2px;color:#0c747a;}
+.textbook-iar-attestation{display:flex;gap:9px;align-items:start;line-height:1.5;border-radius:6px;padding:10px;border:1px solid #bfd3d3;background:#f1f9f7;margin:12px 0;}
+.textbook-iar-attestation input{flex:0 0 auto;margin-top:3px;}

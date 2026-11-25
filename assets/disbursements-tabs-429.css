@@ -1,0 +1,133 @@
+/* IPDAMS v0.2.429: Disbursements tabs match Property Accountability navigation.
+   Presentation-only; no change to DV, bank, withholding or approval rules. */
+.dv-workspace-429 { min-width: 0; width: 100%; }
+.dv-workspace-429 .dv-workspace-tabs {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px; margin: 4px 0 2px; padding: 0; width: 100%;
+    min-width: 0; background: transparent; border: 0;
+}
+.dv-workspace-429 .dv-workspace-tab {
+    position: relative; display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: center;
+    min-width: 0; min-height: 73px; box-sizing: border-box;
+    gap: 5px; padding: 12px 15px !important;
+    margin: 0 !important; text-align: left;
+    border: 1px solid #d6e2e9 !important;
+    border-radius: 10px !important; background: #f5f8fa !important;
+    color: #36576c !important; box-shadow: none !important;
+    cursor: pointer;
+}
+.dv-workspace-429 .dv-workspace-tab:hover {
+    background: #ebf4f7 !important; border-color: #9fc3cc !important;
+}
+.dv-workspace-429 .dv-workspace-tab.is-active {
+    background: #eaf6f6 !important; border-color: #2f9ca5 !important;
+    color: #135865 !important; box-shadow: inset 0 0 0 1px #2f9ca5 !important;
+}
+.dv-workspace-429 .dv-workspace-tab:focus-visible {
+    outline: 2px solid #138e9b !important; outline-offset: 3px;
+}
+.dv-workspace-429 .dv-workspace-tab-title {
+    font-size: .93rem; font-weight: 750; line-height: 1.3; overflow-wrap: anywhere;
+}
+.dv-workspace-429 .dv-workspace-tab-description {
+    font-size: .75rem; line-height: 1.35; font-weight: 400;
+    color: #5a7587; overflow-wrap: anywhere;
+}
+.dv-workspace-429 .dv-workspace-tab-count {
+    font-size: .72rem; padding: 3px 7px; line-height: 1.3;
+    border-radius: 999px; background: #e0eef0; color: #1d6270; font-weight: 700;
+}
+.dv-workspace-429 .dv-workspace-panel {
+    display: grid; gap: 12px; min-width: 0; max-width: 100%;
+    box-sizing: border-box;
+}
+.dv-workspace-429 .dv-workspace-panel > .surface { margin: 0; min-width: 0; }
+.dv-workspace-429 .dv-workspace-panel > .tax-transfer-373 {
+    margin-top: 0; min-width: 0;
+}
+.dv-workspace-429 .tax-transfer-head {
+    padding-bottom: 12px; border-bottom: 1px solid #e3edf0;
+}
+.dv-workspace-429 .tax-transfer-head h3 { font-size: 1.04rem; }
+.dv-workspace-429 .tax-transfer-head p { line-height: 1.5; }
+.dv-workspace-429 .tax-transfer-body > .surface {
+    border: 1px solid #dce8ed; box-shadow: none;
+}
+.dv-workspace-429 .tax-transfer-history,
+.dv-workspace-429 .tax-transfer-table-wrap,
+.dv-workspace-429 .dv-register-table-wrap { min-width: 0; max-width: 100%; }
+.dv-workspace-429 .dv-start-panel { border-color: #d9e6eb; }
+.dv-workspace-429 .dv-register-mobile,
+.dv-workspace-429 .dv-register-desktop { min-width: 0; }
+@media (max-width: 600px) {
+    .dv-workspace-429 .dv-workspace-tabs { gap: 7px; }
+    .dv-workspace-429 .dv-workspace-tab {
+        min-height: 53px; padding: 10px 9px !important; gap: 4px;
+    }
+    .dv-workspace-429 .dv-workspace-tab-title { font-size: .78rem; }
+    .dv-workspace-429 .dv-workspace-tab-description { display: none; }
+    .dv-workspace-429 .dv-workspace-tab-count { font-size: .65rem; padding: 2px 6px; }
+    .dv-workspace-429 .tax-transfer-head { align-items: flex-start; }
+    .dv-workspace-429 .tax-transfer-head a { max-width: 100%; box-sizing: border-box; }
+    .dv-workspace-429 .tax-transfer-record { align-items: stretch; }
+}
+@media print {
+    .dv-workspace-429 .dv-workspace-tabs { display: none; }
+}
+
+/* Division retained-withholding workpaper: narrow-screen cards show all five
+   saved source fields without clipping or altering amounts/accounting. */
+@media (max-width: 600px) {
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table-wrap {
+        overflow-x: visible;
+    }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table {
+        display: block;
+        min-width: 0 !important;
+        width: 100%;
+    }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table thead {
+        display: none;
+    }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table tbody {
+        display: grid;
+        gap: 10px;
+    }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table tbody tr {
+        display: block;
+        padding: 5px 10px;
+        border: 1px solid #d6e6e9;
+        border-radius: 9px;
+        background: #fbfdfd;
+        min-width: 0;
+    }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table td {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 9px 2px !important;
+        border: 0 !important;
+        text-align: right;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        font-variant-numeric: tabular-nums;
+    }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table td + td {
+        border-top: 1px solid #e7eef0 !important;
+    }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table td::before {
+        display: block;
+        text-align: left;
+        font-weight: 650;
+        color: #3e6474;
+        line-height: 1.35;
+    }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table td:nth-child(1)::before { content: "School"; }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table td:nth-child(2)::before { content: "Fund / FY"; }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table td:nth-child(3)::before { content: "Recorded withheld"; }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table td:nth-child(4)::before { content: "Retained confirmation"; }
+    .dv-workspace-429 [aria-label="Division responsibility for utilized school withholding"] .tax-transfer-table td:nth-child(5)::before { content: "School confirmation pending"; }
+}

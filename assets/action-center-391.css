@@ -1,0 +1,16 @@
+/* v0.2.391: compact Action Center task register; visual only. */
+.ipdams-action-center .ipdams-action-workspace{padding:20px 22px;display:grid;gap:8px}
+.ipdams-action-center .ipdams-action-summary{margin:0 0 8px;padding:11px 14px;background:#f3f8f9;border-left:3px solid #148d81;font-size:14px}
+.ipdams-action-center .ipdams-action-top{margin-top:8px;padding-top:12px;border-top:1px solid #e5edf0;align-items:center}
+.ipdams-action-center .ipdams-action-top:first-child{margin-top:0;padding-top:0;border-top:0}
+.ipdams-action-center .ipdams-action-top h2{font-size:18px;margin:0 0 3px;line-height:1.3}
+.ipdams-action-center .ipdams-action-top p{font-size:13px;line-height:1.4}
+.ipdams-action-center .ipdams-action-empty{padding:9px 12px;border:0;border-radius:7px;background:#f6f9fb;color:#647b8c;font-size:13px}
+.ipdams-action-center .ipdams-action-row{margin:0;padding:12px 14px;border-radius:9px;box-shadow:none}
+.ipdams-action-center .ipdams-action-row-content{gap:3px}
+.ipdams-action-center .ipdams-action-row-content strong{font-size:14px}
+.ipdams-action-center .ipdams-action-row-content small{font-size:12.5px;line-height:1.35}
+.ipdams-action-center .ipdams-action-open{padding:8px 12px;font-size:13px;white-space:nowrap}
+.ipdams-action-center .ipdams-action-tax{border-left:3px solid #138d83}
+.ipdams-action-center .body-muted{font-size:12px;margin:5px 0}
+@media(max-width:680px){.ipdams-action-center .ipdams-action-workspace{padding:14px 12px}.ipdams-action-center .ipdams-action-row{padding:11px}.ipdams-action-center .ipdams-action-open{width:100%;white-space:normal}}

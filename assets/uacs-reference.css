@@ -1,0 +1,59 @@
+/* v0.2.17: searchable UACS directory, compact alongside existing Reference Data forms */
+.uacs-reference{display:grid;gap:12px}
+.uacs-reference .uacs-stats{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:.88rem}
+.uacs-reference .uacs-filters{display:grid;grid-template-columns:minmax(210px,2fr) minmax(130px,1fr) minmax(120px,1fr) auto;align-items:end;gap:10px}
+.uacs-reference .uacs-paging{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:.85rem;color:#5b6f7b}
+.uacs-reference .master-table th,.uacs-reference .master-table td{padding:7px 9px;vertical-align:middle}
+@media(max-width:850px){.uacs-reference .uacs-filters{grid-template-columns:1fr 1fr}.uacs-reference .uacs-filters>.field:first-child{grid-column:1/-1}}
+@media(max-width:520px){.uacs-reference .uacs-filters{grid-template-columns:1fr}.uacs-reference .uacs-filters>.field:first-child{grid-column:auto}}
+
+/* v0.2.75: scoped, auditable UACS effectivity correction review. */
+.uacs-correction-dialog{width:min(830px,calc(100vw - 22px));max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain}
+.uacs-correction-dialog .section-head{position:sticky;top:0;z-index:1;background:#fff;padding:8px 0;border-bottom:1px solid #dde8ee}
+.uacs-correction-dialog .field{display:flex;flex-direction:column;gap:6px;margin:13px 0}
+.uacs-correction-dialog .field input,.uacs-correction-dialog .field textarea{width:100%;box-sizing:border-box}
+.uacs-correction-summary{display:flex;flex-wrap:wrap;gap:6px 15px;align-items:center;background:#f0f7f7;
+    border:1px solid #d5e9e6;border-radius:8px;padding:10px 12px;margin:13px 0;color:#244858}
+.uacs-correction-summary span{font-size:12px}
+.uacs-correction-impact{border-top:1px solid #dce8ec;margin-top:15px;padding-top:13px}
+.uacs-correction-impact h4{margin:0 0 7px;font-size:14px}
+.uacs-correction-impact .table-scroll{max-height:260px;overflow:auto}
+.uacs-correction-impact .data-table{min-width:680px}
+.uacs-correction-impact td,.uacs-correction-impact th{font-size:11px;vertical-align:top}
+.uacs-correction-impact .ipr-actions{margin-top:14px}
+.uacs-correction-dialog button:focus-visible{outline:3px solid #147e77;outline-offset:3px}
+@media(max-width:600px){.uacs-correction-dialog{padding:14px}.uacs-correction-summary{flex-direction:column;align-items:flex-start}}
+
+/* v0.2.76: one authoritative UACS maintenance dialog per catalog item. */
+.uacs-mapping-register{padding:0!important;overflow:hidden}
+.uacs-mapping-register>summary{list-style:none;cursor:pointer;display:flex;align-items:center;
+    justify-content:space-between;gap:12px;padding:15px 18px;background:#f4f9fa;
+    border-left:4px solid #168d84;color:#1e4a59}
+.uacs-mapping-register>summary::-webkit-details-marker{display:none}
+.uacs-mapping-register>summary::after{content:"▾";font-size:18px;color:#24706b;
+    transition:transform .15s ease}
+.uacs-mapping-register[open]>summary::after{transform:rotate(180deg)}
+.uacs-mapping-register>summary strong{font-size:14px}
+.uacs-mapping-register>summary small{font-size:11px;font-weight:500;color:#597988}
+.uacs-mapping-register>summary:hover{background:#e7f4f2}
+.uacs-mapping-register>summary:focus-visible{outline:3px solid #167c75;outline-offset:-4px}
+.uacs-mapping-register-body{padding:16px 18px}
+.uacs-mapping-register-body>.hint{margin:0 0 12px}
+.uacs-mapping-register-body>.inline-actions{justify-content:flex-end;margin:0 0 12px}
+.uacs-item-current-mappings{margin:14px 0;padding:13px;background:#f5f9fa;border:1px solid #dbe9ec;border-radius:9px}
+.uacs-item-current-mappings h4,.uacs-item-new-heading h4{margin:0 0 9px;font-size:13px;color:#1f4556}
+.uacs-item-mapping-list{display:grid;gap:7px}
+.uacs-item-mapping-row{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:9px 10px;border:1px solid #e0ebee;border-radius:7px;background:#fff}
+.uacs-item-mapping-row>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.uacs-item-mapping-row strong{font-size:12px;color:#27495a;overflow-wrap:anywhere}
+.uacs-item-mapping-row small{color:#668091;font-size:11px}
+.uacs-item-mapping-row button{flex-shrink:0;white-space:normal}
+.uacs-item-new-heading{margin:16px 0 12px;padding:12px 13px;border-left:3px solid #248a84;background:#f5fbfa}
+.uacs-item-new-heading .hint{margin:0;line-height:1.5}
+.ipr-dialog:has(.uacs-item-current-mappings){max-height:calc(100dvh - 30px);overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:620px){
+  .uacs-mapping-register>summary{flex-direction:column;align-items:flex-start}
+  .uacs-item-mapping-row{flex-direction:column;align-items:stretch}
+  .uacs-item-mapping-row button{align-self:flex-start}
+}

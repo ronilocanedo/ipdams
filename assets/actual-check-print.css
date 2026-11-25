@@ -1,0 +1,67 @@
+/* v0.2.445 Check printer shares one entry from DV register and Cash & Bank. */
+.actual-check-modal-backdrop{position:fixed;inset:0;z-index:10050;background:#10253d99;display:flex;justify-content:center;align-items:center;padding:16px}
+.actual-check-modal{width:min(1060px,100%);max-height:calc(100dvh - 32px);background:#fff;border:1px solid #cbdde5;box-shadow:0 16px 50px #15283c47;border-radius:14px;display:flex;flex-direction:column;color:#17334b}
+.actual-check-modal-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;border-bottom:1px solid #d9e5e9}
+.actual-check-modal-head h2{font-size:23px;margin:0}
+.actual-check-modal-head p{margin:3px 0 0;color:#668092;font-size:12px}
+.actual-check-modal-head button{min-width:42px;min-height:40px;font-size:26px;line-height:1}
+.actual-check-modal-body{overflow:auto;padding:18px 22px 24px}
+.actual-check-summary{display:flex;gap:8px 20px;flex-wrap:wrap;padding:10px 13px;background:#f2f8f9;border:1px solid #cfe1e6;border-radius:8px;font-size:13px}
+.actual-check-summary strong{width:100%;font-size:15px}
+.actual-check-preview-wrap{max-width:100%;margin:16px 0}
+.actual-check-scroll{overflow-x:auto;max-width:100%;padding:10px 0}
+.actual-check-paper{position:relative;flex:none;background:#fff;box-sizing:border-box;border:1px dashed #92aaba;box-shadow:0 3px 14px #132a3b18;overflow:hidden;font-family:'Bookman Old Style',Georgia,serif;color:#102b3d}
+.actual-check-field{position:absolute;box-sizing:border-box;font-weight:700;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:clip;height:6.3mm}
+.actual-check-field-words{white-space:normal;height:13mm}
+.actual-check-screen-watermark{position:absolute;top:24mm;left:20mm;color:#ac3f3f44;font:900 30pt Arial,sans-serif;transform:rotate(-13deg);pointer-events:none}
+.actual-check-signature-guide{position:absolute;font:8pt Arial,sans-serif;color:#8a9daa;border-top:1px dashed #b7c8d0}
+.actual-check-authorization{background:#fbfdfe;border:1px solid #d5e3e9;border-radius:9px;padding:14px;display:grid;gap:12px}
+.actual-check-authorization .field{max-width:430px;min-width:0}
+.actual-check-confirm{display:flex;gap:9px;align-items:start;line-height:1.45;font-size:13px}
+.actual-check-confirm input{margin-top:3px;flex-shrink:0}
+.actual-check-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.cb-check-print-buttons{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+@media(max-width:600px){.actual-check-modal-backdrop{padding:5px}.actual-check-modal{max-height:calc(100dvh - 10px)}.actual-check-modal-head{padding:11px 13px}.actual-check-modal-body{padding:12px}.actual-check-authorization{padding:10px}}
+@media print{
+html,body{background:#fff!important;margin:0!important;padding:0!important}
+body *{visibility:hidden!important}
+.actual-check-paper,.actual-check-paper *{visibility:visible!important}
+.actual-check-paper{position:fixed!important;left:0!important;top:0!important;border:0!important;box-shadow:none!important;overflow:hidden!important}
+.actual-check-screen-watermark,.actual-check-signature-guide{display:none!important}
+.actual-check-field{color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+/* v0.2.446: lifecycle status is advisory only; server remains the status authority. */
+.actual-check-lifecycle{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:12px 0;padding:10px 12px;background:#f8fbfc;border:1px solid #d5e4e9;border-radius:8px}
+.actual-check-stage{font-size:11px;font-weight:650;border:1px solid #d0dee5;border-radius:20px;padding:5px 9px;color:#678193;background:#fff}
+.actual-check-stage.is-complete{color:#14635c;background:#ebf8f4;border-color:#9ed7ca}
+.actual-check-stage.is-current{outline:2px solid #137d87;outline-offset:1px}
+.actual-check-next{flex-basis:100%;margin:5px 0 0;font-size:13px;color:#28495e}
+.actual-check-lifecycle .hint{flex-basis:100%;margin:0;font-size:11px}
+@media(max-width:600px){.actual-check-lifecycle{gap:5px;padding:8px}.actual-check-stage{font-size:10px;padding:5px 6px}}
+
+/* v0.2.447: only the explicitly selected TEST print keeps a non-negotiable watermark on paper. */
+@media print{
+.actual-check-paper.actual-check-test-mode .actual-check-screen-watermark{
+ display:block!important;visibility:visible!important;color:#b04141!important;opacity:.4!important;
+ font-size:20pt!important;white-space:nowrap!important;left:12mm!important;top:28mm!important;
+ -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+}
+
+/* v0.2.448: single-screen preview and existing shared visual alignment editor. */
+.actual-check-print-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:12px 0 9px}
+.actual-check-align-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 12px;background:#f0f8f9;border:1px solid #cbdde5;border-radius:8px}
+.actual-check-align-workspace .check-proof-container{margin:12px 0 0;min-width:0}
+.actual-check-align-workspace .check-proof-overflow{max-width:100%;overflow:auto}
+.actual-check-align-workspace .check-proof-settings{max-width:100%}
+@media(max-width:600px){.actual-check-print-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.actual-check-print-toolbar button{min-width:0;white-space:normal}}
+/* When the alignment editor's TEST print is active, print its non-negotiable
+   proof rather than the negotiable check view. */
+@media print{
+ body:has(.actual-check-modal .check-proof-container) .check-proof-paper,
+ body:has(.actual-check-modal .check-proof-container) .check-proof-paper *{visibility:visible!important}
+ body:has(.actual-check-modal .check-proof-container) .check-proof-paper{
+  position:fixed!important;left:0!important;top:0!important;box-shadow:none!important;
+ }
+}

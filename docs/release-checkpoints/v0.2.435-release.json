@@ -1,0 +1,17 @@
+{
+  "format": 1,
+  "version": "0.2.435",
+  "from_version": "0.2.434",
+  "title": "Organization BIR registered identities for Division and IUS Schools",
+  "notes": "Division legal registered BIR name, TIN, address, ZIP editable under Division Profile; IUS own identity under School Profile; Non-IUS inherits read-only Division identity. Existing BIR2307_PAYOR_IDENTITY_V1 version history, optimistic locking, audit, and School Head employee TIN linkage preserved. No migration and no changes to DV, withholding, tax, funds, check or bank data.",
+  "min_php": "8.2",
+  "extensions": [
+    "pdo_mysql",
+    "zip"
+  ],
+  "files": {
+    "app/Bir2307.php": "0d5bc86b69096c98bbb925aa5a25cd8f82379e6b6ca0f661c82c510b8bad7546",
+    "public/api/bir2307.php": "4b896cace786ebac19a9a9a716bc4b4875fb2caa6c4e7518a32cb935dc8821c9",
+    "public/assets/app.js": "e2912825ca21ec177e931cb0e7512ec936b333573eeb1807a344a8318f74c283"
+  }
+}

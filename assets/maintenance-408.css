@@ -1,0 +1,116 @@
+/* IPDAMS v0.2.408 — compact owner maintenance settings page.
+ * Presentation-only; scoped to the Maintenance Control panel.
+ */
+.ipdams-maintenance-408 {
+  --mc-navy:#193c57;
+  --mc-teal:#137a78;
+  --mc-edge:#dbe5eb;
+  --mc-muted:#627587;
+  --mc-surface:#f7fafc;
+  color:#203c53;
+  padding:18px 20px 20px;
+  max-width:1160px;
+  box-sizing:border-box;
+}
+.ipdams-maintenance-408 *, .ipdams-maintenance-408 *::before, .ipdams-maintenance-408 *::after {box-sizing:border-box}
+.ipdams-maintenance-408 .mc-header {display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin:0 0 12px}
+.ipdams-maintenance-408 .mc-title-area {min-width:0;flex:1}
+.ipdams-maintenance-408 .mc-eyebrow {color:var(--mc-teal);font-size:10px;font-weight:800;letter-spacing:.09em;margin-bottom:4px}
+.ipdams-maintenance-408 h2 {font-size:20px;line-height:1.25;color:var(--mc-navy);margin:0 0 4px}
+.ipdams-maintenance-408 .mc-title-area>p {max-width:680px;font-size:12px;line-height:1.5;color:var(--mc-muted);margin:0}
+.ipdams-maintenance-408 .mc-current {display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:6px 8px;border:1px solid var(--mc-edge);border-radius:9px;padding:8px 10px;background:var(--mc-surface);max-width:240px}
+.ipdams-maintenance-408 .mc-current-label {font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--mc-muted)}
+.ipdams-maintenance-408 .mc-current small {font-size:10px;color:var(--mc-muted)}
+.ipdams-maintenance-408 .mc-status {display:inline-block;border-radius:999px;padding:4px 9px;font-size:11px;line-height:1.1;letter-spacing:.02em;background:#eaf3f7;color:#22566e}
+.ipdams-maintenance-408 .mc-status--active {background:#fbece8;color:#a43a25}
+.ipdams-maintenance-408 .mc-status--countdown {background:#e8f7f2;color:#0d756b}
+.ipdams-maintenance-408 .mc-status--off {background:#eef2f6;color:#4b6172}
+.ipdams-maintenance-408 .mc-schedule-note {display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 10px;border-radius:8px;background:#f1f8f9;border:1px solid #d7e9e9;margin-bottom:11px;color:#456073;font-size:11px}
+.ipdams-maintenance-408 .mc-schedule-note strong {color:#1a6770;font-size:11px}
+.ipdams-maintenance-408 .mc-note-dot {width:7px;height:7px;flex:none;background:#1ba39a;border-radius:50%}
+.ipdams-maintenance-408 .mc-form {display:grid;gap:10px;margin:0}
+.ipdams-maintenance-408 .mc-section {border:1px solid var(--mc-edge);border-radius:10px;background:#fff;padding:13px 14px 14px;min-width:0}
+.ipdams-maintenance-408 .mc-section-heading {display:flex;gap:9px;align-items:center;margin-bottom:11px}
+.ipdams-maintenance-408 .mc-step {display:grid;place-items:center;flex:none;border-radius:7px;width:27px;height:27px;background:#e8f4f3;color:#116d6b;font-size:11px;font-weight:800}
+.ipdams-maintenance-408 h3 {font-size:13px;font-weight:800;line-height:1.25;color:var(--mc-navy);margin:0}
+.ipdams-maintenance-408 .mc-section-heading p {font-size:11px;line-height:1.4;color:var(--mc-muted);margin:2px 0 0}
+.ipdams-maintenance-408 .mc-grid {display:grid;gap:10px;min-width:0}
+.ipdams-maintenance-408 .mc-grid--3 {grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1.15fr)}
+.ipdams-maintenance-408 .mc-grid--2 {grid-template-columns:repeat(2,minmax(0,1fr))}
+.ipdams-maintenance-408 .mc-grid label,
+.ipdams-maintenance-408 .mc-message-grid label,
+.ipdams-maintenance-408 .mc-preset-picker,
+.ipdams-maintenance-408 .mc-form-footer label,
+.ipdams-maintenance-408 .mc-preset-form label,
+.ipdams-maintenance-408 .mc-emergency-grid label {display:flex;flex-direction:column;gap:4px;min-width:0;font-size:11px;color:#2f4f65;font-weight:700;line-height:1.35;margin:0}
+.ipdams-maintenance-408 label small {display:inline;font-size:10px;color:var(--mc-muted);font-weight:500}
+.ipdams-maintenance-408 input:not([type=checkbox]),
+.ipdams-maintenance-408 select,
+.ipdams-maintenance-408 textarea {width:100%;min-width:0;max-width:100%;height:35px;border:1px solid #bdccd6;background:#fff;border-radius:7px;padding:7px 9px;font-family:inherit;font-size:12px;font-weight:500;line-height:1.35;color:#193c57;box-shadow:none}
+.ipdams-maintenance-408 textarea {height:auto;min-height:63px;resize:vertical;line-height:1.45}
+.ipdams-maintenance-408 input:focus-visible,
+.ipdams-maintenance-408 select:focus-visible,
+.ipdams-maintenance-408 textarea:focus-visible,
+.ipdams-maintenance-408 button:focus-visible,
+.ipdams-maintenance-408 summary:focus-visible {outline:2px solid #0b8a81;outline-offset:2px}
+.ipdams-maintenance-408 .mc-lead-fields {max-width:650px;margin-bottom:10px}
+.ipdams-maintenance-408 .mc-switch-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.ipdams-maintenance-408 .mc-switch {display:flex;align-items:flex-start;gap:9px;border-radius:8px;border:1px solid var(--mc-edge);padding:9px 10px;background:var(--mc-surface);cursor:pointer;margin:0;min-height:52px}
+.ipdams-maintenance-408 .mc-switch--lock {grid-column:1/-1;background:#edf8f7;border-color:#c9e5e2;min-height:0}
+.ipdams-maintenance-408 .mc-switch input[type=checkbox] {flex:none;width:15px;height:15px;margin:2px 0 0;accent-color:#137a78}
+.ipdams-maintenance-408 .mc-switch span {display:grid;gap:2px;min-width:0}
+.ipdams-maintenance-408 .mc-switch strong {font-size:11px;line-height:1.3;color:#234659}
+.ipdams-maintenance-408 .mc-switch small {font-size:10px;line-height:1.4;color:var(--mc-muted);font-weight:400}
+.ipdams-maintenance-408 .mc-preset-picker {max-width:440px;margin-bottom:9px}
+.ipdams-maintenance-408 .mc-message-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ipdams-maintenance-408 .mc-message-card {display:grid;align-content:start;gap:9px;min-width:0;background:#f9fbfc;border:1px solid #e3ebf0;border-radius:9px;padding:11px}
+.ipdams-maintenance-408 .mc-message-card h4 {margin:0;font-size:11px;color:#0d7474;font-weight:800}
+.ipdams-maintenance-408 .mc-form-footer {display:flex;align-items:end;justify-content:flex-end;gap:10px;background:#f1f6f8;border:1px solid var(--mc-edge);padding:10px;border-radius:9px}
+.ipdams-maintenance-408 .mc-form-footer label {min-width:210px;max-width:280px;flex:1}
+.ipdams-maintenance-408 button {font-family:inherit;font-size:12px;font-weight:700;line-height:1.35;cursor:pointer;min-height:35px;border-radius:7px;padding:8px 12px;white-space:normal}
+.ipdams-maintenance-408 .mc-primary-button {background:#106f75;color:#fff;border:1px solid #106f75}
+.ipdams-maintenance-408 .mc-secondary-button {background:#fff;color:#2e586c;border:1px solid #b5ccd6}
+.ipdams-maintenance-408 .mc-danger-button {background:#963f33;color:#fff;border:1px solid #963f33}
+.ipdams-maintenance-408 .mc-extra {border:1px solid var(--mc-edge);border-radius:10px;background:#fff;overflow:hidden;margin-top:10px}
+.ipdams-maintenance-408 .mc-extra>summary {display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;list-style:none;background:#f8fafb}
+.ipdams-maintenance-408 .mc-extra>summary::-webkit-details-marker {display:none}
+.ipdams-maintenance-408 .mc-extra>summary>span:nth-child(2) {display:grid;gap:2px;min-width:0;flex:1}
+.ipdams-maintenance-408 .mc-extra>summary strong {font-size:12px;color:var(--mc-navy)}
+.ipdams-maintenance-408 .mc-extra>summary small {font-size:10px;color:var(--mc-muted)}
+.ipdams-maintenance-408 .mc-summary-icon {display:grid;place-items:center;flex:none;width:27px;height:27px;border-radius:8px;background:#eaf4f7;color:#227180;font-size:15px;font-weight:700}
+.ipdams-maintenance-408 .mc-chevron {font-size:17px;color:#678295;transition:transform .15s}
+.ipdams-maintenance-408 details[open] .mc-chevron {transform:rotate(180deg)}
+.ipdams-maintenance-408 .mc-extra-body {padding:13px 14px;border-top:1px solid var(--mc-edge)}
+.ipdams-maintenance-408 .mc-preset-form {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;gap:10px}
+.ipdams-maintenance-408 .mc-full {grid-column:1/-1}
+.ipdams-maintenance-408 .mc-preset-form button {justify-self:start}
+.ipdams-maintenance-408 .mc-preset-list {display:grid;gap:5px;margin-top:14px}
+.ipdams-maintenance-408 .mc-preset-row {display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e4eaee;border-radius:8px;padding:8px 10px}
+.ipdams-maintenance-408 .mc-preset-row>div {display:grid;gap:2px;min-width:0}
+.ipdams-maintenance-408 .mc-preset-row strong {font-size:11px;color:#2c5163}
+.ipdams-maintenance-408 .mc-preset-row small {color:var(--mc-muted);font-size:10px;overflow-wrap:anywhere}
+.ipdams-maintenance-408 .mc-preset-row form {display:flex;align-items:center;gap:7px;margin:0}
+.ipdams-maintenance-408 .mc-inline-password {width:160px}
+.ipdams-maintenance-408 .mc-sr-only {position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.ipdams-maintenance-408 .mc-help {font-size:11px;color:var(--mc-muted);line-height:1.5;margin:0 0 11px}
+.ipdams-maintenance-408 .mc-extra--danger .mc-summary-icon {color:#945b35;background:#f8eee6}
+.ipdams-maintenance-408 .mc-emergency-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ipdams-maintenance-408 .mc-emergency-grid form {display:grid;align-items:end;gap:9px;border:1px solid var(--mc-edge);border-radius:9px;background:var(--mc-surface);padding:10px;margin:0}
+.ipdams-maintenance-408 .mc-emergency-grid button {justify-self:start}
+@media(max-width:840px) {
+  .ipdams-maintenance-408 .mc-grid--3 {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ipdams-maintenance-408 .mc-grid--3>label:first-child {grid-column:1/-1}
+}
+@media(max-width:620px) {
+  .ipdams-maintenance-408 {padding:13px}
+  .ipdams-maintenance-408 .mc-header {flex-direction:column;gap:9px}
+  .ipdams-maintenance-408 .mc-current {max-width:none;width:100%;justify-content:flex-start}
+  .ipdams-maintenance-408 .mc-grid--3,.ipdams-maintenance-408 .mc-grid--2,.ipdams-maintenance-408 .mc-switch-grid,.ipdams-maintenance-408 .mc-message-grid,.ipdams-maintenance-408 .mc-preset-form,.ipdams-maintenance-408 .mc-emergency-grid {grid-template-columns:minmax(0,1fr)}
+  .ipdams-maintenance-408 .mc-section {padding:11px}
+  .ipdams-maintenance-408 .mc-grid--3>label:first-child,.ipdams-maintenance-408 .mc-switch--lock,.ipdams-maintenance-408 .mc-full {grid-column:auto}
+  .ipdams-maintenance-408 .mc-form-footer {flex-direction:column;align-items:stretch}
+  .ipdams-maintenance-408 .mc-form-footer label {width:100%;max-width:none}
+  .ipdams-maintenance-408 .mc-preset-row {align-items:stretch;flex-direction:column}
+  .ipdams-maintenance-408 .mc-preset-row form {flex-wrap:wrap}
+  .ipdams-maintenance-408 .mc-inline-password {flex:1;min-width:120px}
+}

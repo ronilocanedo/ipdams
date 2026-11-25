@@ -1,0 +1,50 @@
+.fund-config-grid-395{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0}.fund-config-card-395{display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-align:left;background:#f6fafb;border:1px solid #d4e1e7;border-radius:12px;padding:16px;cursor:pointer;min-height:145px;color:#16324d}.fund-config-card-395.selected{border:2px solid #139b90;background:#ecfaf7}.fund-config-card-395:hover,.fund-config-card-395:focus-visible{border-color:#139b90;outline-offset:2px}.fund-config-code-395{font-size:12px;opacity:.7}.fund-config-warning-395{color:#9a5612;font-weight:700}.fund-config-ok-395{color:#08796b;font-weight:700}.fund-config-detail-395{border:1px solid #cddfe2;background:#fff;border-radius:12px;padding:18px;margin:12px 0}.fund-config-summary-395{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:5px 18px;margin:14px 0}.fund-config-summary-395 p{margin:5px 0}.fund-config-actions-395{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}@media(max-width:640px){.fund-config-grid-395,.fund-config-summary-395{grid-template-columns:1fr}.fund-config-detail-395{padding:12px}}
+
+/* v0.2.396 fund modal UI — styling only; financial handlers are unchanged */
+.fund-config-grid-395{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))!important;gap:16px!important}
+.fund-config-card-395{position:relative;overflow:hidden;min-height:190px!important;padding:22px!important;background:linear-gradient(145deg,#fff,#eff7f9)!important;box-shadow:0 3px 10px rgba(20,50,73,.06);transition:transform .12s,box-shadow .12s,border-color .12s}
+.fund-config-card-395:before{content:'▣';display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#dff6f1;color:#00796f;font-size:23px;margin-bottom:7px}
+.fund-config-card-395:hover{transform:translateY(-2px);box-shadow:0 9px 25px rgba(20,50,73,.1)}
+.fund-config-card-395 strong{font-size:17px;line-height:1.35}
+.fund-config-cta-396{margin-top:auto;align-self:flex-end;font-size:13px;font-weight:700;color:#077e76}
+.fund-config-card-note-396{font-size:12px;line-height:1.4;color:#526d7a}
+.fund-modal-overlay-396{position:fixed!important;z-index:1100!important;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(7,26,43,.58)}
+.fund-modal-dialog-396{width:min(94vw,960px)!important;max-width:960px!important;max-height:92dvh!important;overflow-y:auto!important;border-radius:18px!important;background:#fff;padding:20px 24px!important;box-shadow:0 24px 80px rgba(0,0,0,.24)}
+.fund-modal-eyebrow-396{font-size:11px;letter-spacing:.09em;color:#078979;font-weight:800;margin:4px 0}
+.fund-modal-dialog-396 .fund-config-detail-395{margin:4px 0 14px;padding:0;border:0}
+.fund-modal-dialog-396 .fund-config-summary-395{background:#f1f7f8;border:1px solid #e0ebef;padding:13px;border-radius:12px}
+.fund-modal-dialog-396>section.surface,.fund-config-policy-inline-396{border:1px solid #dbe7eb;border-radius:12px;margin:12px 0;padding:16px;background:#fff}
+.fund-config-policy-inline-396{background:#f8fcfb}
+.fund-modal-dialog-396 .section-head{position:sticky;top:-20px;background:#fff;z-index:1;padding:12px 0}
+@media(max-width:640px){.fund-modal-dialog-396{width:100%!important;max-height:96dvh!important;padding:12px!important}.fund-config-grid-395{grid-template-columns:1fr!important}.fund-modal-dialog-396 .fund-config-summary-395{grid-template-columns:1fr!important}}
+
+/* v0.2.397: visible fund cards, roomy dialog, accessible configuration tabs */
+.fund-config-grid-395{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))!important;gap:14px!important;margin:16px 0!important}
+button.fund-config-card-395{appearance:none!important;-webkit-appearance:none!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:9px!important;text-align:left!important;border:1px solid #cddfe4!important;border-radius:16px!important;background:linear-gradient(135deg,#fff 40%,#eaf7f5)!important;color:#12354b!important;padding:22px!important;min-height:185px!important;white-space:normal!important;line-height:1.5!important;box-shadow:0 5px 18px rgba(11,52,72,.08)!important;cursor:pointer!important}
+button.fund-config-card-395:hover,button.fund-config-card-395:focus-visible{border-color:#009e90!important;box-shadow:0 10px 26px rgba(9,98,101,.16)!important;outline:2px solid #8ad7ce;outline-offset:2px}
+button.fund-config-card-395 strong{display:block;font-size:17px!important;line-height:1.35!important}
+button.fund-config-card-395 .fund-config-code-395{display:inline-block;background:#e0f4f0;border-radius:20px;padding:3px 10px;font-weight:700;color:#076d67;opacity:1}
+button.fund-config-card-395 .fund-config-cta-396{display:inline-flex;margin-top:auto;border:1px solid #13998b;border-radius:9px;padding:8px 13px;color:#06766b;background:white}
+.fund-modal-overlay-396{z-index:1200!important;padding:14px!important}
+.fund-modal-dialog-396{box-sizing:border-box!important;width:min(96vw,1160px)!important;max-width:1160px!important;max-height:95dvh!important;padding:26px 30px!important;overflow-y:auto!important}
+.fund-modal-dialog-396 .fund-config-summary-395{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px 26px!important;padding:18px!important}
+.fund-config-tabs-397{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #d8e4e8;margin:18px 0 0;padding:0 0 4px}
+.fund-config-tabs-397 button{appearance:none;background:#f1f5f7;color:#31596b;border:1px solid #d3e0e5;border-bottom:3px solid transparent;border-radius:10px 10px 4px 4px;padding:12px 18px;font-weight:700;cursor:pointer;white-space:normal;text-align:left}
+.fund-config-tabs-397 button.active,.fund-config-tabs-397 button[aria-selected="true"]{background:#e9f8f4;color:#086b62;border-color:#70c8bb;border-bottom-color:#009d8e}
+.fund-config-tab-panel-397{padding:18px 4px!important;margin:0 0 12px!important}
+.fund-config-tab-panel-397 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.fund-config-tab-panel-397 .fund-policy-form-372 .hint,.fund-config-tab-panel-397 .fund-accounting-371,.fund-config-tab-panel-397 .fund-policy-reason-372{grid-column:1/-1}
+.fund-config-summary-note-397{margin:8px 0;color:#557283}
+@media(max-width:700px){.fund-modal-dialog-396{padding:16px!important;width:100%!important;max-height:96dvh!important}.fund-modal-dialog-396 .fund-config-summary-395,.fund-config-tab-panel-397 .form-grid{grid-template-columns:1fr!important}.fund-config-tabs-397 button{flex:1 1 100%}.fund-config-grid-395{grid-template-columns:1fr!important}}
+
+/* v0.2.398: isolated check-payee tab */
+.fund-payee-panel-398{margin-top:14px!important;border:1px solid #cce2e4!important;border-radius:14px!important;padding:20px!important;background:#fff!important}
+.fund-payee-panel-398 .form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:14px;align-items:end}
+.fund-payee-panel-398 .form-grid .hint{grid-column:1/-1;margin:0}
+.fund-payee-panel-398 .form-grid button{width:auto;min-height:48px;justify-self:start;padding:12px 22px}
+@media(max-width:740px){.fund-payee-panel-398 .form-grid{grid-template-columns:1fr}.fund-payee-panel-398 .form-grid button{width:100%}}
+
+/* v0.2.399: saving feedback belongs inside the active check-payee tab. */
+.fund-payee-alert-399{padding:12px 15px;margin:10px 0;border-radius:9px;font-weight:650;border:1px solid transparent;line-height:1.4}
+.fund-payee-alert-399.error{background:#fff3f0;color:#923322;border-color:#f0beb5}
+.fund-payee-alert-399.success{background:#eaf8f2;color:#066346;border-color:#9bd8c0}

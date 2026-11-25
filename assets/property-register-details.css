@@ -1,0 +1,18 @@
+/* IPDAMS v0.2.218: accessible Asset Register detail + filter layout. */
+.asset-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;padding:12px 8px;border:1px solid #dce9ee;border-radius:10px;background:#f7fbfc;margin:10px 0}
+.asset-filter-grid .field{min-width:0;margin:0}.asset-filter-actions{display:flex;align-items:end;gap:8px;flex-wrap:wrap}.asset-register-workspace .master-table td{vertical-align:middle}
+.asset-detail-panel{margin-top:14px;padding:16px;border:1px solid #b9d6df;border-radius:10px;background:#fff;max-width:100%;overflow-wrap:anywhere}
+.asset-detail-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.asset-detail-heading h3{margin:0}
+.asset-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:10px;margin:8px 0 20px}.asset-detail-field{display:flex;flex-direction:column;gap:4px;padding:9px 10px;border:1px solid #e0e8ec;border-radius:7px;background:#f9fcfd;font-size:13px}
+.asset-detail-label{color:#54718a;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}.asset-detail-field strong{font-weight:600;color:#173a52}
+.asset-detail-panel h4{margin:20px 0 8px}.asset-detail-history{display:grid;gap:7px}.asset-detail-history details,.asset-detail-history p{border:1px solid #e2e9ee;border-radius:6px;padding:9px;margin:0}.asset-detail-history summary{cursor:pointer;font-weight:600}.asset-detail-history pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;background:#f4f7f9;padding:8px;border-radius:5px}
+@media(max-width:740px){.asset-detail-panel{padding:10px}.asset-filter-grid{grid-template-columns:1fr}.asset-detail-grid{grid-template-columns:1fr}}
+/* v0.2.245: compact in-dialog edit, never an independent property page. */
+.property-profile-edit{display:grid;gap:14px;max-width:100%}
+.property-profile-edit .asset-modal-fields{margin:0 0 4px}
+.property-profile-edit .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr));gap:10px}
+.property-profile-edit .field{min-width:0;margin:0}
+.property-profile-edit .field input,.property-profile-edit .field select,.property-profile-edit .field textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.property-profile-edit .field [disabled]{background:#eff3f6;color:#4e6070;opacity:1}
+.property-profile-edit .primary{justify-self:end;max-width:100%}
+@media(max-width:670px){.property-profile-edit .form-grid{grid-template-columns:1fr}.property-profile-edit .primary{width:100%;justify-self:stretch}}

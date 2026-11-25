@@ -1,0 +1,15 @@
+/* IPDAMS v0.2.310: wider, compact universal expense editor. Presentation only. */
+.travel-305-dialog{width:min(1130px,calc(100vw - 28px));max-height:calc(100dvh - 24px);padding:16px 18px;gap:10px}
+.travel-305-dialog-title{position:sticky;top:-16px;background:#fff;z-index:3;padding-top:8px}
+.travel-310-route-grid,.travel-310-time-grid{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.travel-310-expense-grid{display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+.travel-310-expense-card{border:1px solid #c9d9e3;border-radius:9px;background:#fbfdff;padding:11px;min-width:0;display:grid;gap:8px}
+.travel-310-expense-card .field{display:grid;gap:4px}
+.travel-310-expense-card .field input,.travel-310-expense-card .field select{width:100%;min-width:0;box-sizing:border-box}
+.travel-310-amount-label{font-weight:650}
+.travel-310-component-details{display:grid;gap:9px;border-top:1px solid #d5e0e8;padding-top:9px}
+.travel-310-receipt-exempt{font-size:12px;color:#175c4d;background:#eaf6ef;padding:7px 8px;border-radius:6px;line-height:1.35}
+.travel-310-card-hint{margin:0;font-size:11px;color:#5c7081}
+.travel-305-dialog-actions{bottom:-16px;z-index:4}
+@media(max-width:900px){.travel-310-expense-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.travel-305-dialog{width:100%;padding:12px}.travel-305-dialog-title{top:-12px}.travel-310-route-grid,.travel-310-time-grid,.travel-310-expense-grid{grid-template-columns:1fr}.travel-305-dialog-actions{bottom:-12px}}

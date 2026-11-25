@@ -1,0 +1,10 @@
+/* v0.2.384 check event evidence form: presentational only */
+.cb-check-status-actions{margin-top:1.25rem;padding:1rem;border:1px solid #d2dde8;border-radius:12px;background:#f9fbfd}
+.cb-check-status-actions h4{margin:0 0 .5rem;font-size:1.04rem}
+.cb-check-status-actions .field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.75rem}
+.cb-check-status-actions select,.cb-check-status-actions input[type=text]{max-width:100%;min-height:2.5rem}
+.cb-check-status-confirm{display:flex;align-items:flex-start;gap:.6rem;margin:1rem 0;line-height:1.4}
+.cb-check-status-confirm input{margin-top:.25rem}
+.cb-selected-check-summary{padding:.65rem .85rem;margin:.5rem 0 1rem;border-left:3px solid #0e807d;background:#eef6f5}
+.cb-selected-check-summary p{margin:.3rem 0}
+@media(max-width:700px){.cb-check-status-actions{padding:.75rem}.cb-check-status-actions .form-grid{display:block}}

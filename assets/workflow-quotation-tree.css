@@ -1,0 +1,15 @@
+/* v0.2.137: Supplier quotation register shares the RFQ table geometry. */
+.workflow-register-first .workflow-quotation-tree{min-width:750px;border-collapse:collapse}
+.workflow-register-first .workflow-quotation-tree th,.workflow-register-first .workflow-quotation-tree td{padding:9px 10px;vertical-align:middle}
+.workflow-quotation-parent{background:#f5fafb}
+.workflow-quotation-parent td{border-top:1px solid #cce0e3;font-weight:500}
+.workflow-quotation-parent:hover{background:#ecf6f6}
+.workflow-quotation-child{background:#fff}
+.workflow-quotation-child td{border-bottom:1px solid #edf1f4;color:#405970}
+.workflow-quote-expand{display:inline-flex;align-items:center;gap:9px;border:0;background:transparent;color:#0d5261;cursor:pointer;padding:4px 0;text-align:left;font:inherit}
+.workflow-quote-expand:focus-visible{outline:2px solid #159a8f;outline-offset:3px;border-radius:3px}
+.workflow-quote-chevron{font-size:17px;min-width:13px;color:#128b83}
+.workflow-quote-child-label{display:inline-block;padding-left:20px;font-size:12px;color:#375f75}
+.workflow-quote-empty{text-align:left;padding-left:32px!important;color:#728492!important;font-style:italic}
+.workflow-quote-recorded{font-size:11px;color:#53707b}
+@media(max-width:700px){.workflow-register-first .workflow-quotation-tree{min-width:760px}.workflow-quote-child-label{padding-left:14px}}

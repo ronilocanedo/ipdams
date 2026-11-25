@@ -1,0 +1,75 @@
+/* Appendix 64-adapted Report of Semi-Expendable Property Issued.
+ * Designed for the sample supplied by the owner, with full tables and boxed
+ * paper signature panels. UACS title is smaller italic below verified code.
+ */
+@page { size: A4 portrait; margin: 10mm 11mm; }
+*,*::before,*::after { box-sizing:border-box; }
+html { background:#ecf1f5; color:#000; }
+body { margin:0; font:9pt/1.18 'Bookman Old Style','Palatino Linotype',Georgia,serif; color:#000; }
+.semi-toolbar { max-width:210mm; margin:14px auto; display:flex; align-items:center; gap:12px;
+  padding:12px 14px; background:#edf6fb; border:1px solid #b5cbd8; border-radius:5px;
+  font:12px/1.4 Arial,sans-serif; color:#314457; }
+.semi-toolbar button { cursor:pointer; flex:none; background:#155883; color:#fff; padding:8px 14px;
+  border:0; border-radius:4px; font:600 12px Arial,sans-serif; }
+.semi-toolbar button:focus-visible { outline:3px solid #029b8c; outline-offset:2px; }
+.semi-page { width:210mm; min-height:297mm; margin:0 auto 20px; padding:10mm 11mm;
+  background:#fff; box-shadow:0 3px 14px #20304020; }
+.semi-appendix { text-align:right; font-size:8.5pt; font-style:italic; margin-bottom:14mm; }
+h1 { margin:0 0 8mm; text-align:center; font-size:13.5pt; font-weight:bold; line-height:1.25; }
+.semi-identity { display:grid; grid-template-columns:61% 39%; gap:2px 0; margin-bottom:2mm;
+  font-size:9pt; }
+.semi-identity > div:nth-child(even) { text-align:right; }
+.semi-identity strong { font-weight:bold; }
+.semi-table { width:100%; border-collapse:collapse; border:2px solid #000; table-layout:fixed; page-break-inside:auto; }
+.semi-table th,.semi-table td { border:1px solid #000; padding:2px 2px; overflow-wrap:anywhere; vertical-align:middle; }
+.semi-issued-table .col-ris { width:12%; }
+.semi-issued-table .col-rcc { width:10%; }
+.semi-issued-table .col-stock { width:7%; }
+.semi-issued-table .col-item { width:26%; }
+.semi-issued-table .col-unit { width:7%; }
+.semi-issued-table .col-qty { width:8%; }
+.semi-issued-table .col-unit-cost { width:15%; }
+.semi-issued-table .col-amount { width:15%; }
+.semi-recap-table .col-recap-ris { width:11%; }
+.semi-recap-table .col-recap-stock { width:7%; }
+.semi-recap-table .col-recap-qty { width:7%; }
+.semi-recap-table .col-recap-item { width:23%; }
+.semi-recap-table .col-recap-unit { width:6%; }
+.semi-recap-table .col-recap-unitcost { width:13%; }
+.semi-recap-table .col-recap-totalcost { width:13%; }
+.semi-recap-table .col-recap-uacs { width:20%; }
+.semi-table thead th { text-align:center; font-weight:bold; font-size:7.4pt; line-height:1.2; }
+.semi-table tbody td { font-size:8pt; }
+.semi-table tr { break-inside:avoid; page-break-inside:avoid; }
+.semi-table thead { display:table-header-group; }
+.semi-instruction th { font-size:7.8pt!important; font-weight:normal!important; font-style:italic; }
+.semi-table td.center { text-align:center; }
+.semi-table td.right { text-align:right; font-variant-numeric:tabular-nums; }
+.semi-issued-table .semi-item-row td, .semi-recap-table .semi-item-row td { min-height:7mm; }
+.semi-item-name { font-size:8pt; }
+.semi-tag { font-size:7pt; font-style:italic; margin-top:1px; overflow-wrap:anywhere; }
+.semi-uacs-code { text-align:center; font-size:7.8pt; font-weight:bold; overflow-wrap:anywhere; }
+.semi-uacs-title { text-align:center; font-size:6.6pt; font-style:italic; line-height:1.1;
+  margin-top:2px; overflow-wrap:anywhere; }
+.semi-blank-row { height:5.5mm; }
+.semi-total-row td { text-align:right; font-weight:bold; padding:3px; border-top:2px solid #000; }
+.semi-recap-table { margin-top:0; }
+.semi-signatures { display:grid; grid-template-columns:60% 40%; border:2px solid #000;
+  margin-top:0; min-height:29mm; break-inside:avoid; page-break-inside:avoid; }
+.semi-signatures>div { padding:3mm 2mm; }
+.semi-certified { text-align:center; }
+.semi-posted { border-left:2px solid #000; text-align:left; }
+.semi-sign-name { margin-top:12mm; min-height:4mm; text-align:center; font-weight:bold;
+  text-decoration:underline; text-underline-offset:2px; }
+.semi-sign-caption { text-align:center; font-size:7.2pt; font-style:italic; line-height:1.2; }
+.semi-post-signature { text-align:center; margin-top:5mm; font-size:8pt; letter-spacing:.2px; }
+.semi-posted-name { text-align:center; min-height:3mm; font-size:8.2pt; font-weight:bold; overflow-wrap:anywhere; }
+.semi-posted-designation { text-align:center; min-height:3mm; font-size:7.5pt; }
+.semi-sign-date { text-align:right; margin-top:2mm; font-size:8pt; }
+@media screen and (max-width:850px) { .semi-toolbar { margin:5px; } .semi-page { max-width:none; } }
+@media print {
+  html { background:white; }
+  .semi-toolbar { display:none!important; }
+  .semi-page { width:auto; min-height:0; margin:0; padding:0; box-shadow:none; }
+  .semi-signatures { break-inside:avoid; page-break-inside:avoid; }
+}

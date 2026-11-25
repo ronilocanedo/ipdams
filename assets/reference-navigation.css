@@ -1,0 +1,38 @@
+/* IPDAMS v0.2.197 — taxonomy and reference navigation only; transaction logic unchanged. */
+/* Sidebar groups preserve the original routes and workspace switcher. */
+.sidebar nav .nav-group-label {
+  margin:10px 8px 3px; padding:4px 4px 2px;
+  color:#91aabd; font-size:9px; font-weight:800; letter-spacing:.09em;
+  text-transform:uppercase; flex:0 0 auto;
+}
+.sidebar nav .nav-group-label:first-child {margin-top:0;}
+.sidebar nav .navitem {flex:0 0 auto;}
+/* Only the reference workspace gets the two-level task-focused tabs. */
+.reference-workspace {min-width:0; gap:9px;}
+.reference-workspace .master-tabs[aria-label="Reference data"] {display:none!important;}
+.reference-current, .reference-current>.section-stack {min-width:0;}
+.ref-nav-shell {min-width:0; background:#f5f9fa; border:1px solid #dbe6eb;
+  border-radius:11px; padding:9px 10px 6px; margin-bottom:2px;}
+.ref-nav-caption {display:flex; align-items:center; gap:11px; flex-wrap:wrap;
+  color:#0d756c; font-size:10px; font-weight:800; letter-spacing:.045em;
+  padding:0 3px 7px;}
+.ref-nav-caption span {color:#78909e; font-weight:500; letter-spacing:0; font-size:11px;}
+nav.ref-category-tabs, nav.ref-section-tabs {display:flex!important;flex-direction:row!important;flex-wrap:nowrap;
+  align-items:center; gap:5px; padding:1px 0 5px; overflow-x:auto; overflow-y:hidden; width:100%;
+  scrollbar-width:thin; background:transparent;}
+nav.ref-category-tabs {border-bottom:1px solid #dae6e7; margin-bottom:5px;}
+.ref-category-tab, .ref-section-tab {appearance:none;display:inline-flex;align-items:center;justify-content:center;
+  border:0; border-radius:7px; background:transparent; color:#51697a;white-space:nowrap;
+  flex:0 0 auto; min-height:35px; font-size:12px; padding:8px 12px; font-weight:660;}
+.ref-category-tab:hover, .ref-section-tab:hover {background:#e8f4f3;color:#08756b;}
+.ref-category-tab.active {background:#146d6b;color:#fff;box-shadow:0 1px 4px #164e4e1e;}
+.ref-section-tab.active {background:#fff; box-shadow:0 1px 5px #15384e1a;color:#066f65;font-weight:780;}
+.ref-category-tab:focus-visible,.ref-section-tab:focus-visible {outline:2px solid #139e8b;outline-offset:-2px;}
+.reference-current>.section-stack>.content-header {margin-top:3px;}
+/* Preserve sidebar compactness on mobile; the existing nav becomes a horizontal scroll row. */
+@media(max-width:760px){
+  .sidebar nav .nav-group-label{display:none;}
+  .ref-nav-shell{padding:8px;}
+  .ref-category-tab,.ref-section-tab{min-height:40px;font-size:12px;padding:9px 11px;}
+  .ref-nav-caption span{font-size:10px;}
+}

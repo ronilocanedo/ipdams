@@ -1,0 +1,36 @@
+{
+  "checkpoint": "unified development closeout",
+  "date": "2026-11-25",
+  "run_id": "20261125_200255_049eb528",
+  "development_status": "PASS_CLOSED_TESTED_SCOPE",
+  "release_status": "BLOCKED",
+  "source_sync": "NOT_PERFORMED",
+  "installed_baseline": "v0.2.448 (owner-reported)",
+  "pass": 155,
+  "fail": 0,
+  "blocked": 0,
+  "stages": [
+    {
+      "name": "app-shell",
+      "pass": 8
+    },
+    {
+      "name": "exported-schema",
+      "pass": 56
+    },
+    {
+      "name": "integrated-allocation",
+      "pass": 20
+    },
+    {
+      "name": "operational",
+      "pass": 71
+    }
+  ],
+  "historical_baseline": 267,
+  "historical_not_rerun": 112,
+  "production_tested": false,
+  "production_modified": false,
+  "package_sha256": "f64a22057f3110358124f66aae1521fbc0cd4fdae25819e28b69e5e3f2d875a2",
+  "results_sha256": "4fa1ad34ce42d907b0859fd338af587585b81642ef7d6adc4dcb3626cdbcd715"
+}

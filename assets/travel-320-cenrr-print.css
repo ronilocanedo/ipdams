@@ -1,0 +1,63 @@
+/* IPDAMS v0.2.320 — Annex A CENRR paper format, based on the owner's supplied sample.
+   Dedicated same-origin stylesheet: no inline CSS under the website CSP. */
+@page { size: letter portrait; margin: 13mm 14mm 12mm; }
+html, body { background: #fff; color: #101010; }
+body.cenrr-print {
+  margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt; font-weight: 400; line-height: 1.12;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.cenrr-print * { box-sizing: border-box; }
+.cenrr-print .annex-label {
+  width: 100%; text-align: right; font-size: 9.5pt;
+  line-height: 1.2; margin: 0 0 4px; padding: 0 3px 0 0;
+}
+.cenrr-print .cenrr-table {
+  border-collapse: collapse; border-spacing: 0; width: 100%;
+  table-layout: fixed; border: 1px solid #191919; margin: 0;
+}
+.cenrr-print .col-label { width: 21%; }
+.cenrr-print .col-part { width: 35%; }
+.cenrr-print .col-mid { width: 16%; }
+.cenrr-print .col-amount { width: 28%; }
+.cenrr-print th, .cenrr-print td {
+  padding: 2px 3px; border: 1px solid #222; margin: 0;
+  vertical-align: middle; font-weight: normal; overflow-wrap: anywhere;
+}
+.cenrr-print .agency th, .cenrr-print .document-title th {
+  text-align: center; font-size: 10pt; font-weight: 700;
+}
+.cenrr-print .agency-label td { text-align: center; }
+.cenrr-print .document-title th { font-size: 10.3pt; }
+.cenrr-print .circular td { text-align: center; font-size: 9.5pt; font-style: italic; }
+.cenrr-print .field-strong { font-weight: 700; }
+.cenrr-print .center { text-align: center; }
+.cenrr-print .amount { text-align: right; white-space: nowrap; }
+.cenrr-print .column-head th {
+  text-align: center; font-weight: 700; background: none;
+}
+.cenrr-print .group-row th { text-align: left; font-weight: 700; }
+.cenrr-print .expense td { height: 17px; padding-top: 1px; padding-bottom: 1px; }
+.cenrr-print .expense .date { white-space: nowrap; text-align: center; }
+.cenrr-print .expense .particular { padding-left: 5px; }
+.cenrr-print .expense.blank td { height: 17px; }
+.cenrr-print .total-row th { text-align: right; font-weight: 700; font-size: 10.5pt; }
+.cenrr-print .total-row th.amount { font-size: 12pt; }
+.cenrr-print .purpose-row td {
+  height: 45px; padding: 7px 3px; vertical-align: middle;
+  font-weight: 700; line-height: 1.24;
+}
+.cenrr-print .declaration td {
+  text-align: center; font-weight: 400; padding: 3px 10px;
+  line-height: 1.25; vertical-align: middle;
+}
+.cenrr-print .signature-heading td { text-align: center; }
+.cenrr-print .signature-heading td:last-child { text-align: left; }
+.cenrr-print .signature-line td { height: 23px; }
+.cenrr-print .signature-line td:first-child, .cenrr-print .signer td:first-child { text-align: left; }
+.cenrr-print .signer td { line-height: 1.17; }
+.cenrr-print .signer u { text-underline-offset: 1px; }
+.cenrr-print .cenrr-table tr { page-break-inside: avoid; break-inside: avoid; }
+@media screen {
+ body.cenrr-print { max-width: 184mm; margin: 12mm auto; }
+}

@@ -1,0 +1,23 @@
+/* IPDAMS v0.2.282 · textbook allocation, paper RIS/ITR and physical receiving */
+.textbook-transfer-paths{padding:12px 14px;background:#f1f7fb;border:1px solid #c6d9e6;border-left:4px solid #27769f;border-radius:7px;margin:10px 0 16px;color:#25465e;}
+.textbook-transfer-paths p{margin:3px 0 9px;line-height:1.5;font-size:13px;}
+.textbook-transfer-lines,.textbook-transfer-request-lines{display:grid;gap:12px;margin:12px 0;}
+.textbook-transfer-line{display:grid;gap:8px;border:1px solid #b4d0de;background:#f7fbfe;border-left:4px solid #27839b;border-radius:8px;padding:12px;}
+.textbook-transfer-line strong{font-size:13px;color:#153650;}
+.textbook-transfer-line small{font-size:12px;color:#4b6274;display:block;line-height:1.4;}
+.textbook-transfer-line .field{min-width:0;}
+.textbook-transfer-modal-body{display:grid;gap:12px;min-width:0;}
+.textbook-transfer-modal-body .field{display:grid;gap:5px;min-width:0;}
+.textbook-transfer-modal-body input,.textbook-transfer-modal-body select,.textbook-transfer-modal-body textarea{max-width:100%;width:100%;box-sizing:border-box;}
+.textbook-transfer-paper-fields{border:1px solid #bfcedc;background:#f6f9fb;border-radius:8px;padding:12px;display:grid;gap:10px;}
+.textbook-transfer-paper-fields h4{margin:0 0 3px;color:#1a4665;}
+.textbook-transfer-detail{display:grid;gap:9px;}
+.textbook-transfer-detail>p{margin:0;}
+.textbook-transfer-detail .textbook-table-scroll{overflow-x:auto;}
+.textbook-transfer-print{display:inline-block;border:1px solid #8ab9bc;color:#075c60;background:#edf9f8;text-decoration:none;font-size:12px;font-weight:700;padding:9px 12px;border-radius:6px;}
+.textbook-transfer-print:hover,.textbook-transfer-print:focus-visible{background:#d8f0ed;outline-color:#16808d;}
+.textbook-transfer-cancel{margin-top:8px;padding:12px;border:1px dashed #c79d8e;border-radius:7px;background:#fff9f5;}
+.textbook-transfer-cancel textarea{width:100%;}
+.textbook-transfer-modal-body .textbook-row-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end;}
+.textbook-transfer-modal-body .textbook-row-actions button{white-space:normal;line-height:1.3;min-height:38px;}
+@media(max-width:650px){.textbook-transfer-line{padding:10px}.textbook-transfer-modal-body{gap:9px}.textbook-transfer-paths{padding:9px 11px}}

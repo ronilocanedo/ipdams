@@ -1,0 +1,57 @@
+/* v0.2.26 — compact, user-readable Purchase Request preview */
+.pr-detail-modal { width:min(940px,100%); max-height:calc(100dvh - 28px); padding:0; display:flex; flex-direction:column; overflow:hidden; }
+.pr-detail-header { display:flex; align-items:start; justify-content:space-between; gap:12px; padding:16px 20px 12px; border-bottom:1px solid #e3ebef; }
+.pr-detail-eyebrow { display:block; font-size:10px; font-weight:750; letter-spacing:.8px; color:#128a7c; margin-bottom:4px; }
+.pr-detail-heading { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.pr-detail-heading h2 { margin:0; font-size:20px; color:#1c384b; line-height:1.3; }
+.pr-detail-close { line-height:1; min-width:34px; min-height:34px; }
+.pr-detail-scroll { flex:1; min-height:0; max-height:none; overflow-y:auto; overscroll-behavior:contain; padding:14px 20px; }
+.pr-detail-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px 16px; }
+.pr-detail-field,.pr-detail-purpose { min-width:0; }
+.pr-detail-field>span,.pr-detail-purpose>span { display:block; color:#718595; font-size:10px; font-weight:700; margin-bottom:3px; }
+.pr-detail-field>strong,.pr-detail-purpose>strong { display:block; color:#1d3b4e; font-size:12px; line-height:1.4; overflow-wrap:anywhere; font-weight:650; }
+.pr-detail-purpose { grid-column:1/-1; padding:8px 10px; border-radius:7px; background:#f5f9fa; }
+.pr-detail-note { margin:10px 0; border-left:3px solid #d4a75c; background:#fff9eb; padding:8px 10px; font-size:11px; line-height:1.45; color:#6c592d; }
+.pr-detail-table-heading { display:flex; align-items:center; justify-content:space-between; margin:12px 0 6px; }
+.pr-detail-table-heading h3 { margin:0; font-size:13px; color:#26495e; }
+.pr-detail-table-heading span { font-size:10px; color:#698293; }
+.pr-detail-table-wrap { border:1px solid #e3ebef; border-radius:7px; }
+.pr-detail-table { width:100%; border-collapse:collapse; font-size:11px; }
+.pr-detail-table th { padding:8px; background:#f3f7f9; color:#547186; border-bottom:1px solid #e0e9ee; text-align:left; font-size:10px; white-space:nowrap; }
+.pr-detail-table td { padding:8px; border-bottom:1px solid #eef2f5; color:#304e61; }
+.pr-detail-table tr:last-child td { border-bottom:0; }
+.pr-detail-table .pr-detail-item { min-width:185px; overflow-wrap:anywhere; }
+.pr-detail-num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.pr-detail-table th:nth-last-child(-n+3) { text-align:right; }
+.pr-detail-table tfoot { background:#eaf8f4; font-weight:800; }
+.pr-detail-table tfoot td:first-child { text-align:right; }
+.pr-detail-empty { text-align:center; color:#688399; }
+.pr-detail-history { margin-top:12px; border:1px solid #e2ebef; border-radius:7px; }
+.pr-detail-history>summary { list-style:revert; cursor:pointer; padding:9px 12px; color:#416377; font-size:11px; font-weight:750; }
+.pr-detail-history-body { padding:0 12px 9px; }
+.pr-detail-history-body h4 { font-size:11px; color:#2b4e62; margin:11px 0 4px; }
+.pr-detail-history-body p,.pr-detail-history-body li { font-size:11px; color:#657c8b; margin:3px 0; }
+.pr-detail-history-body ul { padding-left:20px; margin:4px 0 8px; }
+.pr-detail-actions { flex-shrink:0; padding:11px 20px; border-top:1px solid #e3ebef; display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:8px; }
+.pr-detail-actions .primary,.pr-detail-actions .outline { min-height:34px; }
+.pr-detail-print { color:#078477; font-size:12px; font-weight:750; }
+.pr-detail-print-hint { color:#738897; font-size:11px; }
+@media(max-width:600px) { .pr-detail-modal { max-height:calc(100dvh - 12px); } .pr-detail-header { padding:12px; } .pr-detail-scroll { padding:12px; } .pr-detail-fields { grid-template-columns:1fr; gap:8px; } .pr-detail-actions { padding:10px 12px; } .pr-detail-table { min-width:600px; } }
+/* Override the page-level footer rules for this modal's sticky action row. */
+.main-body .pr-detail-actions { padding:11px 20px; color:inherit; text-align:left; }
+@media(max-width:600px) { .main-body .pr-detail-actions { padding:10px 12px; } }
+
+/* IPDAMS 0.2.37 | PR preview remains readable on smaller screens.
+   Read-only preview and printing logic are unchanged. */
+.pr-detail-table-wrap { max-width:100%; overflow-x:auto; scrollbar-width:thin; }
+.pr-detail-table tbody tr:nth-child(even) { background:#f9fcfd; }
+.pr-detail-table tbody tr:focus-within { background:#ebf8f5; }
+.pr-detail-history > summary:focus-visible,
+.pr-detail-actions :is(a,button):focus-visible,
+.pr-detail-close:focus-visible { outline:3px solid #168d80; outline-offset:2px; }
+.pr-detail-actions { background:#fff; }
+.pr-detail-print-hint, .pr-detail-note { overflow-wrap:anywhere; }
+@media(max-width:600px) {
+  .pr-detail-table-wrap { overscroll-behavior-x:contain; }
+  .pr-detail-actions { justify-content:flex-start; }
+}

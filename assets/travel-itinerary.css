@@ -1,0 +1,26 @@
+/* v0.2.298 Stage A — Appendix 45 receipt-classified documentary itinerary */
+.travel-itinerary-section{display:grid;gap:12px;border:1px solid #b9cfdd;border-radius:11px;background:#f9fcfe;padding:14px}
+.travel-itinerary-section h4{margin:0;color:#163953}
+.travel-itinerary-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.travel-itinerary-leg{border:1px solid #aebfcf;border-radius:10px;margin:0;padding:12px;min-width:0;background:#fff}
+.travel-itinerary-leg legend{color:#153e5e;font-weight:700;padding:0 5px}
+.travel-itinerary-trip{display:grid;grid-template-columns:155px minmax(170px,2fr) 125px 125px minmax(155px,1fr);gap:9px}
+.travel-itinerary-place{min-width:0}
+.travel-itinerary-components{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0}
+.travel-itinerary-component{border:1px solid #d4e0e8;background:#f5f9fc;border-radius:8px;padding:9px;display:grid;align-content:start;gap:7px;min-width:0}
+.travel-itinerary-component .field{min-width:0}
+.travel-itinerary-summary{display:flex;gap:14px;flex-wrap:wrap;align-items:center;border-top:1px solid #c4d6e3;padding-top:12px}
+.travel-itinerary-summary strong{color:#12476b}
+.travel-no-receipt-report{padding:14px;background:#f8fbfd;border:1px solid #b9cedc;border-radius:10px;display:grid;gap:9px}
+.travel-no-receipt-report h4{margin:0;color:#173d59}
+.travel-report-scroll{overflow-x:auto;border:1px solid #a4bbcc;border-radius:8px}
+.travel-report-table{border-collapse:collapse;width:100%;min-width:1100px}
+.travel-report-table th{background:#164467;color:#fff;font-size:12px;text-align:left}
+.travel-report-table td,.travel-report-table th{border:1px solid #bfd0db;padding:7px 9px;vertical-align:top}
+.travel-report-table tbody tr:nth-child(even){background:#eaf2f8}
+.travel-legacy-expenses{display:grid;gap:8px}
+.travel-itinerary-record{display:grid;gap:10px;border:1px solid #b5cad9;border-radius:10px;padding:14px;background:#fff}
+.travel-itinerary-readonly{min-width:1050px}.travel-itinerary-readonly td:last-child{min-width:190px;font-size:11px}
+@media(max-width:1060px){.travel-itinerary-trip{grid-template-columns:repeat(2,minmax(0,1fr))}.travel-itinerary-place{grid-column:1/-1}}
+@media(max-width:700px){.travel-itinerary-meta,.travel-itinerary-components{grid-template-columns:1fr}.travel-itinerary-section{padding:9px}}
+@media(max-width:480px){.travel-itinerary-trip{grid-template-columns:1fr}.travel-itinerary-place{grid-column:auto}}

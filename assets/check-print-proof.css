@@ -1,0 +1,46 @@
+/* Cash & Bank school-scoped check print alignment proof. */
+.check-proof-container{min-width:0;margin-top:14px;}
+.check-proof-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.check-proof-overflow{max-width:100%;overflow-x:auto;overflow-y:hidden;margin:14px 0;padding-bottom:6px;}
+.check-proof-paper{background:#fff;border:1px solid #9cabb9;position:relative;color:#1c3442;overflow:hidden;box-sizing:border-box;font-family:'Bookman Old Style',Georgia,serif;box-shadow:0 2px 12px #0000000d;}
+.check-proof-watermark{position:absolute;top:43%;left:13%;font-family:Arial,sans-serif;font-size:25pt;color:#aa2637;opacity:.24;transform:rotate(-17deg);font-weight:900;pointer-events:none;z-index:4;white-space:nowrap;}
+.check-proof-header{position:absolute;left:5mm;top:3mm;font:8pt Arial,sans-serif;letter-spacing:.03em;color:#668092;}
+.check-proof-field{position:absolute;line-height:1.2;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+.check-proof-field-date_month,.check-proof-field-date_day,.check-proof-field-date_year{letter-spacing:2px;}
+.check-proof-field-numeric{font-weight:700;}
+.check-proof-field-words{font-size:9pt;max-width:85%;white-space:normal;}
+.check-proof-field-signatory{font-size:7pt;white-space:normal;max-width:29%;}
+.check-proof-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;}
+.check-proof-settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;}
+.check-proof-settings{padding:14px;border:1px solid #d5e1e7;border-radius:9px;background:#fbfdfe;}
+.check-proof-offset-row{display:grid;grid-template-columns:minmax(105px,1fr) minmax(100px,1fr) minmax(100px,1fr);gap:10px;align-items:end;padding:5px 0;border-bottom:1px solid #e8f0f4;}
+.check-proof-offset-row strong{padding-bottom:12px;font-size:.8rem;}
+.check-proof-warning{font-weight:700;color:#a34b32;font-size:.8rem;}
+.cb-proof-register-list{background:#fff;border-radius:8px;padding:10px 16px;margin-top:12px;}
+.cb-proof-register-list button{margin:0 8px 8px 0;}
+@media(max-width:640px){.check-proof-offset-row{grid-template-columns:1fr 1fr}.check-proof-offset-row strong{grid-column:1/-1;padding-bottom:0}}
+@media print{
+    @page{size:A4;margin:8mm;}
+    body *{visibility:hidden!important;}
+    .check-proof-paper,.check-proof-paper *{visibility:visible!important;}
+    .check-proof-paper{position:fixed!important;left:0;top:0;border:1px dashed #333!important;box-shadow:none!important;}
+    .check-proof-overflow{overflow:visible!important;}
+    .check-proof-watermark{opacity:.48!important;color:#900!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+
+/* v0.2.193 visual alignment wizard; only non-negotiable TEST proof is printable. */
+.check-proof-settings{display:grid;gap:12px}
+.check-proof-field[role="button"]{cursor:move;touch-action:none;outline:1px dashed #5398aa;outline-offset:2px;user-select:none;max-width:88%}
+.check-proof-field[aria-pressed="true"]{outline:2px solid #149d91;background:#e7faf6;color:#075c54;z-index:6}
+.check-proof-field[role="button"]:focus-visible{outline:2px solid #136e99}
+.check-proof-nudge{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.check-proof-nudge button{padding:6px 12px;min-width:62px}
+.check-proof-nudge strong{font-size:.85rem;flex-basis:100%}
+.check-proof-advanced{padding:8px 0;border-top:1px solid #d7e2e8}
+.check-proof-advanced summary{cursor:pointer;font-weight:650}
+@media print{.check-proof-field[role="button"],.check-proof-field[aria-pressed="true"]{outline:none!important;background:transparent!important;color:#1c3442!important}}
+
+/* v0.2.444: show where alignment values came from without altering the paper layout */
+.check-proof-source{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 18px;padding:10px 12px;border:1px solid #d6e5e9;background:#f4f9fa;border-radius:8px;font-size:.82rem;color:#21465a}
+.check-proof-source strong{width:100%;color:#123c52}
+@media print{.check-proof-source{display:none!important}}

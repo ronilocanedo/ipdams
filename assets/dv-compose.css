@@ -1,0 +1,179 @@
+/* v0.2.58 — compact, source-first DV composer; presentation only. */
+body.ipdams-dv-compose-open{overflow:hidden}
+.dv-start-panel{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+.dv-start-panel h3{margin:0 0 6px;font-size:16px;color:#193449}
+.dv-start-panel .body-muted{margin:0;max-width:730px}
+.dv-start-panel .primary{white-space:nowrap;gap:8px}
+.dv-finalize-disclosure{border:1px solid #dfe9ed;border-radius:11px;background:white;overflow:hidden;margin-bottom:16px}
+.dv-finalize-disclosure>summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;font-weight:750;color:#23465b}
+.dv-finalize-disclosure>summary small{font-size:11px;font-weight:500;color:#708a99}
+.dv-finalize-disclosure[open]>summary{border-bottom:1px solid #e4eef0}
+.dv-finalize-disclosure>.surface{box-shadow:none;border:0;margin:0;padding:18px 20px}
+.dv-compose-modal{width:min(1060px,calc(100vw - 26px));max-height:calc(100dvh - 26px);padding:0;display:flex;flex-direction:column;overflow:hidden}
+.dv-compose-modal>.pr-detail-header{flex:0 0 auto}
+.dv-compose-scroll{flex:1 1 auto;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain;padding:18px 24px}
+.dv-compose-actions{flex:0 0 auto;border-top:1px solid #e5edef;padding:14px 24px;display:flex;align-items:center;justify-content:flex-end;gap:10px;background:#fff}
+.dv-type-tabs{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px!important;padding:0!important;margin:0 0 20px;overflow:visible!important}
+.dv-type-tabs button{border:1px solid #dce6eb;background:#f9fbfc;color:#354f61;border-radius:9px;text-align:left;padding:12px;display:grid;gap:4px;min-width:0}
+.dv-type-tabs button.active{background:#eaf8f5;border:2px solid #18aa98;padding:11px;color:#124d49}
+.dv-type-tabs button strong{font-size:12px}.dv-type-tabs button small{font-size:10px;color:#698291}
+.dv-form-panel{border:1px solid #e1eaf0;border-radius:10px;background:#fff;padding:16px;margin:0 0 14px;min-width:0}
+.dv-form-panel>h3{font-size:13px;font-weight:800;color:#213e50;margin:0 0 13px;padding:0 0 10px;border-bottom:1px solid #e9eff2}
+.dv-source-picker .section-stack{gap:9px}.dv-source-picker .hint{margin:7px 0}.dv-source-picker .field{margin-bottom:8px}
+.dv-source-picker .allocation-list{max-height:260px}
+.dv-search-box{max-width:560px}
+.dv-info-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;align-items:stretch}
+.dv-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dv-readonly{min-height:57px;background:#f5f8fa;border:1px solid #e8eef1;border-radius:7px;padding:9px 11px;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.dv-readonly span{font-size:10px;color:#657f91;font-weight:650}
+.dv-readonly strong{font-size:12px;color:#233e50;font-weight:760;line-height:1.45}
+.dv-readonly .field{margin:0}
+.dv-particulars p{font-size:12px;color:#3b586a;line-height:1.6;margin:0 0 8px}.dv-particulars .hint{margin:8px 0 0}
+.dv-tax-simple>.body-muted{margin:0 0 10px}
+.dv-tax-simple .dv-tax-builder{margin:0;padding:12px;background:#f8fbfb}
+.dv-tax-simple .dv-tax-builder .section-head{gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.dv-tax-simple .dv-tax-builder .section-head>h3{display:none}
+.dv-tax-simple .dv-tax-builder .section-head .inline-actions{display:flex;flex-wrap:wrap;gap:7px}
+.dv-tax-simple .dv-tax-builder .body-muted{display:none}
+.dv-tax-simple .dv-tax-row{grid-template-columns:1fr 1.6fr 1fr 1.3fr auto}
+.dv-tax-simple .dv-tax-builder .hint{margin:8px 0}
+.dv-journal-help{padding:8px 11px;background:#f5f9fa;border-radius:7px;color:#46687c;font-size:12px;line-height:1.6}
+.dv-journal-help p{margin:0 0 7px}.dv-journal-help .hint{margin:0}
+.dv-compose-modal button:focus-visible,.dv-compose-modal input:focus-visible,.dv-compose-modal select:focus-visible{outline:3px solid #0e9d8d;outline-offset:2px}
+@media(max-width:850px){.dv-info-grid{grid-template-columns:1fr}.dv-tax-simple .dv-tax-row{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.dv-start-panel{flex-direction:column;align-items:stretch}.dv-compose-modal{width:100%;max-height:calc(100dvh - 12px)}.dv-compose-backdrop{padding:6px}.dv-compose-scroll{padding:12px}.dv-compose-actions{padding:12px}.dv-type-tabs{grid-template-columns:1fr;gap:6px!important}.dv-type-tabs button{padding:10px}.dv-info-grid,.dv-detail-grid,.dv-tax-simple .dv-tax-row{grid-template-columns:1fr}.dv-form-panel{padding:12px}.dv-finalize-disclosure>summary{display:block}.dv-finalize-disclosure>summary small{display:block;margin-top:4px}}
+
+/* Keep legacy duplicate-DV warnings as readable actions, not a wide alert row. */
+.dv-source-picker .notice.error{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:7px;padding:11px;}
+.dv-source-picker .notice.error p{flex:1 1 100%;margin:0 0 4px;line-height:1.55;}
+.dv-source-picker .notice.error .outline{font-size:11px;font-weight:720;padding:7px 10px;white-space:normal;text-align:center;}
+.dv-compose-modal .pr-detail-header h2{margin:0;font-size:20px;line-height:1.3;}
+
+/* v0.2.74: conspicuous native expandable review and read-only UACS diagnostics. */
+.dv-finalize-disclosure>summary.dv-finalize-trigger{list-style:none;display:flex;align-items:center;gap:14px;
+    background:#eef9f7;border-left:4px solid #119c88;padding:16px 19px;min-height:78px}
+.dv-finalize-disclosure>summary.dv-finalize-trigger::-webkit-details-marker{display:none}
+.dv-finalize-disclosure>summary.dv-finalize-trigger::marker{content:''}
+.dv-finalize-trigger-text{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.dv-finalize-trigger-text strong{font-size:15px;line-height:1.35;color:#123b45}
+.dv-finalize-disclosure>summary .dv-finalize-trigger-text small{font-size:12px;line-height:1.5;color:#3b6871}
+.dv-finalize-trigger-chevron{display:inline-flex;align-items:center;justify-content:center;
+    width:31px;height:31px;flex:0 0 auto;border:1px solid #6abdaf;border-radius:50%;
+    color:#075d53;background:#fff;font-size:17px;transition:transform .15s ease}
+.dv-finalize-disclosure[open] .dv-finalize-trigger-chevron{transform:rotate(180deg)}
+.dv-finalize-disclosure>summary.dv-finalize-trigger:hover{background:#dcf2ec}
+.dv-finalize-disclosure>summary.dv-finalize-trigger:focus-visible{outline:3px solid #157f78;outline-offset:-4px}
+.dv-account-line{display:flex;flex-direction:column;gap:4px;max-width:490px;min-width:180px}
+.dv-account-line strong{font-size:12px;line-height:1.4;color:#23465b}
+.dv-account-line small{font-size:11px;color:#607c8c;line-height:1.4}
+.dv-journal-summary{display:flex;flex-wrap:wrap;gap:8px 17px;align-items:center;
+    margin:11px 0;padding:11px 13px;background:#f2f7f9;border:1px solid #dce9ec;border-radius:8px;
+    font-size:12px;color:#29485b}
+.dv-journal-summary .dv-journal-blocked{color:#a53630;font-weight:750}
+.dv-journal-summary .dv-journal-ok{color:#096d5c;font-weight:700}
+.dv-item-diagnostics{margin:14px 0;padding:13px;border:1px solid #dce9ed;border-radius:9px;background:#fcfefe}
+.dv-item-diagnostics h4{margin:0 0 7px;font-size:13px;color:#193d4c}
+.dv-item-diagnostics .hint{margin:7px 0 12px}
+.dv-item-diagnostics .data-table{min-width:650px}
+.dv-item-diagnostics .data-table th,.dv-item-diagnostics .data-table td{font-size:11px;vertical-align:top}
+.dv-item-diagnostics .dv-diagnostic-warning{color:#ae362d;font-weight:700}
+.dv-item-diagnostics .notice.error{margin:10px 0 0}
+@media(max-width:600px){.dv-finalize-disclosure>summary.dv-finalize-trigger{display:flex;align-items:center;padding:13px}
+    .dv-journal-summary{flex-direction:column;align-items:flex-start}}
+
+/* v0.2.77: straightforward, visibly separate cancellation without JSON actions. */
+.dv-cancel-dialog{max-width:730px;max-height:calc(100dvh - 30px);overflow:hidden}
+.dv-cancel-dialog .pr-edit-form{min-height:0}
+.dv-cancel-dialog .pr-detail-scroll{min-height:0;overflow:auto;overscroll-behavior:contain}
+.dv-cancel-kept{border-left:3px solid #168f81;background:#eef8f7;border-radius:5px;
+    padding:11px 12px;font-weight:600;line-height:1.5}
+.dv-cancel-acknowledge{display:flex;align-items:flex-start;gap:10px;
+    padding:12px;border:1px solid #d5e2e5;border-radius:8px;background:#f5f9fa;
+    cursor:pointer;line-height:1.5;font-size:13px}
+.dv-cancel-acknowledge input{width:18px;height:18px;flex-shrink:0;margin:1px 0 0}
+.dv-cancel-link{border:1px solid #c66a60;color:#ab3e35;background:#fff;border-radius:7px;
+    padding:10px 14px;cursor:pointer;font-size:13px;font-weight:700}
+.dv-cancel-link:hover:not(:disabled){background:#fff1ef}
+.dv-cancel-submit{border:1px solid #a64137;background:#b6493f;color:#fff;
+    border-radius:7px;padding:10px 14px;cursor:pointer;font-weight:700}
+.dv-cancel-submit:hover:not(:disabled){background:#99392f}
+.dv-cancel-submit:disabled,.dv-cancel-link:disabled{opacity:.45;cursor:not-allowed}
+.dv-cancel-dialog button:focus-visible{outline:3px solid #156f70;outline-offset:3px}
+@media(max-width:600px){.dv-cancel-dialog{max-height:calc(100dvh - 18px)}
+    .dv-cancel-dialog .pr-detail-actions{display:flex;flex-wrap:wrap;gap:8px}
+    .dv-cancel-submit{flex:1 1 100%}}
+
+/* v0.2.78 — small-screen DV readability; the server-side financial logic
+   and unmodified desktop register/table remain authoritative. */
+.dv-register-mobile{display:none}
+.dv-register-desktop{display:block}
+.dv-journal-money{font-variant-numeric:tabular-nums}
+@media(max-width:650px){
+  .dv-register-desktop{display:none}
+  .dv-register-mobile{display:block}
+  .dv-register-mobile .section-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    justify-content:space-between;margin-bottom:12px}
+  .dv-register-mobile .section-head h3{font-size:15px;margin:0}
+  .dv-register-cards{display:grid;gap:12px}
+  .dv-mobile-register-card{border:1px solid #d9e7ea;border-radius:12px;
+    padding:13px;background:#fff;min-width:0}
+  .dv-mobile-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .dv-mobile-card-head>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .dv-mobile-card-head strong{font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+  .dv-mobile-card-head small{font-size:12px;color:#637b8a}
+  .dv-mobile-card-head .status{font-size:11px;flex-shrink:0}
+  .dv-mobile-payee{margin:13px 0;color:#1b394b;font-size:14px;font-weight:700;
+    line-height:1.45;overflow-wrap:anywhere}
+  .dv-mobile-card-totals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;margin:0}
+  .dv-mobile-card-totals>div{background:#f4f8fa;padding:10px;border-radius:7px;min-width:0}
+  .dv-mobile-card-totals>div:last-child{grid-column:1/-1;
+    background:#eaf6f3;border:1px solid #d0e9e2}
+  .dv-mobile-card-totals dt{font-size:11px;font-weight:700;color:#5d7785}
+  .dv-mobile-card-totals dd{margin:5px 0 0;color:#163a4d;font-size:15px;font-weight:750;
+    font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .dv-mobile-card-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;margin-top:13px}
+  .dv-mobile-card-actions button{width:100%;min-height:44px;white-space:normal;
+    font-size:13px;line-height:1.35;padding:10px}
+  .dv-mobile-card-actions button:only-child{grid-column:1/-1}
+  .dv-register-mobile .hint{margin:12px 0 0}
+  .dv-advance-workpaper .dv-mobile-table-wrap{overflow:visible;max-width:none}
+  .dv-advance-workpaper .dv-journal-table,
+  .dv-item-diagnostics .dv-item-table{min-width:0!important;width:100%!important;
+    table-layout:auto;border:0;border-collapse:separate;border-spacing:0 9px}
+  .dv-advance-workpaper .dv-journal-table thead,
+  .dv-item-diagnostics .dv-item-table thead{display:none}
+  .dv-advance-workpaper .dv-journal-table tbody,
+  .dv-item-diagnostics .dv-item-table tbody{display:block;width:100%}
+  .dv-advance-workpaper .dv-journal-table tbody tr,
+  .dv-item-diagnostics .dv-item-table tbody tr{display:block;border:1px solid #d6e6e9;
+    border-radius:10px;background:#fff;padding:12px;min-width:0}
+  .dv-advance-workpaper .dv-journal-table tbody td,
+  .dv-item-diagnostics .dv-item-table tbody td{display:grid!important;
+    grid-template-columns:minmax(78px,34%) minmax(0,1fr);gap:8px;
+    align-items:start;width:100%;max-width:100%;min-width:0;border:0!important;
+    padding:7px 0!important;text-align:left!important;font-size:13px!important;
+    line-height:1.45;overflow-wrap:anywhere}
+  .dv-advance-workpaper .dv-journal-table tbody td+td,
+  .dv-item-diagnostics .dv-item-table tbody td+td{border-top:1px solid #edf2f4!important}
+  .dv-advance-workpaper .dv-journal-table tbody td::before,
+  .dv-item-diagnostics .dv-item-table tbody td::before{content:attr(data-label);
+    color:#5d7785;font-size:11px;font-weight:750}
+  .dv-advance-workpaper .dv-journal-table .dv-account-line{min-width:0}
+  .dv-advance-workpaper .dv-journal-table .dv-account-line strong{font-size:13px}
+  .dv-advance-workpaper .dv-journal-table .dv-account-line small{font-size:12px}
+  .dv-advance-workpaper .dv-journal-table .dv-journal-money,
+  .dv-item-diagnostics .dv-item-table .dv-journal-money{font-size:14px!important;
+    font-weight:750;font-variant-numeric:tabular-nums}
+  .dv-item-diagnostics{padding:11px}
+  .dv-item-diagnostics .dv-item-table td.dv-diagnostic-warning{color:#a53630}
+  .dv-journal-summary{padding:13px;gap:9px;font-size:13px;line-height:1.5}
+  .dv-journal-summary>span{overflow-wrap:anywhere}
+  .pr-detail-actions button{min-height:42px}
+  .pr-detail-modal .pr-detail-scroll{overflow-x:hidden}
+}
+@media(max-width:370px){
+  .dv-advance-workpaper .dv-journal-table tbody td,
+  .dv-item-diagnostics .dv-item-table tbody td{grid-template-columns:1fr;gap:3px}
+}

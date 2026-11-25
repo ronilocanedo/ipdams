@@ -1,0 +1,37 @@
+/* IPDAMS 0.2.363 — compact RIS draft and cancellation dialogs. */
+.ris363-form{padding:12px 16px 16px;max-width:100%;}
+.ris363-form form{display:flex;flex-direction:column;gap:11px;}
+.ris363-mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ris363-mode-choice{min-height:40px;padding:8px 12px;border:1px solid #cad8e1;background:#f8fafb;border-radius:8px;text-align:left;color:#27445b;font:inherit;cursor:pointer;}
+.ris363-mode-choice.selected{border:2px solid #009b90;background:#e8f6f3;color:#006b66;font-weight:700;}
+.ris363-panel{border:1px solid #dce5ec;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:9px;}
+.ris363-field{margin:0;max-width:100%;}
+.ris363-field select,.ris363-field input{width:100%;max-width:100%;}
+.ris363-preview{display:flex;flex-direction:column;gap:9px;}
+.ris363-requester{padding:9px 11px;display:flex;gap:8px;justify-content:space-between;align-items:center;background:#eef7f5;border-radius:7px;}
+.ris363-requester span{color:#526f7c;font-size:12px;}
+.ris363-section-title{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:13px;color:#243e52;}
+.ris363-section-title span{color:#5a7183;font-size:12px;}
+.ris363-results{border:1px solid #e0e7ed;border-radius:7px;max-height:170px;overflow:auto;padding:3px;}
+.ris363-result{display:flex;justify-content:space-between;gap:9px;align-items:center;padding:6px 7px;border-bottom:1px solid #e9eef1;font-size:13px;}
+.ris363-result:last-child{border-bottom:none;}
+.ris363-result span{min-width:0;overflow-wrap:anywhere;}
+.ris363-result button{flex-shrink:0;padding:5px 11px;}
+.ris363-items{display:flex;flex-direction:column;gap:5px;max-height:280px;overflow:auto;}
+.ris363-item-row{display:grid;grid-template-columns:minmax(0,1fr) 104px auto;align-items:center;gap:9px;padding:8px 9px;border:1px solid #e2e9ef;border-radius:7px;background:#fff;}
+.ris363-item-name{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere;font-size:13px;}
+.ris363-item-name small{color:#667d89;font-size:11px;}
+.ris363-quantity{font-size:12px;text-align:right;white-space:nowrap;color:#324d61;grid-column:2/4;}
+.ris363-item-row input{box-sizing:border-box;width:100%;min-width:0;text-align:right;}
+.ris363-item-row .ris363-remove{padding:6px 8px;font-size:12px;}
+.ris363-alert{border-left:3px solid #cf654d;background:#fff3ef;color:#9b3b29;padding:9px 11px;border-radius:5px;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.ris363-confirm{display:flex;align-items:flex-start;gap:9px;font-size:13px;}
+.ris363-confirm input{margin-top:2px;flex-shrink:0;}
+@media(max-width:620px){
+.ris363-form{padding:10px;}.ris363-panel{padding:9px;}
+.ris363-mode{grid-template-columns:1fr;}
+.ris363-requester{align-items:flex-start;flex-direction:column;}
+.ris363-item-row{grid-template-columns:minmax(0,1fr) 85px;gap:6px;}
+.ris363-item-row .ris363-remove{grid-column:2;}
+.ris363-quantity{grid-column:2;}
+}

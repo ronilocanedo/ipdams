@@ -1,0 +1,33 @@
+.travel-claims { display:grid; gap:1rem; }
+.travel-claims-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; }
+.travel-claims-head h3 { margin:0 0 .35rem; }
+.travel-claim-register { display:grid; gap:.65rem; }
+.travel-claim-form,.travel-claim-evidence,.travel-claim-review { display:grid; gap:.8rem; border:1px solid #dce7ed; border-radius:10px; padding:1rem; }
+.travel-claim-line { display:grid;grid-template-columns:minmax(150px,1fr) minmax(180px,2fr) minmax(110px,.9fr) auto;gap:.7rem;align-items:end; }
+.travel-claim-line .field { min-width:0; }
+.travel-claim-evidence-row { display:flex; flex-wrap:wrap;align-items:center;gap:.7rem;justify-content:space-between;padding:.75rem;border:1px solid #dce7ed;border-radius:8px; }
+.travel-claim-evidence-row>div { flex:1 1 210px; }
+.travel-claim-evidence-row input[type=file] {max-width:290px;}
+.travel-claim-review .travel-check{display:flex;gap:.5rem;align-items:flex-start;}
+@media(max-width:800px){.travel-claim-line{grid-template-columns:1fr 1fr}.travel-claims-head{flex-direction:column}}
+@media(max-width:520px){.travel-claim-line{grid-template-columns:1fr}}
+/* v0.2.113 — guided workflow presentation; no permission or finance changes. */
+.travel-stage-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;margin:0 0 .25rem}
+.travel-stage-tab{background:#fff!important;color:#21394a!important;text-align:left!important;border:1px solid #d5e0e7!important;border-radius:12px!important;min-height:92px;padding:.85rem 1rem!important;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:.22rem;box-shadow:none!important;cursor:pointer}
+.travel-stage-tab:hover{border-color:#169b87!important;background:#f8fbfb!important}
+.travel-stage-tab.active{border:2px solid #078f80!important;border-bottom:4px solid #078f80!important;background:#f8fdfc!important;padding-bottom:calc(.85rem - 2px)!important}
+.travel-stage-tab strong{font-size:.95rem;line-height:1.3}
+.travel-stage-tab span{font-size:.8rem;line-height:1.35;font-weight:400;color:#557084}
+.travel-stage-tab small{font-size:.75rem;color:#667f8c}
+.travel-stage-tab:focus-visible{outline:3px solid #0f9889;outline-offset:2px}
+.travel-stage-panel{display:grid;gap:1rem;min-width:0}
+.travel-stage-intro{display:flex;gap:1rem;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.travel-stage-intro h3{margin:0 0 .2rem}
+.travel-stage-intro p{margin:.15rem 0}
+.travel-stage-intro button{white-space:nowrap}
+.travel-claim-empty{border:1px solid #d5e0e7;border-radius:9px;padding:1rem;background:#fafcfd;display:grid;gap:.6rem}
+.travel-claim-empty p{margin:0}
+.travel-claim-empty button{justify-self:start}
+.travel-finance-notice{font-size:.85rem;color:#526c7d;border-top:1px solid #d5e0e7;padding:.8rem .3rem;margin:0}
+@media(max-width:760px){.travel-stage-nav{grid-template-columns:1fr}.travel-stage-tab{min-height:0;padding:.6rem .8rem!important;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.6rem}.travel-stage-tab strong{font-size:.86rem}.travel-stage-tab span{font-size:.75rem}.travel-stage-tab small{white-space:nowrap}.travel-stage-tab.active{padding-bottom:calc(.6rem - 2px)!important}}
+@media(max-width:470px){.travel-stage-tab{grid-template-columns:1fr auto}.travel-stage-tab span{grid-column:1 / -1;grid-row:2}.travel-stage-tab small{grid-column:2;grid-row:1}.travel-stage-intro button{width:100%}}

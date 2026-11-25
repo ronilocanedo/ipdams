@@ -1,0 +1,6 @@
+/* IPDAMS 0.2.392: action overview is separate from property transfers */
+.ipdams-action-center .ipdams-action-overview{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ipdams-action-center .ipdams-action-overview h2{font-size:18px;line-height:1.3;margin:0 0 3px}
+.ipdams-action-center .ipdams-action-overview p{font-size:13px;line-height:1.4;margin:0;color:#60778a}
+.ipdams-action-center .ipdams-action-summary{margin:2px 0 8px}
+@media(max-width:680px){.ipdams-action-center .ipdams-action-overview .outline{width:100%}}

@@ -1,0 +1,71 @@
+/* IPDAMS v0.2.332 - scoped checkboxes and confirmation usability.
+   Never change eligibility or ledger decisions with CSS. */
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-office-action {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 9px; min-width: 0; max-width: 100%;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-office-action > .field {
+  width: 100%; min-width: 0;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-confirmation {
+  display: flex !important; align-items: flex-start !important;
+  justify-content: flex-start !important; flex-wrap: nowrap !important;
+  gap: 9px !important; width: 100% !important; max-width: 100% !important;
+  padding: 0 !important; margin: 0 !important;
+  font-size: 12px; font-weight: 400; line-height: 1.4;
+  cursor: pointer; white-space: normal !important;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-confirmation > span {
+  flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] input.travel-dv-confirmation-checkbox,
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] input.travel-dv-select-checkbox {
+  -webkit-appearance: checkbox !important; appearance: auto !important;
+  display: inline-block !important; position: static !important;
+  flex: 0 0 16px !important;
+  width: 16px !important; height: 16px !important;
+  min-width: 16px !important; min-height: 16px !important;
+  max-width: 16px !important; max-height: 16px !important;
+  box-sizing: border-box !important;
+  padding: 0 !important; margin: 1px 0 0 0 !important;
+  border-radius: 3px !important; vertical-align: top !important;
+  cursor: pointer;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-confirmation-checkbox:focus-visible,
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-select-checkbox:focus-visible {
+  outline: 2px solid #028d85; outline-offset: 2px;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-select-cell {
+  text-align: center; vertical-align: middle;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-select-control {
+  display: inline-flex !important; justify-content: center; align-items: center;
+  width: 28px; height: 28px; cursor: pointer; margin: 0 !important; padding: 0 !important;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-select-pending {
+  display: inline-block; max-width: 72px;
+  font-size: 11px; line-height: 1.2; color: #526b76; text-align: center;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-approve-button {
+  align-self: flex-start; margin-top: 0; max-width: 100%; white-space: normal;
+}
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table th,
+.dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table td {
+  white-space: normal; overflow-wrap: anywhere; vertical-align: middle;
+}
+@media (min-width: 760px) {
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table {
+    width: 100%; min-width: 0 !important; table-layout: fixed;
+  }
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table th:nth-child(1) {width: 9%;}
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table th:nth-child(2) {width: 24%;}
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table th:nth-child(3) {width: 7%;}
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table th:nth-child(4) {width: 11%;}
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table th:nth-child(5) {width: 15%;}
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table th:nth-child(6) {width: 34%;}
+}
+@media (max-width: 759px) {
+  .dv-compose-modal[aria-label="Prepare consolidated employee travel reimbursement DV"] .travel-dv-claim-table {
+    min-width: 720px !important;
+  }
+}
