@@ -10,6 +10,29 @@
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.
 
+## Standard development and release policy
+
+**Main must represent the latest verified IPDAMS version successfully installed and confirmed working on Hostinger, not experimental development.** Adopted by the owner on 25 November 2026.
+
+| Branch | Purpose |
+| --- | --- |
+| `main` | Latest verified, owner-confirmed working production source |
+| `develop/*` | Ongoing enhancements and bug fixes, based on the current stable source |
+| `feature/*` | Major features needing separate development and review |
+| `checkpoint/*` | Historical milestones and verification evidence |
+
+### Release cycle
+
+1. Develop related features from the latest stable source; keep changes small, versioned and reversible.
+2. Review code, security and financial integrity. Run relevant isolated Docker/MariaDB and Playwright tests using synthetic data only; retain prior QA evidence and avoid unnecessary repetition.
+3. Prepare and verify the exact versioned update package, excluding QA-only code, fixtures and experimental changes not approved for production.
+4. Obtain explicit owner approval and verify complete website and database backups before installation on Hostinger.
+5. Obtain owner confirmation that the installed version works; record any unresolved issues and the limits of verification.
+6. Reconcile the installed release's available source with the tested package and GitHub, verify source integrity, and promote the successful version to `main` with explicit owner approval. Preserve both histories; do not force-push or silently discard changes. Create a version tag for the stable release when separately approved.
+7. Update the README baseline, current development handoff and verification evidence; continue new features from the newly established stable version.
+
+No automatic deployment or automatic merge is authorized by this policy. A successful test run alone does not establish a working Hostinger release. Owner confirmation alone does not prove live file-hash parity. Keep historical branches and audit history; never publish production records, credentials, private configuration, backups or sensitive QA evidence.
+
 ## Historical checkpoint — 12 November 2026 (superseded)
 
 - **Owner-reported installed application: `v0.2.368`; `v0.2.369` installer prepared for owner UAT, not yet installed.** The installed version is not independently authenticated against Hostinger/MariaDB.
