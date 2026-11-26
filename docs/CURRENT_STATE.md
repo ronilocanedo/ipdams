@@ -1,12 +1,12 @@
 # IPDAMS - Current development state / active handoff
 
 **As of:** 2026-11-26 (Asia/Manila)
-**Stable source:** v0.2.458, owner-confirmed installed and working; Main promotion explicitly approved.
+**Stable source:** v0.2.460, owner-confirmed installed; GitHub promotion explicitly approved. Post-installation report values and pagination not independently confirmed.
 
-- Six modified source files (five textbook services and assets/app.js); 270 unchanged; 276 total. [Source manifest](checkpoints/2026-11-26-v0.2.458-source-manifest.json) and [targeted QA](checkpoints/2026-11-26-v0.2.458-qa.json): 82 PHP stub-PDO and 13 mocked JS checks independently rerun; six syntax checks. No migration or new stock posting on installation.
-- Super Admin uses selected active school/Division context without impersonation; retain ownership, audit actor, lifecycle controls and existing client-side read-only view. Server-enforced read-only session not introduced.
-- Integrated Finance R4 v0.2.457 remains intact. 302 historical synthetic checks, not additive. Pending independent evidence: live hashes, actual production migration logs/schema and historical attribution onboarding. Actual MariaDB/HTTP, real browser regression and installer rollback for v0.2.458 remain untested. No production testing.
+- Consolidates v0.2.459 Unified Reports workspace (13 payload files, 63 targeted checks) and v0.2.460 fund utilization and historical allocation (eight payload files, 101 targeted checks). One overlapping payload path; 18 existing files modified, two added, 258 unchanged, 278 total. No new migration.
+- [Final source manifest](checkpoints/2026-11-26-v0.2.460-source-manifest.json), [intermediate source manifest](checkpoints/2026-11-26-v0.2.459-source-manifest.json), [Reports QA](checkpoints/2026-11-26-v0.2.459-qa.json), [Fund Utilization QA](checkpoints/2026-11-26-v0.2.460-qa.json). Prior synthetic passes are historical and not additive. Actual authenticated HTTP/MariaDB integration and installer rollback for these patches not tested. No production testing.
+- Historical payments recognized at fund level using bank-linked credits and recorded release evidence. Explicit download allocation still requires original evidence and user confirmation; unresolved attribution must not be fabricated. Fund projection is not certified cash or spending authority. Actual extra print page not independently reproduced. Preserve R4 financial safeguards and textbook access controls; no online liquidation submission/approval.
 
 ## NEXT ACTION
 
-Continue owner-selected enhancements from verified v0.2.458; next version v0.2.459. Maintain explicit approvals, isolated synthetic QA, office scope and financial integrity. Avoid redundant tests.
+Continue from verified v0.2.460, next proposed v0.2.461. Review actual fund utilization and Appendix 43 print output if owner reports discrepancies. Maintain explicit owner approvals, historical record integrity, isolated synthetic QA and no automatic deployment. Live hashes, migration logs and historical onboarding remain independently unverified.

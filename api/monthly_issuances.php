@@ -7,15 +7,16 @@ ini_set('log_errors','1');
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');
+$reportEmbedded=(($_GET['embedded']??'')==='1');
+header('X-Frame-Options: '.($reportEmbedded?'SAMEORIGIN':'DENY'));
 header('Referrer-Policy: no-referrer');
-header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
+header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; form-action 'self'; object-src 'none'; base-uri 'self'; frame-ancestors ".($reportEmbedded?"'self'":"'none'"));
 ini_set('session.use_strict_mode','1');
 ini_set('session.cookie_httponly','1');
 ini_set('session.cookie_samesite','Lax');
 session_name('IPDAMSSESSID');session_start();
 function reportEsc(mixed $v): string {return htmlspecialchars((string)($v??''),ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
-$error='';$report=null;$organizations=[];$target=0;$selectedType='ALL';
+$error='';$report=null;$organizations=[];$target=0;$selectedType='ALL';$availableTypes=[];
 $timezone=new DateTimeZone('Asia/Manila');
 $now=new DateTimeImmutable('now',$timezone);
 $chosenYear=(string)($_GET['year']??$now->format('Y'));
@@ -35,6 +36,7 @@ try {
     }
     $target=$_GET['organization_id']??($organizations[0]['id']??0);
     $selectedType=(string)($_GET['type']??'ALL');
+    foreach($organizations as $office)if((string)$office['id']===(string)$target){$availableTypes=MonthlyIssuances::typesFor($user,$office);break;}
     if($target){
         scope($db,$user,(int)$target);
         $report=(new MonthlyIssuances($db,$user))->report(['organization_id'=>$target,'year'=>$chosenYear,'month'=>$chosenMonth,'type'=>$selectedType]);
@@ -45,9 +47,9 @@ $months=[1=>'January','February','March','April','May','June','July','August','S
 ?><!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IPDAMS · Monthly Document Issuances</title>
 <link rel="stylesheet" href="../assets/monthly-issuances.css"><script src="../assets/monthly-issuances.js" defer></script></head>
-<body>
+<body<?=$reportEmbedded?' class="reports-embedded"':''?>>
 <nav class="report-tools" aria-label="Report tools">
-  <a href="../index.php">← Back to IPDAMS</a>
+  <?php if(!$reportEmbedded):?><a href="../index.php">← Back to IPDAMS</a><?php endif;?>
   <strong>Monthly Document Issuances</strong>
   <button id="print-report" type="button" <?php if(!$report): ?>disabled<?php endif; ?>>Print / Save as PDF</button>
 </nav>
@@ -58,12 +60,12 @@ $months=[1=>'January','February','March','April','May','June','July','August','S
     <p>Read-only register of allocated control numbers</p>
   </header>
   <form method="get" action="monthly_issuances.php" class="filters report-no-print">
-    <label>Organization<select name="organization_id" required>
+    <?php if($reportEmbedded):?><input type="hidden" name="embedded" value="1"><input type="hidden" name="organization_id" value="<?=reportEsc($target)?>"><?php else:?><label>Organization<select name="organization_id" required>
     <?php foreach($organizations as $org): ?><option value="<?=reportEsc($org['id'])?>" <?php if((string)$org['id']===(string)$target): ?>selected<?php endif; ?>><?=reportEsc($org['name'])?> (<?=reportEsc($org['kind'])?>)</option><?php endforeach; ?>
-    </select></label>
+    </select></label><?php endif;?>
     <label>Year<select name="year"><?php for($y=(int)$now->format('Y')+1;$y>=1900;$y--): ?><option value="<?=$y?>" <?php if((string)$y===$chosenYear): ?>selected<?php endif; ?>><?=$y?></option><?php endfor; ?></select></label>
     <label>Month<select name="month"><?php foreach($months as $n=>$label): ?><option value="<?=$n?>" <?php if((int)$chosenMonth===$n): ?>selected<?php endif; ?>><?=reportEsc($label)?></option><?php endforeach; ?></select></label>
-    <label>Document<select name="type"><option value="ALL" <?php if($selectedType==='ALL'): ?>selected<?php endif; ?>>All numbered types</option><?php foreach(MonthlyIssuances::TYPES as $key=>$label): ?><option value="<?=reportEsc($key)?>" <?php if($selectedType===$key): ?>selected<?php endif; ?>><?=reportEsc($label)?></option><?php endforeach; ?></select></label>
+    <label>Document<select name="type"><option value="ALL" <?php if($selectedType==='ALL'): ?>selected<?php endif; ?>>All numbered types</option><?php foreach(($report['available_types']??$availableTypes) as $key=>$label): ?><option value="<?=reportEsc($key)?>" <?php if($selectedType===$key): ?>selected<?php endif; ?>><?=reportEsc($label)?></option><?php endforeach; ?></select></label>
     <button type="submit">Show register</button>
   </form>
 <?php if($error!==''): ?>

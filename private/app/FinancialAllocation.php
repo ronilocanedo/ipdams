@@ -44,9 +44,30 @@ final class FinancialAllocation {
         demand(one($this->db,'SELECT id FROM bank_accounts WHERE id=? AND organization_id=?',[$bank,$org])!==null,'Bank scope mismatch',403);
         $s=$this->sources((int)$dv['id']);$accounting=array_values($s['by']);
         if(!$accounting){$group=[];foreach(q($this->db,'SELECT accounting_uacs_code,amount FROM dv_allocation_lines WHERE dv_id=? ORDER BY id',[$dv['id']])->fetchAll() as $a){$code=trim((string)$a['accounting_uacs_code']);if($code!=='')$group[$code]=($group[$code]??0)+moneyCents($a['amount']);}foreach($group as $code=>$c)$accounting[]=['id'=>0,'uacs_code'=>(string)$code,'debit'=>moneyString($c),'cents'=>$c,'accounting_line_index'=>0];}
-        $downloads=q($this->db,"SELECT id,organization_id,fund_id,bank_account_id,amount,bank_credit_date,bank_credit_ref,bank_evidence_ref FROM fund_events WHERE organization_id=? AND fund_id=? AND bank_account_id=? AND event_type='ALLOTMENT' ORDER BY bank_credit_date,id LIMIT 1001",[$org,$dv['fund_id'],$bank])->fetchAll();demand(count($downloads)<=1000,'Narrow download selection',409);
+        $downloads=q($this->db,"SELECT id,organization_id,fund_id,bank_account_id,amount,bank_credit_date,bank_credit_ref,bank_evidence_ref,reference_type FROM fund_events WHERE organization_id=? AND fund_id=? AND bank_account_id=? AND event_type='ALLOTMENT' ORDER BY bank_credit_date,id LIMIT 1001",[$org,$dv['fund_id'],$bank])->fetchAll();demand(count($downloads)<=1000,'Narrow download selection',409);
         foreach($downloads as &$r){$used=$this->usage((int)$r['id'],(int)$dv['id']);$r+=$used;}unset($r);
-        return ['dv'=>$dv,'bank_account_id'=>$bank,'downloads'=>$downloads,'accounting_sources'=>$accounting,'tax_sources'=>array_values($s['taxBy']),'current'=>$this->current((int)$dv['id']),'plan'=>$this->planRow($org,(int)$dv['id'])];
+        $current=$this->current((int)$dv['id']);$plan=$this->planRow($org,(int)$dv['id']);$suggestion=null;
+        if($dv['status']==='FINALIZED'&&!$current){
+            $checks=q($this->db,'SELECT id,bank_account_id,amount,replaces_check_id,status FROM checks WHERE organization_id=? AND dv_id=? ORDER BY id',[$org,$dv['id']])->fetchAll();
+            $hasTransfer=one($this->db,'SELECT id FROM school_tax_transfers WHERE dv_id=?',[$dv['id']])!==null;
+            $suggestion=self::historicalSuggestion($dv,$bank,$s,$downloads,$checks,$hasTransfer);
+        }
+        return ['dv'=>$dv,'bank_account_id'=>$bank,'downloads'=>$downloads,'accounting_sources'=>$accounting,'tax_sources'=>array_values($s['taxBy']),'current'=>$current,'plan'=>$plan,'historical_suggestion'=>$suggestion];
+    }
+    /** Suggestion only; the existing transactional reserve path still validates
+     * all accounting, capacity, tax authority, payment history and cutoff rules. */
+    public static function historicalSuggestion(array $dv,int $bank,array $s,array $downloads,array $checks,bool $hasTransfer=false):?array {
+        $gross=moneyCents($dv['gross']);$net=moneyCents($dv['net']);$ded=moneyCents($dv['deductions']);
+        if($dv['status']!=='FINALIZED'||!$s['version']||$s['debit']!==$gross||$s['credit']!==$gross||array_sum($s['gross'])!==$gross||array_sum($s['tax'])!==$ded||$gross!==$net+$ded||$net<=0||!FinancialClosePolicy::day((string)$dv['document_date']))return null;
+        $lines=[];$retained=0;$taxValid=true;
+        foreach($s['by'] as $id=>$line)$lines[]=['kind'=>'GROSS','source_id'=>(int)$id,'uacs_code'=>$line['uacs_code'],'cents'=>(int)$line['cents'],'download_id'=>null];
+        foreach($s['taxBy'] as $id=>$line){$lines[]=['kind'=>'TAX','source_id'=>(int)$id,'cents'=>(int)$line['cents'],'download_id'=>null];if($line['disposition']==='SCHOOL_UTILIZATION')$retained+=(int)$line['cents'];elseif($line['disposition']!=='REMIT')$taxValid=false;}
+        $eligible=[];foreach($downloads as $d){if((int)$d['organization_id']!==(int)$dv['organization_id']||(int)$d['fund_id']!==(int)$dv['fund_id']||(int)$d['bank_account_id']!==$bank||!in_array($d['reference_type']??'',['BANK_DOWNLOAD','DIVISION_RELEASE'],true)||!FinancialClosePolicy::day((string)($d['bank_credit_date']??''))||$d['bank_credit_date']>$dv['document_date']||trim((string)($d['bank_credit_ref']??''))===''||trim((string)($d['bank_evidence_ref']??''))==='')continue;$eligible[]=$d;}
+        // Do not use capacity, FIFO or amount coincidence to choose among multiple eligible credits.
+        $selected=null;if(count($eligible)===1&&count($checks)===1&&!$hasTransfer&&$taxValid){$d=$eligible[0];$c=$checks[0];$capacity=moneyCents($d['amount']);
+            if((int)$c['bank_account_id']===$bank&&empty($c['replaces_check_id'])&&in_array($c['status'],['ISSUED','SIGNED','RELEASED','CLEARED'],true)&&moneyCents($c['amount'])===$net&&$net+(int)$d['other_committed_cents']<=$capacity&&$gross-$retained+(int)$d['other_gross_cents']-(int)$d['other_retained_cents']<=$capacity)$selected=(int)$d['id'];}
+        if($selected!==null)foreach($lines as &$line)$line['download_id']=$selected;unset($line);
+        return ['lines'=>$lines,'suggested_download_id'=>$selected,'eligible_count'=>count($eligible),'review_required'=>true];
     }
     public function plan(array $d):array {
         $org=idOf($d,'organization_id');$this->auth($org,true);$dv=$this->dv($org,idOf($d,'dv_id'),true);demand($dv['status']==='DRAFT','Only draft allocation plans can be saved',409);$bank=idOf($d,'bank_account_id');
@@ -88,6 +109,18 @@ final class FinancialAllocation {
         $minimum=0;if(class_exists('BankReconciliation')){$account+=BankReconciliation::bookAdjustments($this->db,$org,$bank,date('Y-m-d'));$minimum=BankReconciliation::maintaining($this->db,$org,$bank);}
         demand($account>=$minimum&&$fundCash>=0,'Actual fund/account cash after every check and reservation must preserve the maintaining balance',409);
     }
+    /** Validate original release evidence without creating or dating a new payment. */
+    public static function historicalRelease(array $checks,array $eventsByCheck,string $today):?array {
+        $release=null;
+        foreach($checks as $c){$id=(int)$c['id'];$events=$eventsByCheck[$id]??[];
+            demand(count($events)<=1,'Duplicate historical release events require finance review',409);
+            if(!$events){demand(!in_array($c['status'],['RELEASED','CLEARED'],true),'Historical release evidence is missing',409);continue;}
+            demand($release===null&&in_array($c['status'],['RELEASED','CLEARED'],true),'Ambiguous historical release or recovery requires finance review',409);
+            $day=substr((string)($events[0]['created_at']??''),0,10);$issue=substr((string)($c['created_at']??''),0,10);
+            demand(FinancialClosePolicy::day($day)&&FinancialClosePolicy::day($issue)&&$issue<=$day&&$day<=$today&&(int)$events[0]['id']>0,'Historical payment date or identity requires review',409);
+            $release=[$id,(int)$events[0]['id']];
+        }return $release;
+    }
     /** Called after all original Domain controls, before the shared transaction commits. */
     public function reserve(array $d,bool $newFinalization=false):array {
         $org=idOf($d,'organization_id');$this->auth($org,true);$dv=$this->dv($org,idOf($d,'dv_id'),true);demand($dv['status']==='FINALIZED','A finalized voucher is required',409);$bank=idOf($d,'bank_account_id');
@@ -120,6 +153,14 @@ final class FinancialAllocation {
                 $seen[$ancestor]=true;$c=$parent;
             }
         }
+        // Historical onboarding records a past payment only with unambiguous
+        // release evidence. Refuse a released-and-reversed history until actual
+        // cash recovery is separately resolved; never choose the first release.
+        $historicalRelease=null;
+        if(!$previous&&!$newFinalization){
+            $releaseEvents=[];foreach($checks as $c)$releaseEvents[(int)$c['id']]=q($this->db,"SELECT id,created_at FROM payment_events WHERE check_id=? AND event_type='RELEASED' ORDER BY id",[$c['id']])->fetchAll();
+            $historicalRelease=self::historicalRelease($checks,$releaseEvents,date('Y-m-d'));
+        }
         $normalized=[];$downloadIds=[];$meta=[];$retained=0;
         foreach($lines as $l){$kind=$l['kind']??'';$id=(int)($l['source_id']??0);
             if($kind==='GROSS'&&!$id){$matches=array_filter($s['by'],static fn($a)=>!empty($l['accounting_line_index'])?(int)$a['accounting_line_index']===(int)$l['accounting_line_index']:(isset($l['uacs_code'])&&(string)$a['uacs_code']===(string)$l['uacs_code']));demand(count($matches)===1,'Select one exact saved debit line; ambiguous UACS cannot be inferred',409);$id=(int)array_key_first($matches);}
@@ -144,7 +185,7 @@ final class FinancialAllocation {
         q($this->db,'INSERT INTO finance_allocation_sets(organization_id,dv_id,bank_account_id,accounting_version_id,revision,active_dv_id,state,predecessor_id,gross_cents,tax_cents,net_cents,retained_cents,evidence_reference,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[$org,$dv['id'],$bank,$s['version']['id'],$revision,$dv['id'],$paid>0?'PAID':'RESERVED',$previous['id']??null,moneyCents($dv['gross']),moneyCents($dv['deductions']),moneyCents($dv['net']),$retained,$evidence,$this->user['id']]);$set=(int)$this->db->lastInsertId();
         foreach($normalized as $i=>$l)q($this->db,'INSERT INTO finance_allocation_lines(allocation_set_id,download_id,kind,source_id,cents,uacs_code,tax_disposition,evidence_reference) VALUES (?,?,?,?,?,?,?,?)',[$set,$l['download_id'],$l['kind'],$l['source_id'],$l['cents'],$meta[$i]['uacs_code'],$meta[$i]['tax_disposition'],$meta[$i]['evidence_reference']]);
         $this->event($set,null,null,'RESERVED',0,'reserve:'.$set,$evidence);if($paid>0)$this->event($set,null,null,'CASH_CARRY_FORWARD',$paid,'carry:'.$set,$evidence);
-        if(!$previous&&!$newFinalization){$released=[];foreach($checks as $c){$events=q($this->db,"SELECT id FROM payment_events WHERE check_id=? AND event_type='RELEASED' ORDER BY id",[$c['id']])->fetchAll();if($events)$released[]=[(int)$c['id'],(int)$events[0]['id']];}if($released){demand(count($roots)===1,'Ambiguous historical payment roots',409);$this->event($set,$released[0][0],$released[0][1],'HISTORICAL_RELEASE_REVIEW',moneyCents($dv['net']),'historical-release:'.$set,$evidence);q($this->db,"UPDATE finance_allocation_sets SET state='PAID' WHERE id=?",[$set]);}}
+        if($historicalRelease!==null){$this->event($set,$historicalRelease[0],$historicalRelease[1],'HISTORICAL_RELEASE_REVIEW',moneyCents($dv['net']),'historical-release:'.$set,$evidence);q($this->db,"UPDATE finance_allocation_sets SET state='PAID' WHERE id=?",[$set]);}
         $this->audit($org,'DOWNLOAD_ALLOCATION_RESERVED',$set,['dv_id'=>(int)$dv['id'],'revision'=>$revision,'historical_review'=>!$newFinalization]);return $this->current((int)$dv['id']);
     }
     private function event(int $set,?int $check,?int $payment,string $kind,int $cash,string $key,string $evidence):void {

@@ -11,7 +11,7 @@ if(allocationForm){
         if(line){
             const options=[...source.options];const match=options.find(o=>{const [kind,id,index,uacs]=o.value.split(':');return kind===line.kind&&(Number(id)>0?Number(id)===Number(line.source_id):uacs===line.uacs_code&&(line.accounting_line_index===undefined||Number(index)===Number(line.accounting_line_index)));});
             if(match)source.value=match.value;
-            row.querySelector('[data-download]').value=String(line.download_id);row.querySelector('[data-amount]').value=(line.cents/100).toFixed(2);row.querySelector('[data-evidence]').value=line.evidence||line.evidence_reference||'';
+            row.querySelector('[data-download]').value=line.download_id==null?'':String(line.download_id);row.querySelector('[data-amount]').value=(line.cents/100).toFixed(2);row.querySelector('[data-evidence]').value=line.evidence||line.evidence_reference||'';
         }
         host.append(row);
     };
@@ -29,7 +29,7 @@ if(allocationForm){
             const body=Object.fromEntries(new FormData(allocationForm));for(const key of ['organization_id','dv_id','bank_account_id','expected_version','expected_allocation_id','expected_accounting_version'])if(key in body)body[key]=Number(body[key]);
             if('historical_review' in body)body.historical_review=true;
             if('replace_allocation' in body)body.replace_allocation=true;
-            body.lines=[...host.querySelectorAll('.allocation-row')].map(row=>{const [kind,id,index,uacs]=row.querySelector('[data-source]').value.split(':');const line={kind,download_id:Number(row.querySelector('[data-download]').value),cents:exactCents(row.querySelector('[data-amount]').value),evidence:row.querySelector('[data-evidence]').value.trim()};if(debitHost&&kind==='GROSS')line.uacs_code=uacs==='MANUAL'?row.querySelector('[data-manual]').value:uacs;else if(Number(id)>0)line.source_id=Number(id);else{line.uacs_code=uacs==='MANUAL'?row.querySelector('[data-manual]').value:uacs;if(index!=='')line.accounting_line_index=Number(index);}return line;});
+            body.lines=[...host.querySelectorAll('.allocation-row')].map(row=>{const [kind,id,index,uacs]=row.querySelector('[data-source]').value.split(':');const line={kind,download_id:Number(row.querySelector('[data-download]').value),cents:exactCents(row.querySelector('[data-amount]').value),evidence:row.querySelector('[data-evidence]').value.trim()||String(body.evidence_reference||'').trim()};if(debitHost&&kind==='GROSS')line.uacs_code=uacs==='MANUAL'?row.querySelector('[data-manual]').value:uacs;else if(Number(id)>0)line.source_id=Number(id);else{line.uacs_code=uacs==='MANUAL'?row.querySelector('[data-manual]').value:uacs;if(index!=='')line.accounting_line_index=Number(index);}return line;});
             if(debitHost)body.accounting=[...debitHost.querySelectorAll('.accounting-debit')].map(row=>({uacs_code:row.querySelector('[data-debit-uacs]').value,debit:(exactCents(row.querySelector('[data-debit-amount]').value)/100).toFixed(2),credit:'0.00'}));
             if(!body.lines.length)throw new Error('Add at least one explicit source allocation.');
             const response=await fetch('index.php?route='+allocationForm.dataset.route,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':allocationForm.dataset.csrf,'X-Idempotency-Key':allocationForm.dataset.requestKey+'-'+(allocationForm.dataset.sequence||'0')},body:JSON.stringify(body)});

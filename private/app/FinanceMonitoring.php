@@ -4,6 +4,7 @@ require_once __DIR__.'/FinanceAccess.php';
 require_once __DIR__.'/CashFundReports.php';
 require_once __DIR__.'/FinancialClosePolicy.php';
 require_once __DIR__.'/FinancialAllocation.php';
+require_once __DIR__.'/FundUtilizationSummary.php';
 
 /** Read-only utilization of explicitly attributed downloads. School membership
  * and active parent membership are checked independently on every request.
@@ -71,11 +72,14 @@ final class FinanceMonitoring {
             foreach($organizations as $authorized)if(one($this->db,'SELECT '.$column.' FROM '.$table.' WHERE '.$column.'=? AND organization_id=?',[$id,$authorized['id']])!==null){$found=true;break;}
             demand($found,'Report filter is outside authorized school finance scope',403);
         }
-        $rows=[];$options=['schools'=>$allSchools,'funds'=>[],'banks'=>[],'officers'=>[],'downloads'=>[]];$unmapped=[];
+        $rows=[];$options=['schools'=>$allSchools,'funds'=>[],'banks'=>[],'officers'=>[],'downloads'=>[]];$unmapped=[];$fundSummary=[];
         foreach($allSchools as $s)if($s['mooe_employee_id'])$options['officers'][$s['mooe_employee_id']]=['id'=>$s['mooe_employee_id'],'name'=>$s['mooe_in_charge']];
         foreach($schools as $school=>$m){
-            foreach(q($this->db,'SELECT id,name,source_code,fiscal_year FROM funds WHERE organization_id=? ORDER BY source_code,id',[$school])->fetchAll() as $f)$options['funds'][]=$f+['organization_id'=>$school,'school_name'=>$m['name']];
-            foreach(q($this->db,'SELECT id,bank_name,account_label,masked_account FROM bank_accounts WHERE organization_id=? ORDER BY id',[$school])->fetchAll() as $b)$options['banks'][]=$b+['organization_id'=>$school,'school_name'=>$m['name']];
+            $schoolFunds=q($this->db,'SELECT id,name,source_code,fiscal_year FROM funds WHERE organization_id=? ORDER BY source_code,id',[$school])->fetchAll();
+            foreach($schoolFunds as $f)$options['funds'][]=$f+['organization_id'=>$school,'school_name'=>$m['name']];
+            $schoolBanks=q($this->db,'SELECT id,bank_name,account_label,masked_account FROM bank_accounts WHERE organization_id=? ORDER BY id',[$school])->fetchAll();
+            foreach($schoolBanks as $b)$options['banks'][]=$b+['organization_id'=>$school,'school_name'=>$m['name']];
+            if(empty($p['download_id']))foreach(FundUtilizationSummary::read($this->db,$school,$from,$to,$p,$schoolFunds,$schoolBanks) as $summary)$fundSummary[]=$summary+['school'=>$m,'organization_id'=>$school];
             $args=[$school,$from,$to];$extra='';
             foreach(['fund_id','bank_account_id','download_id'] as $key)if(!empty($p[$key])){$extra.=' AND e.'.($key==='download_id'?'id':$key).'=?';$args[]=idOf($p,$key);}
             if(trim((string)($p['source_code']??''))!==''){$extra.=' AND f.source_code=?';$args[]=requiredString($p,'source_code',40);}
@@ -114,24 +118,32 @@ final class FinanceMonitoring {
             }
             foreach($credits as $credit){$id=(int)$credit['id'];$alloc=$byDownload[$id]??[];$gross=$tax=$retained=$remit=$cash=$reservation=$relief=0;$cashComplete=$budgetComplete=true;
                 foreach($alloc as $a){$gross+=$a['gross_cents'];$tax+=$a['tax_cents'];$retained+=$a['retained_cents'];$remit+=$a['remittable_cents'];$relief+=$a['remittance_relief_cents'];if(!$a['budget_evidence_complete'])$budgetComplete=false;if(!$a['cash_evidence_complete'])$cashComplete=false;else{$cash+=$a['released_cash_cents'];$reservation+=$a['net_cents']-$a['released_cash_cents'];}}
-                $amount=moneyCents((string)$credit['amount']);$evidence=(int)($credit['bank_account_id']??0)>0&&trim((string)$credit['bank_credit_ref'])!==''&&trim((string)$credit['bank_evidence_ref'])!=='';
+                $amount=moneyCents((string)$credit['amount']);$evidence=FundUtilizationSummary::verified($credit);
                 $rows[]=$credit+['school'=>$m,'credit_cents'=>$amount,'evidence_complete'=>$evidence,'gross_committed_cents'=>$gross,'budget_authority_used_cents'=>$budgetComplete?$gross-$retained-$relief:null,'remittance_relief_cents'=>$relief,'budget_evidence_complete'=>$budgetComplete,'withholding_cents'=>$tax,'retained_cents'=>$retained,'remittable_cents'=>$remit,'net_committed_cents'=>$gross-$tax,'reserved_cash_cents'=>$cashComplete?$reservation:null,'released_cash_cents'=>$cashComplete?$cash:null,'remaining_cash_cents'=>$cashComplete?$amount-$cash:null,'cash_capacity_after_reservations_cents'=>$cashComplete?$amount-$cash-$reservation:null,'remaining_gross_authority_cents'=>$budgetComplete?$amount-$gross+$retained+$relief:null,'cash_evidence_complete'=>$cashComplete,'allocations'=>$alloc,'attribution_status'=>$alloc?'EXPLICIT_VERIFIED_SOURCES':'UNATTRIBUTED'];
                 $options['downloads'][]=['id'=>$id,'organization_id'=>$school,'school_name'=>$m['name'],'reference'=>$credit['bank_credit_ref'],'date'=>$credit['bank_credit_date']];
             }
             // A visible separate exception bucket; never subtract or allocate it
             // against a particular download without an explicit reviewed record.
-            $missing=q($this->db,"SELECT d.id,d.display_number,d.document_date,d.dv_type,d.gross,d.net,d.fund_id FROM disbursement_vouchers d WHERE d.organization_id=? AND d.status='FINALIZED' AND d.document_date BETWEEN ? AND ? AND NOT EXISTS(SELECT 1 FROM finance_allocation_sets s WHERE s.dv_id=d.id AND s.organization_id=d.organization_id AND s.created_at<?) ORDER BY d.id LIMIT 10001",[$school,$from,$to,$boundary])->fetchAll();
+            $missing=q($this->db,"SELECT d.id,d.display_number,d.document_date,d.dv_type,d.gross,d.net,d.fund_id FROM disbursement_vouchers d WHERE d.organization_id=? AND d.status='FINALIZED' AND d.document_date<=? AND NOT EXISTS(SELECT 1 FROM finance_allocation_sets s WHERE s.dv_id=d.id AND s.organization_id=d.organization_id AND s.created_at<?) ORDER BY d.id LIMIT 10001",[$school,$to,$boundary])->fetchAll();
             demand(count($missing)<=10000,'Narrow unmapped payment range',409);
+            $selectedCredit=!empty($p['download_id'])?($credits[0]??null):null;
             foreach($missing as $u){
+                if(!empty($p['download_id'])&&(!$selectedCredit||(int)$u['fund_id']!==(int)$selectedCredit['fund_id']))continue;
                 if(!empty($p['fund_id'])&&(int)$u['fund_id']!==idOf($p,'fund_id'))continue;
                 if(trim((string)($p['source_code']??''))!==''){
                     $fund=one($this->db,'SELECT source_code FROM funds WHERE id=? AND organization_id=?',[$u['fund_id'],$school]);
                     if(($fund['source_code']??'')!==(string)$p['source_code'])continue;
                 }
-                if(!empty($p['bank_account_id'])&&one($this->db,'SELECT id FROM checks WHERE dv_id=? AND organization_id=? AND bank_account_id=? LIMIT 1',[$u['id'],$school,idOf($p,'bank_account_id')])===null)continue;
-                $unmapped[]=$u+['organization_id'=>$school,'school_name'=>$m['name'],'attribution_status'=>'UNMAPPED_NOT_ASSIGNED'];
+                $bankIds=array_map('intval',array_column(q($this->db,'SELECT DISTINCT bank_account_id FROM checks WHERE dv_id=? AND organization_id=? AND created_at<? ORDER BY bank_account_id',[$u['id'],$school,$boundary])->fetchAll(),'bank_account_id'));
+                if(!empty($p['bank_account_id'])&&$bankIds&&!in_array(idOf($p,'bank_account_id'),$bankIds,true))continue;
+                if($selectedCredit&&$bankIds&&!in_array((int)$selectedCredit['bank_account_id'],$bankIds,true))continue;
+                $unmapped[]=$u+['organization_id'=>$school,'school_name'=>$m['name'],'bank_ids'=>$bankIds,'can_review'=>$this->user['role']==='SUPER_ADMIN'||($this->user['role']==='SCHOOL'&&$m['classification']!=='DIVISION'),'attribution_status'=>'UNMAPPED_NOT_ASSIGNED'];
             }
         }
+        $unmappedScopes=[];foreach($unmapped as $u){$key=$u['organization_id'].':'.$u['fund_id'].':';foreach($u['bank_ids']?:[0] as $bid)$unmappedScopes[$key.$bid]=true;}
+        foreach($rows as &$row){$key=$row['organization_id'].':'.$row['fund_id'].':';$row['attribution_complete']=!isset($unmappedScopes[$key.'0'])&&!isset($unmappedScopes[$key.$row['bank_account_id']]);
+            if(!$row['attribution_complete']||!$row['evidence_complete'])foreach(['remaining_cash_cents','cash_capacity_after_reservations_cents','remaining_gross_authority_cents'] as $key)$row[$key]=null;
+        }unset($row);
         usort($rows,static fn($a,$b)=>strcmp($a['school']['name'],$b['school']['name'])?:strcmp($a['bank_credit_date'],$b['bank_credit_date'])?:((int)$a['id']<=>(int)$b['id']));
         $totals=['verified_download_cents'=>0,'gross_committed_cents'=>0,'budget_authority_used_cents'=>0,'remittance_relief_cents'=>0,'budget_evidence_complete'=>true,'net_committed_cents'=>0,'withholding_cents'=>0,'retained_cents'=>0,'remittable_cents'=>0,'released_cash_cents'=>0,'reserved_cash_cents'=>0,'remaining_cash_cents'=>0,'cash_capacity_after_reservations_cents'=>0,'remaining_gross_authority_cents'=>0,'evidence_gaps'=>0,'unmapped_dv_count'=>count($unmapped),'cash_evidence_complete'=>true];
         foreach($rows as $r){if($r['evidence_complete'])$totals['verified_download_cents']+=$r['credit_cents'];else $totals['evidence_gaps']++;
@@ -140,8 +152,10 @@ final class FinanceMonitoring {
             if(!$r['cash_evidence_complete'])$totals['cash_evidence_complete']=false;else foreach(['released_cash_cents','reserved_cash_cents','remaining_cash_cents','cash_capacity_after_reservations_cents'] as $k)$totals[$k]+=$r[$k];}
         if(!$totals['cash_evidence_complete'])foreach(['released_cash_cents','reserved_cash_cents','remaining_cash_cents','cash_capacity_after_reservations_cents'] as $k)$totals[$k]=null;
         if(!$totals['budget_evidence_complete'])foreach(['budget_authority_used_cents','remaining_gross_authority_cents'] as $k)$totals[$k]=null;
+        $totals['attribution_complete']=!array_filter($rows,static fn($r)=>!$r['attribution_complete']||!$r['evidence_complete']);
+        if(!$totals['attribution_complete'])foreach(['remaining_cash_cents','cash_capacity_after_reservations_cents','remaining_gross_authority_cents'] as $key)$totals[$key]=null;
         $options['officers']=array_values($options['officers']);
-        return ['organization_id'=>$org,'from'=>$from,'to'=>$to,'rows'=>$rows,'totals'=>$totals,'unmapped'=>$unmapped,'options'=>$options,'read_only'=>true,'certified'=>false,'note'=>'Exact explicit allocation sources only. Download dates select credits; utilization uses recorded allocation/payment events through the cutoff. Gross authority, reserved cash, released cash and withholding remain distinct. Unmapped historical payments are not assigned to a download.'];
+        return ['organization_id'=>$org,'from'=>$from,'to'=>$to,'rows'=>$rows,'fund_summary'=>$fundSummary,'totals'=>$totals,'unmapped'=>$unmapped,'options'=>$options,'read_only'=>true,'certified'=>false,'note'=>'Individual-download figures reflect explicit attribution only. Credit dates select downloads; allocation events are read through cutoff. Fund summary separately uses bank-linked credits and recorded releases, including historical payments. No historical payment is guessed into a download.'];
     }
     /** Existing Appendix 43 renderer receives a register built solely from the
      * selected download's saved gross/tax lines and dated cash events. */
@@ -156,7 +170,7 @@ final class FinanceMonitoring {
         $report=$this->read(['organization_id'=>$org,'download_id'=>$download,'from'=>'2000-01-01','to'=>$today]);
         demand(count($report['rows'])===1,'Download is unavailable in this organization and cutoff',404);$credit=$report['rows'][0];
         demand($credit['bank_credit_date']<=$to,'Download credit is after the selected report period',404);
-        demand($credit['evidence_complete']&&$credit['cash_evidence_complete'],'Download source/cash evidence is incomplete',409);
+        demand($credit['evidence_complete']&&$credit['cash_evidence_complete']&&$credit['attribution_complete'],'Download source/cash evidence is incomplete',409);
         if(!empty($p['fund_id']))demand(idOf($p,'fund_id')===(int)$credit['fund_id'],'Download fund mismatch',422);
         if(!empty($p['bank_account_id']))demand(idOf($p,'bank_account_id')===(int)$credit['bank_account_id'],'Download bank mismatch',422);
         $fund=one($this->db,'SELECT id,name,source_code,fiscal_year FROM funds WHERE id=? AND organization_id=?',[$credit['fund_id'],$org]);

@@ -2,17 +2,17 @@
 
 ## Current stable baseline - 26 November 2026 (Asia/Manila)
 
-- **IPDAMS v0.2.458** installed on Hostinger and working (owner-confirmed; promotion explicitly approved). Super Admin textbook access follows the selected active school or Division workspace, retaining office ownership and actual audit actor.
-- **`main` is the stable source baseline.** [Source manifest](docs/checkpoints/2026-11-26-v0.2.458-source-manifest.json): 276 source files, six modified, no new migration. [Targeted QA](docs/checkpoints/2026-11-26-v0.2.458-qa.json): 95/95 PHP stub-PDO and mocked JavaScript assertions; six syntax checks.
-- Integrated finance v0.2.457 remains intact; its 302 synthetic acceptance passes are historical, not additive. No online liquidation submission or approval. Live source hashes, production migration logs and actual browser/MariaDB regression for v0.2.458 remain independently unverified. Existing admin read-only view is client-side, not a server authorization boundary.
+- **IPDAMS v0.2.460** installed on Hostinger (owner-confirmed; GitHub promotion explicitly approved). Unified Reports workspace and corrected fund-level utilization, historical allocation review and report printing. Post-installation fund reconciliation and print results have not been separately verified.
+- **`main` is the stable source baseline.** [Source manifest](docs/checkpoints/2026-11-26-v0.2.460-source-manifest.json): 278 source files; 18 modified and two added since v0.2.458. No new migrations. [v0.2.459 QA](docs/checkpoints/2026-11-26-v0.2.459-qa.json): 63 targeted passes; [v0.2.460 QA](docs/checkpoints/2026-11-26-v0.2.460-qa.json): 101 targeted passes. Separate synthetic test scopes, not additive.
+- Fund-level cash projection reflects recorded credits and release evidence, not certified bank balances or spending authority. Explicit historical attribution and original evidence remain required; ambiguous individual balances are withheld. Existing R4 financial controls and textbook patch preserved. Actual MariaDB/HTTP integration and rollback for these two patches, production hashes and report pagination remain unverified. No production testing.
 - No automatic deployment. Follow the release policy below and obtain explicit owner approval for future commits, pushes, migrations, installation and releases.
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.
 
-## Latest completed milestone - Super Admin textbook access
+## Latest completed milestone - Unified Reports and fund utilization
 
-- v0.2.458 owner-confirmed working; no migration. The prior [Integrated Finance R4 checkpoint](docs/checkpoints/2026-11-26-integrated-finance-r4-release-candidate.md) and v0.2.457 source manifest remain historical evidence.
-- Next development version: v0.2.459. Review actual source before further changes.
+- v0.2.459 and v0.2.460 owner-confirmed installed; both release manifests and targeted QA preserved. [Intermediate source manifest](docs/checkpoints/2026-11-26-v0.2.459-source-manifest.json). No automatic allocation or changes to historical transactions on installation.
+- Integrated Finance R4 and v0.2.458 textbook access remain preserved. Next proposed development version: v0.2.461. Review actual source and any reported issues before further changes.
 
 ## Standard development and release policy
 

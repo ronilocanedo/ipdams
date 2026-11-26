@@ -24,6 +24,7 @@ function oneRow(array $cols):void{echo '<tr>';foreach($cols as $cell)echo '<td>'
 $reportCodes=['A80'=>'Appendix 80 · Monthly Bank Reconciliation','S1'=>'Schedule 1 · Outstanding Checks',
     'A35'=>'Appendix 35 · Report of Checks Issued','A40'=>'Appendix 40 · Cash Disbursements Record',
     'A43'=>'Appendix 43 · Cash Disbursements Register','A67'=>'Appendix 67 · Accountable Forms'];
+$reportEmbedded=(($_GET['embedded']??'')==='1');
 $r=(string)($_GET['report']??'A43');if(!isset($reportCodes[$r]))$r='A43';
 $period=(string)($_GET['period']??date('Y-m'));
 $org=(int)($_GET['organization_id']??0);$bankId=(int)($_GET['bank_account_id']??0);$fundId=(int)($_GET['fund_id']??0);
@@ -57,14 +58,14 @@ try{
 }catch(DomainError $e){http_response_code($e->status);$err=$e->getMessage();}
 catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_response_code(500);$err='Financial report could not be prepared. Technical review is required; nothing was posted.';}
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IPDAMS · Cash and Fund Reports</title><link rel="stylesheet" href="../assets/cash-fund-reports.css?v=0.2.455"><script src="../assets/cash-fund-reports.js" defer></script></head>
+<title>IPDAMS · Cash and Fund Reports</title><link rel="stylesheet" href="../assets/cash-fund-reports.css?v=0.2.460"><script src="../assets/cash-fund-reports.js" defer></script></head>
 <body class="report-<?=er($r)?>"><div class="toolbar noprint">
  <div><div class="eyebrow">IPDAMS / CASH &amp; BANK</div><h1>Fund liquidation &amp; cash reports</h1><p>Prepared from existing source records. Printing never posts funds, alters taxes or changes check status.</p></div>
  <button type="button" data-report-print <?=$data?'':'disabled'?>>Print selected report</button>
 </div>
 <form class="filters noprint" method="get">
- <label>School / Division<select name="organization_id" data-report-organization-change>
- <?php foreach($organizations as $o):?><option value="<?=er($o['id'])?>" <?=(int)$o['id']===$org?'selected':''?>><?=er($o['name'])?></option><?php endforeach;?></select></label>
+ <?php if($reportEmbedded):?><input type="hidden" name="embedded" value="1"><input type="hidden" name="organization_id" value="<?=er($org)?>"><?php else:?><label>School / Division<select name="organization_id" data-report-organization-change>
+ <?php foreach($organizations as $o):?><option value="<?=er($o['id'])?>" <?=(int)$o['id']===$org?'selected':''?>><?=er($o['name'])?></option><?php endforeach;?></select></label><?php endif;?>
  <label>Fund source<select name="fund_id"><?php foreach($choices['funds'] as $f):?><option value="<?=er($f['id'])?>" <?=(int)$f['id']===$fundId?'selected':''?>><?=er($f['source_code'].' · FY '.$f['fiscal_year'].' · '.$f['name'])?></option><?php endforeach;?></select></label>
  <label>Bank account<select name="bank_account_id"><?php foreach($choices['banks'] as $b):?><option value="<?=er($b['id'])?>" <?=(int)$b['id']===$bankId?'selected':''?>><?=er($b['bank_name'].' / '.$b['account_label'].' / '.$b['masked_account'])?></option><?php endforeach;?></select></label>
  <label>Report month<input name="period" type="month" required value="<?=er($period)?>"></label>
@@ -75,6 +76,7 @@ catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_r
 </form>
 <nav class="report-tabs noprint"><?php foreach($reportCodes as $code=>$title):
  $tabParams=['organization_id'=>$org,'fund_id'=>$fundId,'bank_account_id'=>$bankId,'period'=>$period,'report'=>$code];
+ if($reportEmbedded)$tabParams['embedded']=1;
  if(!empty($_GET['snapshot_id']))$tabParams['snapshot_id']=(int)$_GET['snapshot_id'];
  if($code==='A43'&&!empty($_GET['download_id']))$tabParams['download_id']=(int)$_GET['download_id'];
  $query=http_build_query($tabParams); ?>

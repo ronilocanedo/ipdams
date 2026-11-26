@@ -12,6 +12,7 @@
     ['ris','Requisition and Issue Slips (RIS)',['display_number','requestor','status'],'RIS'],
     ['checks','Checks',['check_number','dv_number','amount','status'],null],
     ['accountability','Property Accountability (ICS/PAR)',['display_number','doc_type','property_tag','item_name','custodian','status'],'ACCOUNTABILITY'],
+    ['stocks','Current supply stock',['item_name','category','batch','on_hand'],null],
     ['assets','Property Register',['property_tag','item_name','acquired_on','category','custodian','status'],null]
   ];
   const message = (text, error = false) => {
@@ -51,6 +52,7 @@
             '&type='+encodeURIComponent(actualType)+'&id='+encodeURIComponent(r.id);
           link.target='_blank';link.rel='noopener noreferrer';link.textContent='Print '+actualType;
           td.appendChild(link);
+          if(actualType==='AWARD'){const resolution=link.cloneNode(true);resolution.href=link.href+'&form=RESOLUTION';resolution.textContent='BAC Resolution';td.appendChild(document.createElement('br'));td.appendChild(resolution);link.textContent='Abstract of Quotations';}
         }else td.textContent='—';
         tr.appendChild(td);
       }
@@ -58,10 +60,14 @@
     }
   };
   let nonce=0;
+  const clearResults=()=>{ $('table-head').replaceChildren(); $('table-body').replaceChildren(); $('result-count').textContent=''; $('period-info').textContent=''; $('archive-print').disabled=true; };
   const search=async () => {
-    const org=$('org').value,year=$('year').value,month=$('month').value,kind=$('process').value;
+    const org=$('org').value,kind=$('process').value,currentStock=kind==='stocks';
+    $('year').disabled=currentStock; $('month').disabled=currentStock;
+    const year=currentStock?'':$('year').value,month=currentStock?'':$('month').value;
     const definition=processTypes.find(t=>t[0]===kind);
     const request=++nonce;
+    clearResults();
     if(!org || !definition){
       $('table-head').replaceChildren(); $('table-body').replaceChildren();
       $('result-count').textContent=''; $('period-info').textContent='';
@@ -79,8 +85,9 @@
       const rows=Array.isArray(payload.data)?payload.data:[];
       render(definition,rows,org);
       const mon=month?$('month').selectedOptions[0].textContent:'All months';
-      $('period-info').textContent=(year||'All years')+' · '+mon+
-        ' · Document / issuance date, scoped to selected organization. Results are read-only.';
+      $('period-info').textContent=currentStock?$('org').selectedOptions[0].textContent+' · Current stock only; not a historical balance.':(year||'All years')+' · '+mon+
+        ' · '+$('org').selectedOptions[0].textContent+' · Document / issuance date. Results are read-only.';
+      $('archive-print').disabled=false;
       message('Transaction register loaded.');
     }catch(e){if(request===nonce)message(e.message||'Unable to load archive',true);}
     finally{if(request===nonce)$('search').disabled=false;}
@@ -91,19 +98,36 @@
       const j=await r.json();if(!r.ok||!j.data.user)throw Error('Sign in to IPDAMS and try again.');
       $('org').replaceChildren(opt('','Choose organization'));
       for(const o of j.data.organizations||[]) $('org').appendChild(opt(String(o.id),o.name+' · '+o.kind));
-      $('process').replaceChildren(...processTypes.map(p=>opt(p[0],p[1])));
+      const params=new URLSearchParams(location.search);
+      const requested=params.get('organization_id');
+      const embedded=params.get('embedded')==='1';
+      const offices=j.data.organizations||[];
+      const matched=offices.find(o=>String(o.id)===requested);
+      if(requested&&!matched){clearResults();message('The selected organization is not authorized for this account.',true);return;}
+      if(embedded&&!matched){clearResults();message('Select an authorized organization in the IPDAMS workspace.',true);return;}
+      if(matched)$('org').value=String(matched.id);
+      else if(offices.length)$('org').value=String(offices[0].id);
+      const populateProcesses=()=>{
+        const office=offices.find(o=>String(o.id)===$('org').value);
+        const old=$('process').value||params.get('process');
+        const visible=processTypes.filter(p=>!(j.data.user.role==='VIEWER'&&['ris','assets','accountability','stocks'].includes(p[0]))&&!(j.data.user.role==='DIVISION'&&office?.kind==='SCHOOL'&&['assets','stocks'].includes(p[0])));
+        $('process').replaceChildren(...visible.map(p=>opt(p[0],p[1])));
+        if(visible.some(p=>p[0]===old))$('process').value=old;
+      };
+      populateProcesses();
+      $('org').addEventListener('change',()=>{populateProcesses();search();});
       $('year').replaceChildren(opt('','All years'));
       const year=new Date().getFullYear();
       for(let n=year+1;n>=2000;n--)$('year').appendChild(opt(String(n),String(n)));
       $('month').replaceChildren(opt('','All months'));
       for(let m=1;m<=12;m++) $('month').appendChild(opt(String(m),new Date(2020,m-1,1).toLocaleString('en-PH',{month:'long'})));
-      if((j.data.organizations||[]).length)$('org').value=String(j.data.organizations[0].id);
       $('year').value='';$('month').value='';
       if($('org').value)await search();
       else message('Your account has no assigned organization.',true);
     }catch(e){message(e.message||'Unable to load account',true);}
   };
   $('search').addEventListener('click',search);
-  for(const id of ['org','process','year','month'])$(id).addEventListener('change',search);
+  $('archive-print').addEventListener('click',()=>window.print());
+  for(const id of ['process','year','month'])$(id).addEventListener('change',search);
   init();
 })();

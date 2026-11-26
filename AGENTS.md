@@ -14,9 +14,8 @@ Verify current source and QA evidence before proposing changes.
 
 ## Verified development baseline (2026-11-26, Asia/Manila)
 
-- Stable source: `main`, v0.2.458, owner-confirmed installed and working; explicit promotion approval. See `docs/checkpoints/2026-11-26-v0.2.458-source-manifest.json` and `docs/checkpoints/2026-11-26-v0.2.458-qa.json`: 276 source files, 95 targeted stub-PDO/mocked JS passes, no migration.
-- Super Admin textbook workspace role follows selected active office, with actual audit actor and existing ownership controls retained. Read-only view remains client-side. Actual MariaDB/HTTP/browser regression and live hashes not independently verified.
-- Preserve integrated finance v0.2.457 safeguards (302 historical synthetic passes, not additive), explicit allocations, historical cutoff, Division scope and direct SQL write restriction. Historical attribution requires evidence. No automatic deployment, production testing or file-only rollback after DDL.
+- Stable source: `main`, v0.2.460, owner-confirmed installed and explicitly approved for promotion. See `docs/checkpoints/2026-11-26-v0.2.460-source-manifest.json` and both v0.2.459/v0.2.460 QA records. 278 source files, no new migrations. Separate targeted synthetic suites: 63 and 101 passes respectively. Actual authenticated MariaDB/HTTP integration and rollback for these patches, live hashes and report pagination remain unverified.
+- Preserve grouped Reports workspace, scoped reporting, original official print layouts, actual fund-level payment projections and explicit historical allocation review. Do not infer download attribution or represent cash projections as certified balances or spending authority. No online submission/approval. Preserve v0.2.457 financial controls and v0.2.458 textbook access rules. Existing admin read-only mode is client-side. No automatic deployment, production testing or file-only rollback after DDL.
 
 ## Repository and code layout
 

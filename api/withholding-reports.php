@@ -8,7 +8,9 @@ ini_set('session.use_strict_mode','1');ini_set('session.cookie_httponly','1');
 ini_set('session.cookie_samesite','Lax');ini_set('session.cookie_secure',$https?'1':'0');
 session_name('IPDAMSSESSID');session_start();
 header('Cache-Control: private, no-store');header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');header('Referrer-Policy: no-referrer');
+$reportEmbedded=(($_GET['embedded']??'')==='1');
+header('X-Frame-Options: '.($reportEmbedded?'SAMEORIGIN':'DENY'));
+header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; form-action 'self'; object-src 'none'; base-uri 'none'; frame-ancestors ".($reportEmbedded?"'self'":"'none'"));header('Referrer-Policy: no-referrer');
 function wrEscape(mixed $s): string{return htmlspecialchars((string)$s,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');}
 function wrDate(string $s,string $name): string {
     demand((bool)preg_match('/^20\d{2}-\d{2}-\d{2}$/D',$s),"Invalid $name",422);
@@ -104,11 +106,12 @@ function wrRender(array $d,int $org): never {
     $office=$d['office'];$rows=$d['rows'];$sum=$d['sum'];$funds=[];$atcs=[];
     foreach($rows as $r){$funds[$r['fund_code']]=true;$atcs[$r['atc_code']]=true;}
     header('Content-Type: text/html; charset=UTF-8');
-    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IPDAMS · Withholding Tax Report</title>';
-    echo '<style>body{font:15px system-ui,sans-serif;background:#f4f8fa;color:#19344a;margin:0}main{max-width:1400px;margin:24px auto;background:white;padding:24px;border-radius:12px}h1{margin:0 0 6px}.muted{color:#537085}form{display:flex;flex-wrap:wrap;gap:12px;align-items:end;padding:18px 0}label{display:grid;gap:5px;font-weight:600}input,select,button,a.export{padding:9px;border:1px solid #cddde5;border-radius:6px;font:inherit}button,a.export{background:#128d7f;color:white;text-decoration:none;cursor:pointer}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid #dde7ed;text-align:left;vertical-align:top}th{background:#eef5f7}td.money{text-align:right;white-space:nowrap}.kpis{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.kpis>div{background:#eef7f6;padding:14px;min-width:130px;border-radius:8px}.kpis strong{display:block}section.scroll{overflow:auto}small{color:#587084}@media print{body{background:white}main{margin:0;padding:0}form,.export{display:none!important}table{font-size:10px}tr{break-inside:avoid}}</style></head><body><main>';
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IPDAMS · Withholding Tax Report</title><script src="../assets/cash-fund-reports.js" defer></script>';
+    echo '<style>body{font:15px system-ui,sans-serif;background:#f4f8fa;color:#19344a;margin:0}main{max-width:1400px;margin:24px auto;background:white;padding:24px;border-radius:12px}h1{margin:0 0 6px}.muted{color:#537085}form{display:flex;flex-wrap:wrap;gap:12px;align-items:end;padding:18px 0}label{display:grid;gap:5px;font-weight:600}input,select,button,a.export{padding:9px;border:1px solid #cddde5;border-radius:6px;font:inherit}button,a.export{background:#128d7f;color:white;text-decoration:none;cursor:pointer}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid #dde7ed;text-align:left;vertical-align:top}th{background:#eef5f7}td.money{text-align:right;white-space:nowrap}.kpis{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.kpis>div{background:#eef7f6;padding:14px;min-width:130px;border-radius:8px}.kpis strong{display:block}section.scroll{overflow:auto}main{box-sizing:border-box;width:100%;min-width:0}label{min-width:0;max-width:100%}input,select{box-sizing:border-box;max-width:100%}@media(max-width:640px){main{margin:0;padding:12px}form label{flex:1 1 130px}form input,form select{width:100%}.kpis>div{min-width:0;flex:1 1 120px}}small{color:#587084}@media print{body{background:white}main{margin:0;padding:0}form,.export{display:none!important}table{font-size:10px}tr{break-inside:avoid}}</style></head><body><main>';
     echo '<h1>Withholding Tax Report</h1><p class="muted">'.wrEscape($office['name']).' · '.wrEscape($d['from']).' through '.wrEscape($d['through']).'</p>';
     echo '<p class="muted">Read-only schedule. Withheld, retained, remitted, and applied are distinct accounting measures and must not be added together.</p>';
     echo '<form method="get"><input type="hidden" name="organization_id" value="'.$org.'">';
+    if(($_GET['embedded']??'')==='1')echo '<input type="hidden" name="embedded" value="1">';
     foreach([['from','From',$d['from']],['through','Through',$d['through']]] as [$key,$label,$val])echo '<label>'.wrEscape($label).'<input type="date" name="'.$key.'" value="'.wrEscape($val).'" required></label>';
     echo '<label>Fund source<input name="fund" maxlength="40" placeholder="All sources" value="'.wrEscape($d['fund']).'"></label>';
     echo '<label>Tax code<input name="atc" maxlength="25" placeholder="All ATCs" value="'.wrEscape($d['atc']).'"></label>';
@@ -122,7 +125,7 @@ function wrRender(array $d,int $org): never {
     echo '<div class="kpis">';foreach($vals as [$label,$key])echo '<div><small>'.wrEscape($label).'</small><strong>₱'.wrMoney($sum[$key]??0).'</strong></div>';echo '</div>';
     $query=['organization_id'=>$org,'from'=>$d['from'],'through'=>$d['through'],'fund'=>$d['fund'],'atc'=>$d['atc']];
     if($office['kind']==='DIVISION')$query['school_id']=$d['schoolId'];
-    echo '<p><a class="export" href="?'.wrEscape(http_build_query($query+['format'=>'csv'])).'">Export CSV</a> <button type="button" onclick="window.print()">Print / Save PDF</button></p>';
+    echo '<p><a class="export" href="?'.wrEscape(http_build_query($query+['format'=>'csv'])).'">Export CSV</a> <button type="button" data-report-print>Print / Save PDF</button></p>';
     echo '<section class="scroll"><table><thead><tr>';
     foreach(['School','DV / Date','Supplier / Payee','Fund','ATC','Gross DV','Withheld','Disposition','Status','Utilized','Remaining','Division OR / Ref','JEV'] as $h)echo '<th>'.wrEscape($h).'</th>';echo '</tr></thead><tbody>';
     foreach($rows as $r){$cols=[$r['school_name'],$r['dv_number'].' / '.$r['document_date'],$r['payee'],$r['fund_code'],$r['atc_code'],$r['dv_gross'],$r['amount'],$r['disposition'],$r['report_status'],$r['applied_amount'],$r['remaining_amount'],$r['division_receipt']??$r['remittance_reference']??'', $r['jev_reference']??''];echo '<tr>';foreach($cols as $c)echo '<td>'.wrEscape($c).'</td>';echo '</tr>';}
