@@ -10,6 +10,11 @@
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.
 
+## Latest development milestone — Integrated Finance R4 (not installed)
+
+- 302/302 synthetic acceptance checks across 18 suites; exact R4 payloads packaged as v0.2.456 installer capability and v0.2.457 integrated finance candidates. Production preflight and owner-confirmed installation remain pending.
+- [R4 release candidate checkpoint](docs/checkpoints/2026-11-26-integrated-finance-r4-release-candidate.md). Main application source stays at v0.2.454 until a successful installed release is confirmed.
+
 ## Standard development and release policy
 
 **Main must represent the latest verified IPDAMS version successfully installed and confirmed working on Hostinger, not experimental development.** Adopted by the owner on 25 November 2026.
