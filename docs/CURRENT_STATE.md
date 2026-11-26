@@ -1,30 +1,14 @@
-# IPDAMS — Current development state / active handoff
+# IPDAMS - Current development state / active handoff
 
-**As of:** 2026-11-25 (Asia/Manila)
-**Status:** v0.2.449 development and source synchronization milestone closed. Owner-approved promotion to stable main. New feature development is next.
+**As of:** 2026-11-26 (Asia/Manila)
+**Status:** v0.2.450 installed and working (owner confirmed); owner approved source promotion to main.
 
-## Baseline and evidence
-
-| Location | State |
-| --- | --- |
-| GitHub | Public `ronilocanedo/ipdams`; stable `main`, active `develop/hostinger-v0.2.449` |
-| Verified source commit | `e668405638e67db5fd855bf9bf81c418b1cf31a6` — 256/256 blob matches |
-| Hostinger | v0.2.449 installed, Financial Reports accessible, backups available (owner-confirmed) |
-| Local GitHub Desktop | Sync script PASS; local working tree preserved; fetch and switch only after checking uncommitted changes |
-| Google Drive | Official documents and QA evidence authority; unchanged |
-
-Source evidence: [v0.2.449 manifest](checkpoints/2026-11-25-v0.2.449-source-manifest.json). Exact release candidate QA: **136 PASS, 0 FAIL, 0 BLOCKED**. Earlier 267/267 historical multi-snapshot regression and 155/155 unified acceptance are not additive release counts. No new runtime QA required for documentation-only promotion.
-
-## Remaining limitations and backlog
-
-- Live Hostinger file hashes not independently verified. Reconstructed source plus verified patch is the baseline, not a full production audit.
-- Installer apply/rollback not independently tested; historical migration chain incomplete.
-- Financial report formatting deferred at owner request; reports are uncertified review workpapers.
-- Permanent fund allocation, taxable/all DV types, per-download UACS and tax attribution, historical and replacement-check corrections, complete reimbursement settlement, property and textbook lifecycles, password-reset security improvement remain outstanding.
-- No production changes, migrations, deployment or automatic workflow execution authorized by promotion.
+- Stable baseline: main, v0.2.450. Previous development branch v0.2.449 retained as history. New features start from current stable main or approved feature/development branches.
+- Cash & Bank grouped navigation, compact cards, authorized issuance fallback, existing check lifecycle and reporting preserved. UI-only update: app.html, assets/app.js, assets/cash-bank-349.css. No PHP or migration.
+- Source manifest: [v0.2.450](checkpoints/2026-11-26-v0.2.450-source-manifest.json). [QA](checkpoints/2026-11-26-v0.2.450-qa.json): 62/62 desktop/mobile component checks, mocked backend. Prior 136/136 is v0.2.449 evidence. No real payments or production tests.
+- Live production hashes, actual installer apply/rollback, full application integration, real check event and reconciliation submission not independently tested. Historical migration chain incomplete. Backup availability confirmed for v0.2.449; not independently reverified for this update.
+- Deferred: report formatting, permanent fund allocation, taxable/all DV types, per-download UACS and tax, historical and replacement checks, complete reimbursement settlement, property/textbook lifecycle, password-reset security improvement. Preserve all prior evidence in Git history.
 
 ## NEXT ACTION
 
-Continue owner-selected new feature development from v0.2.449; next proposed application version v0.2.450. Read actual code and official references, preserve financial controls, test isolated synthetic fixtures and consolidate meaningful regression milestones. Do not rerun unchanged tests merely for documentation updates. Obtain explicit owner approval for future commits, pushes, migrations, installation or deployment.
-
-Prior continuity and historical local-only evidence remain in Git history (including the previous version of this file at commit `e668405638e67db5fd855bf9bf81c418b1cf31a6`). Follow AGENTS.md, AI_CONTINUITY_PROTOCOL.md and DECISION_REGISTER.md.
+Continue owner-selected new feature development from v0.2.450 (next proposed v0.2.451). Follow README release policy and AGENTS.md. No automatic deployments, no production testing, no repeated unchanged QA. Explicit approval for commits, pushes and production operations.

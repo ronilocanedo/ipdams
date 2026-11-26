@@ -1,12 +1,12 @@
 # IPDAMS — Integrated Procurement, Disbursement and Asset Management System
 
-## Current stable baseline — 25 November 2026 (Asia/Manila)
+## Current stable baseline - 26 November 2026 (Asia/Manila)
 
-- **IPDAMS v0.2.449** is the owner-confirmed installed Hostinger version. Financial Reports opens; formatting improvements are deferred. Website and SQL backup availability is owner-confirmed.
-- **`main` is the stable source baseline.** Develop new features from `develop/hostinger-v0.2.449` or a reviewed branch based on the current stable baseline. The verified reconstructed source commit is [e668405](https://github.com/ronilocanedo/ipdams/commit/e668405638e67db5fd855bf9bf81c418b1cf31a6).
-- The [source manifest](docs/checkpoints/2026-11-25-v0.2.449-source-manifest.json) matches all 256 source files. Exact release candidate QA: 136 PASS, 0 FAIL, 0 BLOCKED. Earlier 267-test and 155-test milestones are historical evidence, not additional tests of this release.
-- This public repository is a reviewed source checkpoint, not a deployment mechanism. Live Hostinger file hashes and installer rollback have not been independently verified; historical migration coverage remains incomplete. Reports are uncertified review workpapers. No production configuration, database data or credentials belong here.
-- No automated deployment. Owner approval is required for each future commit, push, migration, installation and release.
+- **IPDAMS v0.2.450** is installed and working on Hostinger (owner-confirmed). Cash & Bank follows Property & Accountability navigation; check issuance remains in DV and authorized register fallback.
+- **`main` is the stable source baseline.** Start new development from the latest main or an approved feature/development branch. `develop/hostinger-v0.2.449` is the previous baseline.
+- [Source manifest](docs/checkpoints/2026-11-26-v0.2.450-source-manifest.json): 256 verified source files, 3 changed. [QA review](docs/checkpoints/2026-11-26-v0.2.450-qa.json): 62/62 desktop/mobile Chromium component checks with mocked backend; no database migration. Earlier 136/136 QA applies to v0.2.449, not a new full regression of v0.2.450.
+- Live production hashes, installer apply/rollback and real financial workflow submissions were not independently tested. Reports remain uncertified review copies. No production records or secrets belong in GitHub.
+- No automatic deployment. Follow the release policy below and obtain explicit owner approval for future commits, pushes, migrations, installation and releases.
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.
 

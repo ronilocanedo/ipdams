@@ -7,3 +7,27 @@
 .cb-page .cb-fund-register-table td:nth-child(3),.cb-page .cb-fund-register-table td:nth-child(4){font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .cb-page .cb-fund-register-table th:nth-child(3),.cb-page .cb-fund-register-table th:nth-child(4){text-align:right}
 .cb-page .cb-fund-register-table tbody tr:hover{background:rgba(60,90,130,.04)}
+
+/* v0.2.450 — Cash & Bank uses the Property Accountability workspace style. */
+.cb-page.ipdams-property-modern .cb-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+.cb-page .cb-stat{padding:10px 13px;border-radius:9px;box-shadow:none}
+.cb-page .cb-stat-value{font-size:22px}
+.cb-page .cb-group-navigation{display:grid;gap:5px;min-width:0;margin:0;padding:7px 10px}
+.cb-page .cb-panel-header{align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.cb-page .cb-panel-header h3{margin:0}
+.cb-page .cb-panel-surface .table-box{padding:0;overflow:hidden}
+.cb-page .table-box .section-head{padding:9px 12px;margin:0}
+.cb-page .table-scroll,.cb-page .cb-fund-register-table{overflow-x:auto;max-width:100%}
+.cb-page .cb-legacy-issue{border:1px solid #cfdeea;border-radius:9px;padding:10px 12px;margin-top:12px;background:#f5f9fc}
+.cb-page .cb-legacy-issue>summary{cursor:pointer;font-weight:650;color:#254761;font-size:.85rem}
+.cb-page .cb-legacy-issue[open]>summary{margin-bottom:8px}
+.cb-page .cb-check-print-buttons{display:flex;flex-wrap:wrap;gap:5px}
+.cb-page .cb-check-print-buttons button{font-size:.78rem;padding:6px 9px;white-space:nowrap}
+.cb-page .cb-active-panel{min-width:0;max-width:100%}
+@media(max-width:620px){.cb-page.ipdams-property-modern .cb-summary{gap:5px}.cb-page .cb-stat{padding:8px 7px}.cb-page .cb-stat-label{font-size:10px}.cb-page .cb-stat-value{font-size:18px}.cb-page .cb-group-navigation{padding:5px 6px}.cb-page .cb-legacy-issue{padding:9px}.cb-page .cb-empty button{margin-left:0;margin-top:6px}}
+.cb-page.section-stack{gap:10px}
+@media(max-width:620px){
+    .cb-page.ipdams-property-modern .property-workspace-navigation > nav.property-workspace-groups{flex-wrap:wrap!important;overflow:visible!important;padding:3px!important;gap:5px!important}
+    .cb-page.ipdams-property-modern .property-workspace-groups > button.property-group-tab{padding:8px 10px!important;white-space:normal!important;min-height:34px!important}
+    .cb-page.ipdams-property-modern .property-workspace-subnav > nav.property-workspace-subtabs{flex-wrap:wrap!important;overflow:visible!important}
+}

@@ -8,7 +8,7 @@ A change of chat session, model, AI developer or tool must **not reset IPDAMS de
 
 ## Mandatory start-of-session procedure
 
-1. Open the correct public repository `ronilocanedo/ipdams` and inspect the checked-out branch and clean/dirty status. Stable source is `main` (v0.2.449); active development is `develop/hostinger-v0.2.449` or an approved feature branch. Do not treat source as automatic deployment authority.
+1. Open the correct public repository `ronilocanedo/ipdams` and inspect the checked-out branch and clean/dirty status. Stable source is `main` (v0.2.450); start new development from current stable main or an approved feature/development branch. Do not treat source as automatic deployment authority.
 2. Read root `AGENTS.md`, then this protocol, `docs/DECISION_REGISTER.md`, `docs/CURRENT_STATE.md`, `docs/HOSTINGER_GITHUB_SYNC_REVIEW_2026-11-17.md`, and `docs/QA_BASELINE_2026-11-16.md`. These last two are currently local, uncommitted review files; if missing from remote, do not invent their contents. Request the latest reviewed handoff or inspect available connected QA evidence.
 3. Read the *actual code* and relevant official Drive documents for the task. Project decisions do not substitute for source verification.
 4. Verify which reports are from Hostinger production, which are owner-confirmed, and which are synthetic QA. Reconcile conflicting dates or versions and **record the uncertainty**.
@@ -43,6 +43,6 @@ A change of chat session, model, AI developer or tool must **not reset IPDAMS de
 
 ## One-paragraph bootstrap for a new conversation or AI
 
-> Continue IPDAMS from the **current verified checkpoint**, not a new plan. Repository: public `ronilocanedo/ipdams`, stable `main` and development baseline `develop/hostinger-v0.2.449`. First read `AGENTS.md`, `docs/AI_CONTINUITY_PROTOCOL.md`, `docs/DECISION_REGISTER.md`, and `docs/CURRENT_STATE.md`; inspect actual current GitHub/Hostinger/Drive evidence before changing anything. Respect every ACCEPTED decision, current blockers, synthetic-only tests and explicit owner-approval gates. Do not repeat completed QA without a reason. Explain any new evidence before proposing to change a decision. Continue the NEXT ACTION in `docs/CURRENT_STATE.md`.
+> Continue IPDAMS from the **current verified checkpoint**, not a new plan. Repository: public `ronilocanedo/ipdams`, stable `main` at v0.2.450; start new development from the current stable source. First read `AGENTS.md`, `docs/AI_CONTINUITY_PROTOCOL.md`, `docs/DECISION_REGISTER.md`, and `docs/CURRENT_STATE.md`; inspect actual current GitHub/Hostinger/Drive evidence before changing anything. Respect every ACCEPTED decision, current blockers, synthetic-only tests and explicit owner-approval gates. Do not repeat completed QA without a reason. Explain any new evidence before proposing to change a decision. Continue the NEXT ACTION in `docs/CURRENT_STATE.md`.
 
 **Limit:** This protocol is available in GitHub following owner-approved commits and push. Future AI agents must actually open these files (or receive their contents); no AI can guarantee automatic recall across systems that do not load them. The v0.2.449 reconstructed source is committed; older local-only artifacts remain historical unless separately verified and approved.

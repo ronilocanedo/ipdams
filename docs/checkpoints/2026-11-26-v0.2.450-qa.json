@@ -1,0 +1,279 @@
+{
+  "baseline": "0.2.449",
+  "release": "0.2.450",
+  "source_origin": "verified reconstructed 256-file baseline, commit e668405638e67db5fd855bf9bf81c418b1cf31a6",
+  "changed_paths": [
+    "app.html",
+    "assets/app.js",
+    "assets/cash-bank-349.css"
+  ],
+  "unchanged_baseline_files": 253,
+  "patch_sha256": "4b6c1c7390ba3d0acbd6557167459b5062c74f80a9c8cbd86a68cffbb4c2d64f",
+  "installer_manifest_validation": "PASS (actual settingsValidateManifest; PHP ZIP extension unavailable)",
+  "zip_integrity": "PASS (Python ZIP CRC and SHA256 verification)",
+  "javascript_syntax": "PASS (node --check)",
+  "browser_tests": {
+    "mode": "Chromium actual App Cash & Bank component, actual React and CSS, synthetic in-memory state; stubbed lifecycle loaders and task transport, no live data, no server or DB",
+    "passed": 62,
+    "failed": 0,
+    "checks": [
+      {
+        "name": "desktop default register",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop four groups",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop group buttons within viewport",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop three summary cards",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop no prepare tab or serial card",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop no duplicate event form",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop Manage Check dialog",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop signing requires attestation",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop close dialog without write",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop print target",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop proof row target",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop legacy unpaid DV only",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop issue disabled without physical confirmation",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop keyboard subtab navigation",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop check stock",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop stock attestation",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop transactions",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop selected bank record",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop fund balance",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop fund drilldown",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop bank account directory",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop manage navigation",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop bank management destination",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop reconciliation preserved",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop report iframe scope",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop report URL persists",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop old prepare URL redirects",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop viewer cannot issue or manage",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop read-only admin cannot use fallback",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop no page exceptions",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop viewport no page overflow",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile default register",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile four groups",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile group buttons within viewport",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile three summary cards",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile no prepare tab or serial card",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile no duplicate event form",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile Manage Check dialog",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile signing requires attestation",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile close dialog without write",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile print target",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile proof row target",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile legacy unpaid DV only",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile issue disabled without physical confirmation",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile keyboard subtab navigation",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile check stock",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile stock attestation",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile transactions",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile selected bank record",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile fund balance",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile fund drilldown",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile bank account directory",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile manage navigation",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile bank management destination",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile reconciliation preserved",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile report iframe scope",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile report URL persists",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile old prepare URL redirects",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile viewer cannot issue or manage",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile read-only admin cannot use fallback",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile no page exceptions",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile viewport no page overflow",
+        "status": "PASS"
+      }
+    ]
+  },
+  "not_tested": [
+    "full app authentication and workspace integration",
+    "real check print and event submission",
+    "real bank reconciliation submission",
+    "installer ZipArchive reader, application and rollback",
+    "live Hostinger source hashes"
+  ],
+  "production_modified": false,
+  "github_modified": false
+}

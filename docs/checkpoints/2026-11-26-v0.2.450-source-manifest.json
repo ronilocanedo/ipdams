@@ -1,0 +1,1048 @@
+{
+  "baseline": "0.2.450",
+  "status": "OWNER_CONFIRMED_INSTALLED_WORKING; SOURCE_RECONSTRUCTED_FROM_VERIFIED_PREDECESSOR_AND_PATCH",
+  "parent_main": "0c13f88b5391d5de8667eb9346c6a810a92ca70f",
+  "predecessor_manifest": "docs/checkpoints/2026-11-25-v0.2.449-source-manifest.json",
+  "patch_sha256": "4b6c1c7390ba3d0acbd6557167459b5062c74f80a9c8cbd86a68cffbb4c2d64f",
+  "qa_review_sha256": "6115a98ccf3f5e9b4c222baea0a8e3c9aa58b42cd7c320f2a68ff4b9faa85d46",
+  "qa_component_pass": 62,
+  "qa_component_fail": 0,
+  "file_count": 256,
+  "changed_paths": [
+    "app.html",
+    "assets/app.js",
+    "assets/cash-bank-349.css"
+  ],
+  "files": {
+    "api/action-center.php": {
+      "sha256": "e1cdd0784ac9ba601e195fc3cb686d773fe643d6f6206bfc7c11a14b6f8bf051",
+      "git_blob_sha1": "2bc94fed1d946ca7be75d1db2f91f57583e10e0d"
+    },
+    "api/attachment.php": {
+      "sha256": "e923d48a981ee904fea4b3b25c5448a563b1129c4922c4cd0d46a9a253fc563e",
+      "git_blob_sha1": "15ad8b2dd84553b5afd270c750ae8391efd96f69"
+    },
+    "api/bir2307.php": {
+      "sha256": "9b092e57197c0199171a90f7bb87b5a7fcf93a3f65e9ea8ed890260a266557c2",
+      "git_blob_sha1": "4eb11986c437658b16076f038081dbf7782eab7d"
+    },
+    "api/branding.php": {
+      "sha256": "6852edebb6c3d3c6975733a03db33af2ea72e8d537c77364c54a06647b8c8b76",
+      "git_blob_sha1": "cdb3d5b20b0fe3b7cc8f7ff5b55b443eddc57365"
+    },
+    "api/cash-fund-reports.php": {
+      "sha256": "c99ff096e673944cbfaad9e3f135eca08db25c013cbd38dc467d5df3d724f66a",
+      "git_blob_sha1": "0692b11d25e858953763477d3cb60a920fdc5ef4"
+    },
+    "api/employee_reimbursements.php": {
+      "sha256": "86c074cfc3e3aa673c3ac240d323ace60f0ffee5919131784c9ef4f4bf4447fe",
+      "git_blob_sha1": "9794937c33016dc3c37802f66233e190e41d8ea9"
+    },
+    "api/index.php": {
+      "sha256": "3f83f7c89a819b4ddcc3b44a8576b17e60cc751209485a982eabcefb06af2122",
+      "git_blob_sha1": "c04bddecbfca7368770dc326d3d88ff58772c922"
+    },
+    "api/monthly_issuances.php": {
+      "sha256": "fc4c5b0f0a05e147652f859bc403b8f3fb96bab9138af24936edf23a8982f984",
+      "git_blob_sha1": "53575cae24e851ff47fc6c5a67b4f6505753877f"
+    },
+    "api/mooe_monitor.php": {
+      "sha256": "123e5d608606968b2fee2ef6ff6d822807775c1bf55f18a2cbb0b7b17520e72e",
+      "git_blob_sha1": "02a91f52a67d112183836230fa0a46895aec659b"
+    },
+    "api/password-recovery.php": {
+      "sha256": "8834a5ed320723252961ba69f1364dd6f0a6ac47b79228854f24a2302d96030e",
+      "git_blob_sha1": "e7535ae1ed35e96693066e58887bc6191ae9a369"
+    },
+    "api/pr_xlsx.php": {
+      "sha256": "fbb0b1358c592a6e1e7d6a84de529827a69258db37e7d8b3ae7698f3b344d12e",
+      "git_blob_sha1": "944c0f6a8b9fdc2f1550843e00716474af0de4e0"
+    },
+    "api/print.php": {
+      "sha256": "ed4fcd24194ca81cac53b3de1703309971b1ee5d581f5fe429f95238c6629def",
+      "git_blob_sha1": "6ff214627d8b2e2ef1a143224a4c41194f91cc65"
+    },
+    "api/property-lifecycle.php": {
+      "sha256": "cfaf78213559c1472caa5dad8c0bcc7841778f254838f1dc77803389c0cf34c3",
+      "git_blob_sha1": "22c87f99cdc75b06142b26b60160911bdac9c4c9"
+    },
+    "api/property-returns.php": {
+      "sha256": "683fd5ab1b3126817dfbe3258529be9d38f77df4d54a93edb08870d6e8ff2940",
+      "git_blob_sha1": "802e14b04b75e9404f8fbd39f1d0ac9da5a7ae33"
+    },
+    "api/property-scan.php": {
+      "sha256": "9bba895d8b2dcd7224e0204f82b173fcced14477e0676fc9b99105bb95815e24",
+      "git_blob_sha1": "f2cc2f27b043096b107e8ab93177b5753abedaef"
+    },
+    "api/property-stickers.php": {
+      "sha256": "d0db997e47fdfeeb00ed99e46d9df54cd5d04ec3af811d6c658ad749a723ae0b",
+      "git_blob_sha1": "547ac4888403ae4974691eaacc697d68a9da70fc"
+    },
+    "api/property-transfer-intake.php": {
+      "sha256": "2b9b2f1262830dbf1e38453ecdeeadedfd4c5110d4caac1cec85c131fb922a1f",
+      "git_blob_sha1": "0d44c0ffd8d0a24b795c614b52f639b326626fd0"
+    },
+    "api/property-transfers.php": {
+      "sha256": "4cb2f0d93e86b2444132be8c773aa76e3f7ebd3fa4dca7ba6630e53359e61668",
+      "git_blob_sha1": "aa7f75147e1d4f086378ae0cd1afa30f02f49255"
+    },
+    "api/property-verify.php": {
+      "sha256": "b21cdcb6c7daaeb3f0a8529ba31de34af2cf975e4c9c8e4b74c01de2024629f5",
+      "git_blob_sha1": "0d41a604a18b9dc4c4798edade8176aa08451580"
+    },
+    "api/property.php": {
+      "sha256": "16f172ccb95cb615538b26ed27bbb08d5b54498f6c0239ab6574595cddf32256",
+      "git_blob_sha1": "ed0d6624efc23e27c507b18f41c7f5d04e6a0429"
+    },
+    "api/semi_expendable_reports.php": {
+      "sha256": "90f29f33f8c941cc3bf4de0fbf3d4ebab66627614f5561661c7ac7e0b32be6ca",
+      "git_blob_sha1": "b10dd2a4e1ed887863a7ca5a9c20118bff55dca3"
+    },
+    "api/tax_utilization.php": {
+      "sha256": "313a9ae11d487890199a4cf084af241dc507417dcbd01ab9fda9eb8935a820bb",
+      "git_blob_sha1": "332706be9d5fdd7a5485f42fb01e9d197b0eb65d"
+    },
+    "api/textbook-transfer-print.php": {
+      "sha256": "448de27081b7b2593f6499e181b038c09a327fc25a5f369dbb44eb004745a8bd",
+      "git_blob_sha1": "ae5f87627a2593bf1a3dcd7ca406aae955b93264"
+    },
+    "api/transactions.php": {
+      "sha256": "006fae98ad2331a38b486f94c0551560aba7a97e3a232e3722bf84faaa9bb204",
+      "git_blob_sha1": "dd10f6b18d1da487e6195734fa6e456140b0b95c"
+    },
+    "api/travel_branding_image.php": {
+      "sha256": "ed5013437e6b4a3cb7042b1c9f746c3c21fecc93cdfb681c9576e4b4baa16869",
+      "git_blob_sha1": "1cf1f0f9d427c249fad48dc10f70439a638e9f10"
+    },
+    "api/travel_print.php": {
+      "sha256": "7f7e2a4476a08f2dfb6699837a2e9e70743548cadd1c165368b803bcc22a2a43",
+      "git_blob_sha1": "23a3afa4da690ee703ff941acb2aba182259146a"
+    },
+    "api/travel_word.php": {
+      "sha256": "06c6b00d97715d6a8d83f0d47b8530964c9d0f9e4b26d71d057bf6d65176d215",
+      "git_blob_sha1": "46e49306256cba8c6af59103767c9d8471635235"
+    },
+    "api/withholding-reports.php": {
+      "sha256": "4750aa13c756c485b2c598001bc94ea688724bd54f9d20eb074982dc2da525ce",
+      "git_blob_sha1": "2d519348d8bdc998c2176f4d142233eb744e0ff1"
+    },
+    "app.html": {
+      "sha256": "cb33ca9330b6646604c0f98ff39310909d46fb7e738e9eff045aaa693fa49934",
+      "git_blob_sha1": "e6abb6ee077023d68ab938949acd4d3c8a3ee3b9"
+    },
+    "assets/action-center-391.css": {
+      "sha256": "82a63791fe0b90d00588a34685369732305d6a178655b874bd80e91c09785dde",
+      "git_blob_sha1": "53816a821ebbdec1756ce38c768f5adf6a7af20e"
+    },
+    "assets/action-center-392.css": {
+      "sha256": "9e24f51e57f31a959f25a3a2b4a8a879c2ddccc7c2aca464b6b306c8076391ee",
+      "git_blob_sha1": "96e350c0f674388a668a65805bcfd32499439733"
+    },
+    "assets/action-center-404.css": {
+      "sha256": "a8f0931c7e6040af2a384f6bf5a099bb97efd8e21fc67d37a9200318a3378426",
+      "git_blob_sha1": "a41a6340d0e92ab68f7f9a423876a95a45e7f61d"
+    },
+    "assets/action-center-405.css": {
+      "sha256": "3ad7b072d55ccc3f052c3d5b3c9ad64794480ab50e70b4ac9171c81a178b0ef5",
+      "git_blob_sha1": "bdf489fc4eb5b245cf941b8742fc9d427728c236"
+    },
+    "assets/action-center.css": {
+      "sha256": "36f4f6b2dd1b424ec3cb899aebc2bbb74dfac4cc439679afa1829139e6353d9a",
+      "git_blob_sha1": "9e3b0891bffa9cefb50c07b113a1538458542681"
+    },
+    "assets/actual-check-print.css": {
+      "sha256": "a3fe84e3278327cc521e3798c87b03497f32c57ca3d819f1fd8d37455a7034e8",
+      "git_blob_sha1": "acfc44b33069cea91c6e00d170fe51b768c12c46"
+    },
+    "assets/actual-check-print.js": {
+      "sha256": "3d5f9433e45c9c3211cd6de6b98f60dc5b7cf23906d8704e7bdb9685bf8695af",
+      "git_blob_sha1": "1840067dada6160fa4f9bae51616c0c10bed9d12"
+    },
+    "assets/app.css": {
+      "sha256": "1a02fec50ce21f25328e9d7ca3bf557ffe3b789e994290b10b6a0d361e64a8a5",
+      "git_blob_sha1": "7f2f49944a5b2663aa12dc429776042775a53fa3"
+    },
+    "assets/app.js": {
+      "sha256": "22a31057c0f94232145a8a786c0766fabf0a39af5327172027ab7384d413af37",
+      "git_blob_sha1": "c1194a7e31177979d032b9b758a02992698ad405"
+    },
+    "assets/bir2307-modal-442.css": {
+      "sha256": "ca7d99cf6a395b4306bc5aafe1a1590d5ed293494c646289b05230e65b33f320",
+      "git_blob_sha1": "82358624f8f931bd401e61c0296b0520c22fc83e"
+    },
+    "assets/bir2307-template-data.js": {
+      "sha256": "73a20f9eb8ba8759b196451203f31f6082bae761cce29bac04b669718eb4025d",
+      "git_blob_sha1": "ff55b7d2658622c8484fe7819fd826b65a257928"
+    },
+    "assets/branding-missing-display-377.js": {
+      "sha256": "7be41968eccd7d0923b484034230df51fd0d5db55e8f0d89e522c015e1a91b40",
+      "git_blob_sha1": "97d146098468b757cbca245b90082ed6434664cb"
+    },
+    "assets/branding-pages.css": {
+      "sha256": "59e1e3175792fc54d8b9c015715e5941e0d3dd53e0695803716996c8340d4c52",
+      "git_blob_sha1": "079b0bb7e89dfeb7e46d80f30c334f348e271fad"
+    },
+    "assets/branding-ui.css": {
+      "sha256": "52e1ee6a52743aeeb48f29436407b92632468ee8410c114c8e35dcb183814ac8",
+      "git_blob_sha1": "ee4a754ea81c45f5a703757eb097abd289227ae0"
+    },
+    "assets/cash-bank-349.css": {
+      "sha256": "81432620bac443c01f7c7bd5658824818b4f8930fed8101cae6546e1ff4cbece",
+      "git_blob_sha1": "8c3a168a67b728280f1e3cc41f70c24979fb21d3"
+    },
+    "assets/cash-bank-tabs.css": {
+      "sha256": "b51486347b1f3f3b1cced4e51ede518d2663ad6b33847391d1aae2dd845718f0",
+      "git_blob_sha1": "8d64217a59088b6226bea3ec25f8fb8fff0ae54c"
+    },
+    "assets/cash-fund-reports.css": {
+      "sha256": "d3a12368754f39d7841bb83a70672e2382d836810eae7f0045b2d5a3f88ed0a7",
+      "git_blob_sha1": "e6bf92ea39e5054ce7fa114af151aa88d169542b"
+    },
+    "assets/cash-fund-reports.js": {
+      "sha256": "b7baff4b818b20fc0ede7baca73f2d4d21dec2982be72397f3961ccca3a55d95",
+      "git_blob_sha1": "c3ee5eef513b32143769314d05fe5990e8b33557"
+    },
+    "assets/catalog-registry-links.css": {
+      "sha256": "d689ca1a24bea7212ff44c793eed4782344fd1836b4b6fedd20360716182e6b1",
+      "git_blob_sha1": "1bba49e5f39cf9cbcf17369fc978cac1c0d5a4e2"
+    },
+    "assets/check-print-proof.css": {
+      "sha256": "acc4f0628ef57d6c254110d2f29dbdc3be82b706f0234ad6e331a876a9259091",
+      "git_blob_sha1": "f87d7daa7b125b7036baa529745619e04065a885"
+    },
+    "assets/check-print-proof.js": {
+      "sha256": "e4b46e45f2401dbd2f2d230efa80d5047e31e48ab229c6d28357a901eb40afce",
+      "git_blob_sha1": "1c8a91985b6b35346470ff24d214205609b0b3c2"
+    },
+    "assets/check-status-384.css": {
+      "sha256": "366023dbdaec6436d7cfdb27ebf2fc8efd57f646da1280b921eb42dde626d291",
+      "git_blob_sha1": "1b45b4e20b51a71ea52fe58d669d7a7e4a8d7ed0"
+    },
+    "assets/compact-ui.css": {
+      "sha256": "b9dc3e1f6898ffcddd9952c074d162bb750a06e890d315aa2f58a657f95197d6",
+      "git_blob_sha1": "456e954d0c963b8cd2b4b1abb85cbf142353d134"
+    },
+    "assets/dense-ui.css": {
+      "sha256": "707829d001217c7d3aac542a349f8b052621e9025c1a4bc13370e3a64c0be286",
+      "git_blob_sha1": "8988c11c607fe04ee44c98c6663adc4a87025f39"
+    },
+    "assets/disbursements-tabs-429.css": {
+      "sha256": "6c9bd7cb4f6c59b15d738d169c26e622f4f382eb8654ba6623f0fed8bfb99f5a",
+      "git_blob_sha1": "c7ea68e3aea185775706c66e4b6270ca15f23ddc"
+    },
+    "assets/division-classifications.css": {
+      "sha256": "9891f23885a0ac680d53889ec23199cc31357a4afad14b759db847664e87529e",
+      "git_blob_sha1": "2e3349b04e0deb881b4b4403800a60ff3351cb8f"
+    },
+    "assets/division-consolidation-ui.css": {
+      "sha256": "72945c132a9b15798b66ac71903736105a00b84acf4bd6084fd66ee734946d7d",
+      "git_blob_sha1": "0139f81c5d8d9d0dac76a4c38a7b083a4bdf2d4b"
+    },
+    "assets/division-procurement-checkbox.css": {
+      "sha256": "41d361079bc0fc1251354f8db588f1c30000c8daec1c2e2a6e09c1af815ae4cf",
+      "git_blob_sha1": "a6e60637ca771ea4459eb00f9044abc5a77d1240"
+    },
+    "assets/division-property-registry.css": {
+      "sha256": "9687090a8996bfc78e048a2fcd9f3a2793bf48119c82903cbb5cef7190b67ebd",
+      "git_blob_sha1": "c575d3e7711545700969a148035cf5124e95db76"
+    },
+    "assets/division-withholding-420.css": {
+      "sha256": "69d9b970cfea7bc9608c3cc4a3e87c6c05315448a9ae474e73a4f715d39d7eea",
+      "git_blob_sha1": "9da74f6aa0211ab1c69fecf48160e71da67f8b3a"
+    },
+    "assets/dv-compose.css": {
+      "sha256": "121c0dda82be3ef1125ef64ae53bb4e383916a609133342ed66e967bc5c41e96",
+      "git_blob_sha1": "a015fc7ff9f0542961917fb68f059543c1340965"
+    },
+    "assets/dv-prpo-354.css": {
+      "sha256": "e06b1a0f8122b45422406bac050974d4cfe3bc3732bf5fa8d26db900a3fcb081",
+      "git_blob_sha1": "bcb5b3c428abe848206e8d2e6c057bab7f4dd732"
+    },
+    "assets/dv-register-compact.css": {
+      "sha256": "70f0469e07592cda135b1dc391a617ae47d6c8dbd73730493f4436013a24c62b",
+      "git_blob_sha1": "32a2e5e8162ec8eea1d2a7db72075dfcb2d706f1"
+    },
+    "assets/dv-register-icons-443.css": {
+      "sha256": "dd1ae378617ea9a5e98afd52920a7a82ef2e37f084b104e2036c78f93cfec690",
+      "git_blob_sha1": "4507d6b0cd3abeca607d4c82a72552d7219aa548"
+    },
+    "assets/employee-reimbursement-339.css": {
+      "sha256": "6015558cb00c27e22c6ca3350f604481454609fd0cd224e0dcb1f3982789df2c",
+      "git_blob_sha1": "551dacc7830b6ac91207dd6d503dea8cb22915d8"
+    },
+    "assets/fund-audit-352.css": {
+      "sha256": "8ab5632e81726c093150be8ad36d44fb0134f78aaeb742bf1b2ad7e22c804a32",
+      "git_blob_sha1": "ce34b02e93cdd0a07cd344fe9ea99e7b4cbf9616"
+    },
+    "assets/fund-config-397.css": {
+      "sha256": "eea342306005c4a627a9f35ed1f958de7eaba24b3ed059c0a80232467f90d7f3",
+      "git_blob_sha1": "5ac04c3296c5759e9be2b243d3edfc31afbed736"
+    },
+    "assets/fund-policy-responsive-372.css": {
+      "sha256": "e5a6470fc96fd20161d681c6fc81432c2b0f26ae86bcb412b7edb70e11530b10",
+      "git_blob_sha1": "6f8e188ef01ed9d16d659ec33e3d9d0a4602942c"
+    },
+    "assets/fund-policy-setup-370.css": {
+      "sha256": "22054da8fbc886780db076cc7e1b8b9a9de78ef6265106868d5305fff8ce3467",
+      "git_blob_sha1": "bb8344a1917850ae61053a9876744863b6441c48"
+    },
+    "assets/fund-workflow-364.css": {
+      "sha256": "8d996fe82f35ae641a4e3bc6cdbc6a8d689036f7980b3b6d179235b9c74a43db",
+      "git_blob_sha1": "4b5373da8aa0a664d34899887c630b66f6d13911"
+    },
+    "assets/ics-property-picker.css": {
+      "sha256": "dfb878b1b53e7abac82252ccff7bb7b468646496262d75cd5ea02b06190cfb95",
+      "git_blob_sha1": "105f1f29e18191f63982437290cad623dfd78ce5"
+    },
+    "assets/ics-ris-pair-print.css": {
+      "sha256": "c2733c644664af1f502d8faa29b730df475f9d0b47c6109aeb9b6c9079e6a517",
+      "git_blob_sha1": "677acd0e6765e953c8c40d2568b8663a2c309f5f"
+    },
+    "assets/ics-ris-pair-print.js": {
+      "sha256": "3db2566e2249f957f6a35c830bfa9c7e19ffa407efccd9c1e8d75dcdb60e948c",
+      "git_blob_sha1": "0c776283c2515bd4b02ac624152fd0a7c46f54fd"
+    },
+    "assets/inventory-tabs.css": {
+      "sha256": "9e775f7a82d6e1d3f396952e1a0d32d6d79f7fbc12a9aedddacda9c23e02a77c",
+      "git_blob_sha1": "3b059889afe3d428a5720457408a5991c48c61c3"
+    },
+    "assets/maintenance-406-settings.js": {
+      "sha256": "b4521b6ae1a43b8e7fad735adca14665223c2217c296e32a6431130bf8fd95c4",
+      "git_blob_sha1": "df76aceb5011c2c0508537265d9264349714521c"
+    },
+    "assets/maintenance-406.css": {
+      "sha256": "dd875770ba8f8b4fdc9d8058c08577209776affab24520d5e6eb9893b99e8265",
+      "git_blob_sha1": "e4e46b79daccf60b306169112ed0573baf0299bb"
+    },
+    "assets/maintenance-406.js": {
+      "sha256": "f5e6c10f0252845279d4cfa1752e74f9903b36cbc6b09508c8e57c4556b2ad88",
+      "git_blob_sha1": "cf25c669c77e72a44fbfebda14d100795c6ece58"
+    },
+    "assets/maintenance-408.css": {
+      "sha256": "afaddab5b5c36b079338a96435966c58e9a31eac0f530a226a12a8b356f107d6",
+      "git_blob_sha1": "8a7f8555509eeef66ba1d8710eb3d22531c82657"
+    },
+    "assets/monthly-issuances.css": {
+      "sha256": "cc1be38fb2691aedffe2e67562b2d86215816fb4265a6e2bb310aa223ff9711d",
+      "git_blob_sha1": "f433b263db9f864bbb6ce80d6ab5cb1c95312d29"
+    },
+    "assets/monthly-issuances.js": {
+      "sha256": "e4f6415a6c6236a7687d006c660af8e3c1f371de58318f1d988cfc1496de6d6b",
+      "git_blob_sha1": "d9275c82915a77c41df0158cbacd2a1ba8c05139"
+    },
+    "assets/mooe-monitor-333.css": {
+      "sha256": "6712f9ffaae3f62f38becdba406c1b81820a45ac2bb3fe8ea4a7cba22e8f8af1",
+      "git_blob_sha1": "51264b90119d5bff5dddf4d6129172ccd8a7a333"
+    },
+    "assets/official-print-init.js": {
+      "sha256": "8acc5bb028ffd94272100c1f295407a78b4e621e5e29f71198d937c4b1eb68be",
+      "git_blob_sha1": "b605f7db911a7d2ae1380514a262df7b9d31e2d1"
+    },
+    "assets/organization-tabs.css": {
+      "sha256": "29fcea41e754481fd0d2b471819e7512f6eb6ff295ce16ede3bc24abcb7b5a8f",
+      "git_blob_sha1": "04642f76d611046d27c662efb6d19b2f5f85e9ce"
+    },
+    "assets/organization-unified-436.css": {
+      "sha256": "b3b428fa4449bbecfb8aec40b37041a7a7db8bc691f46b987a215bd7d2c88751",
+      "git_blob_sha1": "2eee6f130b00b817233f85a23662088a6220d94a"
+    },
+    "assets/pdf-lib-1.17.1.min.js": {
+      "sha256": "0f9a5cad07941f0826586c94e089d89b918c46e5c17cf2d5a3c6f666e3bc694f",
+      "git_blob_sha1": "edb12c72cdaa11b608eb5967cf1531892b7f3b31"
+    },
+    "assets/pdf-lib-license.js": {
+      "sha256": "d8f42d419e78e6b3afe8c7951dc6d8740ffd19aacc95094118722b8646e8946a",
+      "git_blob_sha1": "bb9c7934673dc97c64899ac708dbf0945bf87d3c"
+    },
+    "assets/pr-accounting-preview.css": {
+      "sha256": "bde85089c6cf1e1d134ea9ca185df16e8867d822d0973c514c6a4791a9d9a5dc",
+      "git_blob_sha1": "a2b2c985d23a91a04297f638ca78686992d8ff44"
+    },
+    "assets/pr-catalog-quick-add.css": {
+      "sha256": "f4b74678d8c8bedc7dd46509e5b58d205fa0cb16999479be565ba25dca707e9b",
+      "git_blob_sha1": "2d6bc0d8c15c1509bc1a48e90bdddfbb6489ae73"
+    },
+    "assets/pr-compact-items.css": {
+      "sha256": "964f09ae05e06940e36215b85f9cff6ec8d57901d233ee9acb5c8384133b7993",
+      "git_blob_sha1": "82388bec370e6286201e086c4987d0ce238cd615"
+    },
+    "assets/pr-create-modal.css": {
+      "sha256": "8ceeaaba5f7a4175277f38f477a682b6cfb58b7c5c6bc3c1dafdffb2575fb9c3",
+      "git_blob_sha1": "942cafa20f7a53184f7e48fb20e9064815f6daba"
+    },
+    "assets/pr-details.css": {
+      "sha256": "2e83b574f4abc52d0b1d6e562b31bdb26a37d44d7bf106b0aeb69346204ea09b",
+      "git_blob_sha1": "879e0d7b17deddb2edb333480d6000069aec068d"
+    },
+    "assets/pr-edit.css": {
+      "sha256": "c193e7e7f9419583c589e60a4d3be49dd4bd25076d01334e27a22f1789886779",
+      "git_blob_sha1": "530397df0e0577c9cc244da8e2ae86848fc98d5c"
+    },
+    "assets/pr-property-lineage.css": {
+      "sha256": "c6c6cfefdf1adf10df26925e21bfa3c38b9fe5415d506387dd45c0f62628acd8",
+      "git_blob_sha1": "7ad078c58354db4c7886aeaf28a1c50f4c2a41bf"
+    },
+    "assets/pr-start.css": {
+      "sha256": "24baf527a11bebb3d91fb837e2899ca85db57b82dac23fcf38de1999d4bf55eb",
+      "git_blob_sha1": "9b377898d55c02fbb614ec10fd1f655b631d8835"
+    },
+    "assets/pr-unit-fund-ui-365.css": {
+      "sha256": "dce615eedb86a7045a489689571b15e795f8bd5949083db79d9f711265e67fd1",
+      "git_blob_sha1": "80743a1ec8cd231c3c1d4d8ffabb1922a1e72976"
+    },
+    "assets/procurement-workflow.css": {
+      "sha256": "8e71c5f646ac48722b6ab6bf5604925d59af68378c42b368418d454d18793c03",
+      "git_blob_sha1": "d25471191bf650acf99642975f45d6314c1c58aa"
+    },
+    "assets/property-auto-registration.js": {
+      "sha256": "31068e514ef56d2f9b5ec5e565c11387f442c64cca5d099a285675c4ae004368",
+      "git_blob_sha1": "7c54873fbadff4a0e72967b2942e7b13d163e97b"
+    },
+    "assets/property-batch-registration.css": {
+      "sha256": "05ddaa04a9de51d2e0ee8fedff4961a95f0a36ab2d1aa45bb838f4344e3e7d37",
+      "git_blob_sha1": "c4e42875e03941311a40aa1702b34f0b813141e2"
+    },
+    "assets/property-detail-modal.css": {
+      "sha256": "7e41c3e3230bafdfac3b123533336b9f713d263fcbca13527951eed211b34d1e",
+      "git_blob_sha1": "c82349628d3eca466194415dd7762a0a7022adbd"
+    },
+    "assets/property-inventory-modern.css": {
+      "sha256": "1d394007f81d809f1438edb5e59bbc5be3e9e960565ae58171a0ff71aaab0762",
+      "git_blob_sha1": "6fb4f1392be418c17e213de0723d6919b35ab279"
+    },
+    "assets/property-register-details.css": {
+      "sha256": "345ed4b359e1475e274015cc94773bb6d703926ca10e5b481da1bd33a338d722",
+      "git_blob_sha1": "988fbc85e86cbc118d761668c230f96ac05acbdf"
+    },
+    "assets/property-returns.css": {
+      "sha256": "415e42fe72a7ebfd01ed463ff2cdfe78170f74a0e2e4ff991b92644a6651ed74",
+      "git_blob_sha1": "5b4e22a2849c4f18c18659983025ab6b6a0b5f0f"
+    },
+    "assets/property-returns.js": {
+      "sha256": "2dbae104d355f4189866ab997bf3fdbf138e5a265451fa208d857ad2012b9d5a",
+      "git_blob_sha1": "79977764f0e54e6850cc10674c74ab799a58de38"
+    },
+    "assets/property-scan-411.css": {
+      "sha256": "4a349654220031bde8ea455414f6ed1a30ee3b3d5b4012b10b94de11eabe6939",
+      "git_blob_sha1": "b88e50ae65f3d28980dca3a2a13b238f2c92bafe"
+    },
+    "assets/property-scan-411.js": {
+      "sha256": "e39d3156fb7c9a1a3d5de99aa88ad13969021576097aa20f2a261c330eb71c56",
+      "git_blob_sha1": "908b7503a99ea9e25f8b1199512e227808213f0c"
+    },
+    "assets/property-scan-audit-412.css": {
+      "sha256": "52843fbe946b1e9d8cfd3e1d57d394083dc1155f5539a227ca7c5518afe42687",
+      "git_blob_sha1": "6410ce247884e467f26c5a21e82d0f9a2864a822"
+    },
+    "assets/property-sticker-qr-383.js": {
+      "sha256": "06c46e561776be9ff37c072d908096b760e265bb9dedeae966738f4ee18df327",
+      "git_blob_sha1": "23acfc4961d946e0b878f4da1887149acd3d7a08"
+    },
+    "assets/property-stickers-383.css": {
+      "sha256": "63930face1912cd382bcdca7d10543132352670691846af5d0a196897f4c7527",
+      "git_blob_sha1": "ead95cdae5f6d30c13ff8d59462adde8bfdb1224"
+    },
+    "assets/property-stickers-383.js": {
+      "sha256": "47d3f5a5991a7923e42bcad9c4e8b7e74ba532f37a39d3ac2ce385807d62e496",
+      "git_blob_sha1": "0a75b16570510e2d1086bd4fb8bcfc7d9b14ebc4"
+    },
+    "assets/property-stickers-400.css": {
+      "sha256": "fc03253aa13bde67f04be54cb0743f4d73f33cab83940fdf8849aa19a8932b18",
+      "git_blob_sha1": "1fec1c2b4b3c58c1fa49fbfd50b5175712d3c768"
+    },
+    "assets/property-stickers-400.js": {
+      "sha256": "897d9c7bb2f2f436b3fa1685c7da7356bd7c1f87ad19b9e9044db93aa243265a",
+      "git_blob_sha1": "fc38815d19c2c01f74a7b883f8db77eb085ede47"
+    },
+    "assets/property-transfers.js": {
+      "sha256": "1916054a530bf6a004f53d0a025cdaeabc5aac4d3ab518c7d0af5506a7993595",
+      "git_blob_sha1": "417f8028a7cb8ebddc183470f0d01b11b1523b3d"
+    },
+    "assets/property-verify-409.css": {
+      "sha256": "09e2700fa5eaa23736ae09c7f5be278fdfb036712560364079f65257a7a3a5fe",
+      "git_blob_sha1": "15e433a861692934ef165d067efb4493c46bca6b"
+    },
+    "assets/property-workspace-navigation.css": {
+      "sha256": "68868dc526c8a1d340fe18e3523641c5adec9a24489cb7c433e526cb1a34946a",
+      "git_blob_sha1": "e28ccdfce9d652d8ce7a66763fb874715a6b313c"
+    },
+    "assets/property-workspace.css": {
+      "sha256": "895a185f52fb7723283dac285a53f201285167e4847164d36fc90b35a5fa4744",
+      "git_blob_sha1": "084651bda382d4ba2ba9adf981d81807e854e0cb"
+    },
+    "assets/property-workspace.js": {
+      "sha256": "a7953c14c897f59490ed081b1f47701cb735722a054960d01b3250ebf282f1a4",
+      "git_blob_sha1": "a603ad5d6fd06020287fb6605233c47ddb6a29bd"
+    },
+    "assets/react-dom.production.min.js": {
+      "sha256": "c7a65157caebd9af7e108f1f1eb8b6e2c8fafb141d0f4c2a4d4dfd851c52ec9e",
+      "git_blob_sha1": "871378b0d9769e9ca364073d24ba397314fbc2ab"
+    },
+    "assets/react.production.min.js": {
+      "sha256": "de59b0d4504aa0350c13775fec9b78859f3eda83dea21d60dded98bb7866d54a",
+      "git_blob_sha1": "79c7d2012d5d06be020cb40f9f628234f8eae5da"
+    },
+    "assets/reference-navigation.css": {
+      "sha256": "2a6013b49a3ea490c5e99a3407e81f9fd7b718b5281063357d5348f7de0c7c87",
+      "git_blob_sha1": "779bf5797acfbb721122a26eab2fbd95bb494a6c"
+    },
+    "assets/reimbursement-dv-selection-379.css": {
+      "sha256": "c756952cddb474d6faca8ec2dcbc53f46ab9033fa3438180a08333d46dc63203",
+      "git_blob_sha1": "8dcb846c35c760268186795845980eb65302fdca"
+    },
+    "assets/reimbursement-dv-selection-379.js": {
+      "sha256": "4391f509c3aa9320ff51367c44d3e97480be78b7080a2b22297316ea8b68ff92",
+      "git_blob_sha1": "d2f1959726fce9b021627b9d4ec974c9b3a4113a"
+    },
+    "assets/reimbursement-pr-default-360.css": {
+      "sha256": "182a9b27b579a2556d676e310a3ba316ad77803fc6e9cdf6c17f967d697a8eb5",
+      "git_blob_sha1": "e7397d85ce26d0217688131588018f8fbd0e9124"
+    },
+    "assets/reimbursement-uacs-359.css": {
+      "sha256": "30fe1f4f599eea48e674efc5198ed97028a30a756fa4c25a526d4d177dd9becd",
+      "git_blob_sha1": "96616f38c4b99711160a0d09c482ba13f168f9bb"
+    },
+    "assets/rfq-quotation-status-367.css": {
+      "sha256": "1ae67e84a5f2b6ff1884b815019cbe6931dace6711af8dbddfcd1570d471fecf",
+      "git_blob_sha1": "fccdbdc5f05e5d8f8d9a41f7772777163dcceb68"
+    },
+    "assets/ris-363.css": {
+      "sha256": "59038c9224443bbbdbc5e2c8252462eea509483dfed2a970257415fffd1309fd",
+      "git_blob_sha1": "96f48a115881d579a6baec735a203fa3a7c2ac5b"
+    },
+    "assets/role-functions.css": {
+      "sha256": "5cac7b8c6024b848ae12ee22a6b31b5a09e87e7ea1831e289b554330dca02b8f",
+      "git_blob_sha1": "90111047d09148839a8c3caeeb42cc2286c2b0d6"
+    },
+    "assets/semi-expendable-reports.css": {
+      "sha256": "3c3d3380007f9f443ca5a1962d28bd5b4656cb1aeaf9084247ef21b72e2739c0",
+      "git_blob_sha1": "83783753e14f236fd1ff2e4196357735db4ad0de"
+    },
+    "assets/semi-expendable-reports.js": {
+      "sha256": "ca8155b28c2d8ce1ac1d2794592b2e8bc6a3cc77a43461c3141ee2d82b4fb9dc",
+      "git_blob_sha1": "e5069ff04245711807d34d043b5f4c87f53be62e"
+    },
+    "assets/semi-issued-report.css": {
+      "sha256": "7471b2ea29adb857f4612afc4317b2797ef158284546fc2195fd2e627e5678c6",
+      "git_blob_sha1": "0ad23b25cc9a2659ae80732b7f94b90d3d215004"
+    },
+    "assets/settings-tools.js": {
+      "sha256": "e7bf19a6c4f37b8439ac6c1a875840831f9ca19d22f8699af6caa54cbf3503fc",
+      "git_blob_sha1": "d40380af3e4f40bcc9fec9cfa8b6dfed4a323dcc"
+    },
+    "assets/siif-fund-accounting-371.css": {
+      "sha256": "4d8803242e37aa8de47e530adcc88c2dcf495278e82f5ab04ecc2f1c8824f8b5",
+      "git_blob_sha1": "2f430b9e1467f9f4fa512a1c209f86b95ab11c1c"
+    },
+    "assets/supplier-tax-profiles.css": {
+      "sha256": "2c248a2376a14bd4ddf767a5e49374458a739a65d90b65d09ddf70e906752d2c",
+      "git_blob_sha1": "2f557c04b6017e21271dd2c30cc132a275fae317"
+    },
+    "assets/tax-remittance-393.css": {
+      "sha256": "9bd197e4f8fe54d8f447d4755e5098c1df3f3380de5554dfcff47c7d9a91713d",
+      "git_blob_sha1": "065cc3f65006a016bab1b2833489ccbc33b7ce94"
+    },
+    "assets/tax-remittance-402.css": {
+      "sha256": "ef0256cf020d85812b8f1b167c837ccea2223cf88125dfcd463956c6e9995b12",
+      "git_blob_sha1": "1d0d5e30d527791f321e4a3eb80a7ff11732b13d"
+    },
+    "assets/tax-transfer-374.css": {
+      "sha256": "e63e7bea482547067c46d266b9d25d78ba3a3be432d2e01ef16c9111ef57b6b7",
+      "git_blob_sha1": "8e7daad306d32fc613bbd579a4ccac1a6f6a5f80"
+    },
+    "assets/textbook-book-ledger.css": {
+      "sha256": "e3e0f0d35d46206d8297015017784728836fb4051543dba977f48a0b4e53cd24",
+      "git_blob_sha1": "8557037a13336a45f4b326ddaf16050401870fda"
+    },
+    "assets/textbook-book-profiles.css": {
+      "sha256": "a09d1b2ecd80a6a278a66bec14befe5a2063be330de877a1f6a3544468418970",
+      "git_blob_sha1": "f2a549b8ee927971c9ee6c1b02c6f902c1eb5e4f"
+    },
+    "assets/textbook-lifecycle.css": {
+      "sha256": "769ee3118bf7d747f3fa4bdc70423ff0c0f91576d1fc803b236c0c9c2bf53cae",
+      "git_blob_sha1": "23037d58729bcc6fc7ffb720ea6f406b1abe3ea6"
+    },
+    "assets/textbook-transfers.css": {
+      "sha256": "8e184ae566a23d02376ae5d558342cde54d1e07c8d861919487ece485caabc4b",
+      "git_blob_sha1": "04263af610f136e385ada475cc1a904f1f27de6d"
+    },
+    "assets/transaction-archive.css": {
+      "sha256": "f3dff461309a2c6e95635e652ed71eb3fba76e254fee7c9832c7a568df99dfac",
+      "git_blob_sha1": "b06a66a02da93979cacb22fb4262c62172e34d9d"
+    },
+    "assets/transaction-archive.js": {
+      "sha256": "d601db68e060ad70d02ddb0eb7d5aa10caf8d32e171027ccc89cd7f5c1bde380",
+      "git_blob_sha1": "3d588f65a8df3654e219dedd2af80cb2c63db7db"
+    },
+    "assets/travel-299.css": {
+      "sha256": "b7e6dcc778e5e7ad714ad7134d698e4d4d7e81c477f7dc83616bd00b539fb696",
+      "git_blob_sha1": "872fcd28f7cf8ef899c3900a3a7639b9f25e11a1"
+    },
+    "assets/travel-305.css": {
+      "sha256": "c50070fcd76bc0e5e9db868285ba27d0854658f1c3eeada25b45d109b32e6c1b",
+      "git_blob_sha1": "da5573757ae2dce0e8170cfb15efadedba33185f"
+    },
+    "assets/travel-310.css": {
+      "sha256": "4dfedf1683a649ac5c253acf874bab9984b5da1696e4fbca355fc957130e873b",
+      "git_blob_sha1": "5ec5b48f191bf50b3de6da62741baa5dd7625b7f"
+    },
+    "assets/travel-311.css": {
+      "sha256": "5030ada5e0e0d0a8521de287e4b4306b18f3ef1061d0a4b7c42e1aa243b9e937",
+      "git_blob_sha1": "6db6f40964d5a4a59326a4127144e2141a2a6af9"
+    },
+    "assets/travel-312.css": {
+      "sha256": "6f3f1d596f644fcbb061246267fb36932565886b3c20e91470d8d3e14986582f",
+      "git_blob_sha1": "0530e84bb747731fe1440253e598500178520d67"
+    },
+    "assets/travel-313.css": {
+      "sha256": "48afea287d7b12b398a7dea88faf6eb050bc82c5c522832283e5fccb95e695ea",
+      "git_blob_sha1": "080a9fc140ecebbbca9a016cb2cd7f1cb9c84c4d"
+    },
+    "assets/travel-315.css": {
+      "sha256": "8475645892526d78aeeef70665f8ca3d8e026a679acc742bfd03a2f97f8251b1",
+      "git_blob_sha1": "ed11b68ab6f02a662ad8d41719913c733aa5427d"
+    },
+    "assets/travel-316.css": {
+      "sha256": "688550bb9ce69c6b1a3ab3426b588cb07ac49d38ae2319676615ae3990370fe6",
+      "git_blob_sha1": "6a5f94ec84cdfd1e94a7d195844d513d8d317f25"
+    },
+    "assets/travel-318-appendix47-print.css": {
+      "sha256": "6d0fcf5c462bd98d8bbc3b2b54e72f91bdb2225b7723aef94d2a4aac198a4450",
+      "git_blob_sha1": "4e82d5a425f115e09a8faf5d938a0887182eb017"
+    },
+    "assets/travel-320-cenrr-print.css": {
+      "sha256": "ce3db77771a11338d480cdb1a29bb612c3d9499d336318574d6f379f9164032c",
+      "git_blob_sha1": "814c044498e9fce8ebc0bc3e82c939cca7bb1cf0"
+    },
+    "assets/travel-323.css": {
+      "sha256": "4fa2071c9c83cef63b02d2ecb1d3e6c522874afd41884b312e15d124c5268efa",
+      "git_blob_sha1": "21fe5c2405167194a2546f934c0ebbcc7abd6ea9"
+    },
+    "assets/travel-documents.css": {
+      "sha256": "b82aed4151d32b97aad82387e102db3658f430a16a92efa8ce57eda96fb746f4",
+      "git_blob_sha1": "1187bf54d9282b7b78ec3c50d6151df9ad92dce6"
+    },
+    "assets/travel-dv-327.css": {
+      "sha256": "bb0d476414131cc42e84c023bd3fc9b6d0ba7c1fd356a119c9e69a9119cbbbf1",
+      "git_blob_sha1": "ba3c0074602c73d626af368c561c44b85bf1486f"
+    },
+    "assets/travel-dv-332.css": {
+      "sha256": "3e9d3d5519920425e69c588dca604ceb2edcd47ad7d9d6ff70d30a584582e421",
+      "git_blob_sha1": "6b5db1a33de2c7f50c0f4b1bc52f0f5cca04f43c"
+    },
+    "assets/travel-itinerary.css": {
+      "sha256": "a3b4f985b311702f4f654f41120954388c598d27849ce8a3a14c5f2edbecd7ec",
+      "git_blob_sha1": "f3d339c49a25f940733894a253531f7acb829fe3"
+    },
+    "assets/travel-no-receipt-print.css": {
+      "sha256": "9131b2506fec9a3109005a7287b325961f9b4a23ecce08489f53e4d5ed9dbb7a",
+      "git_blob_sha1": "059d22d6071f95070d1c3294fcf2576e5fa03de5"
+    },
+    "assets/travel-reimbursement.css": {
+      "sha256": "ee64ab311850f82ad408d421881dc58012636f31e06d9a3126b9e582cdd63509",
+      "git_blob_sha1": "4d76224e4f207264be60ab3f82f4508888aa1214"
+    },
+    "assets/uacs-reference.css": {
+      "sha256": "8d07eb8085cffd8b4272c055b5c1938a78907babce7bef69b4cddbd72a3e0a0e",
+      "git_blob_sha1": "8b39e2fec58aad5d06e1a958b1d9d40f5f5f5f03"
+    },
+    "assets/version-badge.js": {
+      "sha256": "61a3b0dad75a918eaa8b4dcaa29544865b6e47d248674bf3287b536d262b83b3",
+      "git_blob_sha1": "0e86f35613ac25604ff3c20b628dbe16edaf89be"
+    },
+    "assets/withheld-tax-344.css": {
+      "sha256": "14e0d3a521d50e45462e170c3537b2379865995935eff448ab56709ff03799d3",
+      "git_blob_sha1": "95ae0acddec55a0f4d02c1c59f38c70a107092f2"
+    },
+    "assets/workflow-po-appendix61.css": {
+      "sha256": "68b716d7ed5f0f117cd4db391d7d90f138c56a49fe79739a49e62c3fcae031e6",
+      "git_blob_sha1": "43c8d1692988a8737d15f01fd44d1a3f84fb3cd6"
+    },
+    "assets/workflow-quotation-tree.css": {
+      "sha256": "403151213e838660a8df3c9fffd71f554dc92ad5a19f82cd46498900725ece30",
+      "git_blob_sha1": "94c8ae8d9d2ee447633723d27ed906a180f6eb03"
+    },
+    "assets/workflow-quote-live-total-369.css": {
+      "sha256": "ae64dd5a48d37505108802fb81cd938da1b9a55d6eb7025e3c1f66769d374963",
+      "git_blob_sha1": "9799499d94e4d8799a32fc26678ff04488f5d0a5"
+    },
+    "assets/workflow-register-modal.css": {
+      "sha256": "6ac40980b0465151fcad1ddd7851473d153065577e695fe97a0c9a7f7acb6101",
+      "git_blob_sha1": "27e6af7b14fabac887666432755034c328dc9115"
+    },
+    "assets/workspace-switch.css": {
+      "sha256": "8f7f43d07fd5aff35260c12f33f5fbfcab839e33cae3e88463501cd7c4ec2a09",
+      "git_blob_sha1": "4cb09f1a152258dafd74d068de38cb31648dbe81"
+    },
+    "index.php": {
+      "sha256": "d51681acb3c18e57ed409685eaae825973b51f6c33f6caa10d7108c658d621c0",
+      "git_blob_sha1": "9fb3963b1bd19f075e7a9672fe8a468cdcfb4085"
+    },
+    "private/app/ActionCenterWorkflow.php": {
+      "sha256": "58f85469ab5c10b7f069a21e8295ded4f87897456e2da072ec43d94524baa6bb",
+      "git_blob_sha1": "290f06adda346fb0c8793c2f03c4cba71c260f81"
+    },
+    "private/app/AnnualDocumentNumbering.php": {
+      "sha256": "cf5b82f1dda6c1e426ed13a383780c59ecce1349354252406d8b8212ae21db0b",
+      "git_blob_sha1": "db108b3af022e7a584fa4c4ecc89fd52b2de12a1"
+    },
+    "private/app/AwardDocuments.php": {
+      "sha256": "8c61e651b7d331e5210d08e5ead9363c6242f0f6f54f0157220c0a6e1d05cef8",
+      "git_blob_sha1": "1821b0b547e1493bfa626efbf6fdf0bd906f273a"
+    },
+    "private/app/BackupService.php": {
+      "sha256": "b26e89b5d9ed45a36794aba16b3b72fd95e542b03aed57f5b7f92d50bc77bab2",
+      "git_blob_sha1": "1771f72916957044f3af591e62b48d019d848a03"
+    },
+    "private/app/BankFundRegister.php": {
+      "sha256": "ed823260391e2278a4e24f8968ee0fa0588efb66a865a4cbc173bfe25aaddeef",
+      "git_blob_sha1": "0b2d5c7d74d45b6efb39252195de5aec8a0b63f7"
+    },
+    "private/app/Bir2307.php": {
+      "sha256": "343e39ee992763b4051227d4f256ec1510987b4452445e27c6af430aaf61adca",
+      "git_blob_sha1": "b15ec7354c9db8c40433146fba97d16bd218bdc9"
+    },
+    "private/app/CashFundReports.php": {
+      "sha256": "92148d04cf8a93e6e9c553b6b2eb2b8326826f59785d7c6b6ba7b09976c4d82e",
+      "git_blob_sha1": "4eafb49b9b43c8e6b34f0ac0bd49d2d489deb3e5"
+    },
+    "private/app/CatalogRegistryLinks.php": {
+      "sha256": "421593ba98c8bccd299c404d9af6f0a4597cc4c2f6178c5114797e4ebbd89beb",
+      "git_blob_sha1": "c14e3f5794bd3cf0d680b6908db504678b7b909c"
+    },
+    "private/app/DateQuality.php": {
+      "sha256": "4bbf8e702cacfd134f42c8ee8d749b1a6715c77e938f30d5d0c3887eb75e529f",
+      "git_blob_sha1": "77fde67996713f8595960b3d3b5df83072c24a11"
+    },
+    "private/app/DivisionConsolidation.php": {
+      "sha256": "7ae34c5bf09d96ed1765eb1a85e5fe9fe46cfa8bde12be5b0793b4f14065f5a0",
+      "git_blob_sha1": "b932ba489745c554f3a095ba4a0b18c7a1dbcd26"
+    },
+    "private/app/DivisionPropertyRegistry.php": {
+      "sha256": "ce5fef809bc13a8f411c82f16850065f5e537383670aa33d161296a2a05ded1f",
+      "git_blob_sha1": "cd266cff1338cf59742d1c11977f869e697e8d52"
+    },
+    "private/app/DivisionSchoolAccess.php": {
+      "sha256": "89cb95f291dbf26ef84a0b55c4c04bfe99c71afa90cd8b9d89e3d8cb1f315f5a",
+      "git_blob_sha1": "52d72a996bcc84ae1d09dc611d0f0f657b158bb7"
+    },
+    "private/app/DivisionWithholdingRegister.php": {
+      "sha256": "eff02ce31a8ab465b549b523f64a4969a8203ae4a1e7cb6dec5c92c8e02769f0",
+      "git_blob_sha1": "0e2cec6677426f6f54e59389f2f787fc1e642f56"
+    },
+    "private/app/Domain.php": {
+      "sha256": "2a5ef7c53bd099b8fdf5a4451b01769b4295b0eef57ced6ba05723a24d3b73cc",
+      "git_blob_sha1": "27f4feaa9827032502e5e9d1a7352a5ec9b7123a"
+    },
+    "private/app/DvAppendix32.php": {
+      "sha256": "50dd95f4b719bec1529e2c876cf166c7f6eb7088f5b37f67196e1b50e063c1a8",
+      "git_blob_sha1": "e60276627f4427a80e8e3a0c27d521127f84a292"
+    },
+    "private/app/EmployeeClaims.php": {
+      "sha256": "e48b246b407d51389bddf3c6672860676f9a2b82f9ee7c9f52edd78ca13dd6fc",
+      "git_blob_sha1": "cce8dfa119c08b95b247e6fb634bd00cb9855ece"
+    },
+    "private/app/FundCashFinalization.php": {
+      "sha256": "e97bd8648ae5c679197a1521f91e0161dc21b14b6b5efd3a3734596836fe6cd5",
+      "git_blob_sha1": "c7d5332f640d032f2db2140505bc712a0e66f6ee"
+    },
+    "private/app/FundCashFundingPreview.php": {
+      "sha256": "92dbd4df8294c78e7f83aa6a1b1001713cf1920e3ed6ad2e37145c190ae5840e",
+      "git_blob_sha1": "e46f0d42b8cb45d178bb687653b6f6fc7d3b864a"
+    },
+    "private/app/FundTransactionAudit.php": {
+      "sha256": "619db4233d5be2200cdea58588a6454c044791c29dcfda8a9fb3b29f0b07c9e6",
+      "git_blob_sha1": "edc0285e90d93257d484922e27b08e47934c41fd"
+    },
+    "private/app/IarAppendix62.php": {
+      "sha256": "1b4227484c4528b43875cb3467f9618f9e91ec4b3634859174e868f1b1ccabb5",
+      "git_blob_sha1": "1f6f8eb9cd79a76c23cfd5d72765631227dc118b"
+    },
+    "private/app/IarAutoPropertyPolicy.php": {
+      "sha256": "ac23c2358daf8b9d4287a5906c6d4550f0e9a18b2b4d52309a0e9e961e3e1dc7",
+      "git_blob_sha1": "7eb112869c3f86c9943539296e522d5ed2836dc8"
+    },
+    "private/app/IarDocumentCorrections.php": {
+      "sha256": "b5865c95188340d89e8f9bc8e303a6403d0cf19d1866b909d824d3af94c47161",
+      "git_blob_sha1": "e58b44c0fa6cb9a0a06314e19a345fdd31025e98"
+    },
+    "private/app/IarSignatories.php": {
+      "sha256": "10344dabdc22fa72e1f36ca185161ea76ea386ada8a2abd620f4b1dec764c036",
+      "git_blob_sha1": "b42fa9e69bd2421eb8ef90b5df98920e5bc7dd01"
+    },
+    "private/app/MaintenanceService.php": {
+      "sha256": "d6bc7612df8b28c10c29ba5602c07fc3803a135a7614ce0b2d03167bf8576e27",
+      "git_blob_sha1": "b5b55c44f4555f2ddade8412f5b8e7c027374126"
+    },
+    "private/app/MonthlyIssuances.php": {
+      "sha256": "53a4c2a5c942a654758a422d0f5d09147ac795f2088b279b055d978d72331c80",
+      "git_blob_sha1": "61cead46ce391c1b43a7a87bcd88a0955d8a6a6c"
+    },
+    "private/app/NumberingSetup.php": {
+      "sha256": "d7c19dbc97e3e28a96cdd18ec94a0c45cfc07201fde285099d51c28190fadb92",
+      "git_blob_sha1": "3c0d45f72d463d5f758413fd46ac1e82348e6c52"
+    },
+    "private/app/OfficialAccountabilityPrint.php": {
+      "sha256": "5e0222f7f007888ae4d0ef72195ab24c24cc3fb3dddcd014c57b3f23c5878ede",
+      "git_blob_sha1": "7fc7cee05af860d47dfb3a8dcc7af39e7d2d2a83"
+    },
+    "private/app/PasswordRecovery.php": {
+      "sha256": "e19adbf03db47520b810b8342dabcf0a63096e020a3df05ea9af48ecc481a493",
+      "git_blob_sha1": "074affe15fc7cf881047a593ee5b2aad08923066"
+    },
+    "private/app/PoDocuments.php": {
+      "sha256": "1147377fd5b39de3e44972edd31e4bb46c9b955f65c7ef6a5ab8fc0c272bc385",
+      "git_blob_sha1": "c0fe23ae318165c021912ad0a499a0e6232eb2c8"
+    },
+    "private/app/PrClassificationPreview.php": {
+      "sha256": "17dce5c24f01a9a492e10fed2d0ed051486c3ad297fa819f57ad97341760f9db",
+      "git_blob_sha1": "c4c65cb28d0324f1efed83d0759979192b65904a"
+    },
+    "private/app/PrPrint.php": {
+      "sha256": "949d8be113db284177535fa027378d1ae9ce3cdbd4f56fe046ff1a23834f057d",
+      "git_blob_sha1": "4900821bfb7a30f5cffe4e89941a6df76cb2d8ea"
+    },
+    "private/app/PrUacsInheritance.php": {
+      "sha256": "7bcc081eaeabf002dd0acca02a1c17e70e7f4f2e72e41c2a644cc6206b18118b",
+      "git_blob_sha1": "e386ed51ede734da5f6a9c976696ed7bf5b3b86d"
+    },
+    "private/app/PrXlsx.php": {
+      "sha256": "9d43d13c025a23291300a1ea3682c2191a8a3ea0293a96391a8b05be65693458",
+      "git_blob_sha1": "bbd2e342592ae50b8a5165d1faa5a4e6afe666c0"
+    },
+    "private/app/ProcurementDocumentDates.php": {
+      "sha256": "1a7f9ada30c504454d21b4e3061cd34a66ab379385a7fdf85bf5fbcae4b82e57",
+      "git_blob_sha1": "0d2e77bd4b4ab9848e05496318367aa0d47cf7fa"
+    },
+    "private/app/PropertyBatchMetadata.php": {
+      "sha256": "d50b9d74cb72c5ce15820961a73246cdc04963b668fa1f5dd3607f5271d55fc9",
+      "git_blob_sha1": "cfb58bc5a315a793f6c9b5182d6cb40e55293041"
+    },
+    "private/app/PropertyEvidenceSnapshots.php": {
+      "sha256": "fe10a3634446bd7173590f578dcf50256a4659cee42d20a2f5fc5be9b35751ef",
+      "git_blob_sha1": "4f9062239afc3a46afd8d441434ce7f5943e84dc"
+    },
+    "private/app/PropertyLifecycleWorkflow.php": {
+      "sha256": "03735f1c7f252223e7a21f0a6175ca7adac4b21243b1a71922c570d3c5e88986",
+      "git_blob_sha1": "688201ed22fd6d0f4737048f3005aa2f1ce6780f"
+    },
+    "private/app/PropertyLineageReview.php": {
+      "sha256": "3b7d1ebc111c0b96ee13dc7ba4aa3f0099fc52053460f64305ff5e3d5ff5ee66",
+      "git_blob_sha1": "9964596da48dfede8b9fa2882f3a01af92de4982"
+    },
+    "private/app/PropertyQrVerification.php": {
+      "sha256": "07bf0185a6b9816a11ba036e1b6d2af7c6c29f8e7fe854d55db96f4bfb508057",
+      "git_blob_sha1": "b519b6b36e6124e7d2d67d9b5b973ce1208dbe62"
+    },
+    "private/app/PropertyRegistrationNumbers.php": {
+      "sha256": "4d2e87a7ee05a426e2ced81723c24043945b5d35475945a834162320482819ca",
+      "git_blob_sha1": "d7b414b93a076e64117675df7c245e59334d484f"
+    },
+    "private/app/PropertyReturnWorkflow.php": {
+      "sha256": "dec95f850dd1aa35fb949e720bf7f4e19f0a1a3ffdf3383dcc8f515d43360df2",
+      "git_blob_sha1": "432955d67cb2e53b0ef1e147249a35defb7c06fd"
+    },
+    "private/app/PropertyScanAssessment.php": {
+      "sha256": "59e2221b3ce305201179494d9d55d53f0656aae2f8cca1fff17942add6fb0302",
+      "git_blob_sha1": "7bc588e1d37675c13bc96d40f526c636b25c4dd2"
+    },
+    "private/app/PropertyStickerRegistry.php": {
+      "sha256": "dfc2a2aaf5817c60367e14b773a94a86ad2915cffba5aa96653fc3d86b0710df",
+      "git_blob_sha1": "b5f2f81b087ffacfb3676bce972d56b6d672add4"
+    },
+    "private/app/PropertyStickerTemplates.php": {
+      "sha256": "603d93769e625857114cfd9aed6f04027a078395de32a19cc4a73ad0065940e8",
+      "git_blob_sha1": "bce698ddad4d575510dc8cfdd277ab8d919b1a45"
+    },
+    "private/app/PropertyTransferAcceptance.php": {
+      "sha256": "7880acfc0ee1be0065e26fc65619894e29eb20b134e5ec606157ac2107ac3859",
+      "git_blob_sha1": "91d070837d7ebdec897b2caaf24c5fa4bcb922e8"
+    },
+    "private/app/PropertyTransferWorkflow.php": {
+      "sha256": "e3698af20d03f8fc465d6d7b03ea4557ce3aa5a8f041f2b48875b161e2de72b8",
+      "git_blob_sha1": "40abc0944a46445648113e7629e221590ab4f107"
+    },
+    "private/app/ReimbursementFinalization.php": {
+      "sha256": "ed2ffe54b1fa64ed8c533c54e07b5f081d26c0b1cc83d7887aef8e9938e769a0",
+      "git_blob_sha1": "f4c9d27590a390cda57a10ca81e7adddd3d3b72e"
+    },
+    "private/app/ReleaseVersion.php": {
+      "sha256": "5678043972f71336b412bd00aaabc11f77f4c2bfd63ff670226de33f2da539ff",
+      "git_blob_sha1": "5a3b13d874e442f95ffe8c642fd75762741b1cef"
+    },
+    "private/app/ResetService.php": {
+      "sha256": "ab756dace34fdf23fd9d8974afcf99314e0ae312d5dcbd49443827efb4270d9a",
+      "git_blob_sha1": "6fd2af93d1cde3a55b116710cb03237af98075e5"
+    },
+    "private/app/RetainedTaxHandoff.php": {
+      "sha256": "0bb3c060d5651088faa3f736e2a5ac0c29912e721e99ed92925e04c324c45092",
+      "git_blob_sha1": "a899022d46d06f4829ea82220b6ebc7ee3b925b9"
+    },
+    "private/app/RfqCanvassPrint.php": {
+      "sha256": "61f46ced5ed5461998e57ef57a6f71d7de2e8c935103d7b67331744284a320ca",
+      "git_blob_sha1": "eaa7feb0e6f2fd553acd9d2fe07d4e5710a9ee5d"
+    },
+    "private/app/RfqCanvassSignatories.php": {
+      "sha256": "b53667471a9973ae55116a7fecba970ad5a74f800e82d2b127ac01084ff623e4",
+      "git_blob_sha1": "ff6ea9ef58ed687a8b7468087d130f687ec55b5b"
+    },
+    "private/app/RfqQuotationEligibility.php": {
+      "sha256": "cc1a2e7d81a722864a2493577187b13bcbc155ae95e9560467d3d3a8619bbeb9",
+      "git_blob_sha1": "74c569c58033814f2f7c516cefd44c5778ca2727"
+    },
+    "private/app/RoleFunctions.php": {
+      "sha256": "4381bd4a32210bc8580d6d12bb22d2fee05c1f7cfd9271e00a50da1a059c7287",
+      "git_blob_sha1": "bd8d7487951f3ba556833a779a329ddff34f5ed6"
+    },
+    "private/app/SchemaHealth.php": {
+      "sha256": "685e4271bed18c6ea9a3c2cad07f3c11659d65a691b0882bc24a6b42aa5c6d0f",
+      "git_blob_sha1": "596d49304c131d89ef267509abe178401891381d"
+    },
+    "private/app/SchoolFundDownloadLink.php": {
+      "sha256": "6d32410594c06b214adcfd775d3888d81c3832231308ef9ddd7442d92275ad41",
+      "git_blob_sha1": "a0110cd807b92ecf1f7e8a01f78386c704d64ad6"
+    },
+    "private/app/SchoolNumberingPage.php": {
+      "sha256": "4bfb9477b812eb9f2cc6a26a0b5614f32506f8f41b6ca80fddbf09a72e792ff2",
+      "git_blob_sha1": "365b0b31b3aecb8fabeec23455d70dbffe537ae9"
+    },
+    "private/app/SemiExpendableReportCenter.php": {
+      "sha256": "0ebc4f40a3f7d4b60cb83221d105afed6b2c1cd679e4b6e1cd11ee7e3b28f191",
+      "git_blob_sha1": "c7997b489d576ca8202b5d15a83a1d8128bf6ac0"
+    },
+    "private/app/SettingsService.php": {
+      "sha256": "fb65d65783dd64625d45f5fed2a5dc1ebc33c6e201afff70e33ab991f3a8978c",
+      "git_blob_sha1": "865f9ac4294949e7f77f5524bf2298488755c638"
+    },
+    "private/app/SystemBranding.php": {
+      "sha256": "f52181d99c1ee9a8b94c73e754133e087afbdd8173842d0e84cf355a92d0781d",
+      "git_blob_sha1": "c9676c88f6baf2c087449168fcb7cdc20bcb1d57"
+    },
+    "private/app/TaxTransferRules.php": {
+      "sha256": "ca5f7d7d8ec825cf5a363faf308967483f278cbc60d1956880fd64e546c0b1f5",
+      "git_blob_sha1": "a2c6dec3da7cafc59520e4cefbf9e5fc61806602"
+    },
+    "private/app/TextbookBookLedger.php": {
+      "sha256": "1a73024cc67c46b0e7688125a8eb4f7da662ad0cdbed51f55c3e382c2c751339",
+      "git_blob_sha1": "5f0a89585e135ff28ab08be66e48c07df3f4cdbf"
+    },
+    "private/app/TextbookBookProfiles.php": {
+      "sha256": "39884acc471a1506e8dd9223c472d7d45433a728433bea9edbf6be348b326293",
+      "git_blob_sha1": "f8711a6b90054d89e57de1bf0321b8bf8aa371a8"
+    },
+    "private/app/TextbookCoIar.php": {
+      "sha256": "a892edefdd6090ffe35e4417e59918cefc373f8d7c141aaea75aca99b70c1dcd",
+      "git_blob_sha1": "2860160eb0ff03dec477f1fe60f4079d87380b61"
+    },
+    "private/app/TextbookCoReceiptWorkflow.php": {
+      "sha256": "3c51dff3c427c0326888c8ca7b0e59cc834a96adf20dbb980fe3d9f2136e443c",
+      "git_blob_sha1": "f500c5c56d8d2cd01ac0135a713e37378db7b1f8"
+    },
+    "private/app/TextbookDirectory.php": {
+      "sha256": "d0e7eaaba7d847c3ba61bcaa8f0a1940980739e00f1a6072a68f70fd64eb82d7",
+      "git_blob_sha1": "e0f01bb7b27dff8818b316fa0b7bd4ff12ec60dc"
+    },
+    "private/app/TextbookIsbn.php": {
+      "sha256": "802eaeb373b85e958dd04ed1c460957e78987e6519f483cf23958be9316f8925",
+      "git_blob_sha1": "3ae3a89e223d394a97f9c5612ac4034289de0feb"
+    },
+    "private/app/TextbookLifecycleWorkflow.php": {
+      "sha256": "192ebfa92a3c3acb97d7744398e9002ac1c5ec61138b8babe05a949a167f9f70",
+      "git_blob_sha1": "419d8276405a8a69ea4592bf8ea0b3bbe85ed0ab"
+    },
+    "private/app/TextbookReceiptDistributionRules.php": {
+      "sha256": "68c6c9b3b26e455e4e437fcdd3556c5f1b8978dd0c0c735c305d36cb91a94e3c",
+      "git_blob_sha1": "550546d529fa6198550740fe3818c4fc3a6ba2c8"
+    },
+    "private/app/TextbookTeacherPrint.php": {
+      "sha256": "55c4e3fcd5dfb51d7fff729fa4e786595004e506bffc118d4b55c4e9f0c18f7c",
+      "git_blob_sha1": "0732c5d615f03b73c49307934ec9de5440bc2d8c"
+    },
+    "private/app/TextbookTransferPrint.php": {
+      "sha256": "d995cd0cd0595ce1c57f1c888ea723fbbe74681906ea8b22c4f51f6084660494",
+      "git_blob_sha1": "60e217d4dbdff3576ef9d3c81de7b297574d7b1e"
+    },
+    "private/app/TextbookTransferWorkflow.php": {
+      "sha256": "7c0ea6b9e7f371ccb2b2486f564b0f4e9433a010631c533ce8109afb8241d3c0",
+      "git_blob_sha1": "67ec7c49c06ad06cda097341875402650b33abee"
+    },
+    "private/app/TravelBranding.php": {
+      "sha256": "bba77f20dc34cca65c49543257f0f382acef7330fd8e3f7740063549b88cb281",
+      "git_blob_sha1": "15d48de989b49b6f5d52957687370c259cb1e94e"
+    },
+    "private/app/TravelDtePolicy.php": {
+      "sha256": "2fa177280a7769bc7b4c1735d42ea08392d79e2ee328688d6fbc6e574d38ec16",
+      "git_blob_sha1": "91c23961a2843b3703930ced4b853e13e5f6e1a9"
+    },
+    "private/app/TravelExpenseTimeline.php": {
+      "sha256": "4596d69e7ac363b5794819b1aaebca374a4998ba07146bf4e43418dbdfd3af53",
+      "git_blob_sha1": "4217d037c60a1c3ff8b2d275dbe6d565790d9d5f"
+    },
+    "private/app/TravelExpenseWorkflow.php": {
+      "sha256": "e83678e1bf0fbe309d1f5a83c2bf780d1352e6efafdb0a3d68566b3043169d29",
+      "git_blob_sha1": "b60bef1bcd7a679f802fc3faf46b6848b84b91ae"
+    },
+    "private/app/TravelItineraryLines.php": {
+      "sha256": "9aa20a7d8002c87ea3d7fa3e209b7b6078c7df315f8b5107dcd3a7102cb1d090",
+      "git_blob_sha1": "a18202eb73a48a7208c15afc87a3594dd6c52716"
+    },
+    "private/app/TravelProvinceDirectory.php": {
+      "sha256": "f94a7c6015aa7f54f345a1dea882859c1d54670f73390cc4c211c195113da378",
+      "git_blob_sha1": "bc3947893bf1c734754e366b0d72d0553fc59d82"
+    },
+    "private/app/TravelReimbursement.php": {
+      "sha256": "e8cb4f7d82a6136e70aa711046c3fda9a05df73c68b242686de8ec3ed44b77e0",
+      "git_blob_sha1": "6931cf702c8adca896ff0d4d708464312daf7489"
+    },
+    "private/app/TravelReimbursementLocks.php": {
+      "sha256": "e818d378ef40cae043bd16bde8eded7d90c9ddf706cfb1ab5dac8ac3f30aeb92",
+      "git_blob_sha1": "507d80f3f783ad5960b3711cbef23d4bfbb54e9a"
+    },
+    "private/app/TravelResetDocumentBoundary.php": {
+      "sha256": "e38f16dda8ea714b9fc922f1521baf61337c4284c60a749de50c25f5e6b60645",
+      "git_blob_sha1": "eae114f30617997588285781e4a962046c16ee72"
+    },
+    "private/app/TravelWord.php": {
+      "sha256": "631b1fcd1564dc82b10fa23f4ecde92f63acf8bfe8043cba854b00dc88f62c04",
+      "git_blob_sha1": "ada755c74c65c7ac6620395013709696ccf14bf7"
+    },
+    "private/app/TravelWorkflow.php": {
+      "sha256": "6f85ba358ce631a20d11dc88f1987ff202ba525981ed87af44a1fc9ac417823c",
+      "git_blob_sha1": "9bf0af98b73475ce2d43608bbc7e6b9e91987a7b"
+    },
+    "private/app/bootstrap.php": {
+      "sha256": "3c5e9ceebf02668704b6a8761c4d0d84bf70fcc6090e6524d3a83ca7dfbd35ae",
+      "git_blob_sha1": "09f1301b5f1cff36c9cdf4c76dee10f386324f7c"
+    },
+    "private/db/migrations/001_initial.sql": {
+      "sha256": "a54d3e844e3456fd0e74df51c81ef4387226f553a01f67594b9a29ad7c8c6c99",
+      "git_blob_sha1": "2ab71631759905488236108a397153f687ffb5a6"
+    },
+    "private/db/migrations/002_manual_signature_records.sql": {
+      "sha256": "4f1a9dd0316b141cd1dffbd872a7d023e16661dac9dcf6c565f52b9e4dbe2e8f",
+      "git_blob_sha1": "b05cf7fbeba71ce943253f6575f66c394670ac0b"
+    },
+    "settings.css": {
+      "sha256": "8d2767281bdb79fa9696fa7c015fce34098dd658de0145d08aafbafe7158ac12",
+      "git_blob_sha1": "72d2a4682de9750f9078b0e775a9fe0c97d242a4"
+    },
+    "settings.php": {
+      "sha256": "7d1af25ba218630854b7172f29f1378008aa5d6f13a19e504dae8d09469d3316",
+      "git_blob_sha1": "8544e16e435bc4343434a48eef7b702b3a360239"
+    },
+    "setup.php": {
+      "sha256": "d931053a8d6a41286a5134014810ed6b346f0eac2f9cf50cf09538285cdce528",
+      "git_blob_sha1": "3483336cb2f98c6870c0d0711ff5b02a9091d59f"
+    },
+    "version.php": {
+      "sha256": "7aed7f3448555a3fe82b2372d1f808dd8f4b0fc5c1ff1030d993ff38bb3b9e52",
+      "git_blob_sha1": "975ae782c69dbdea375df5e116bdfb3ea0f67f2e"
+    }
+  },
+  "limitations": [
+    "Owner confirmed installed and working; live hashes not independently checked.",
+    "Mocked backend component tests only; no real DB or live financial tests.",
+    "Full installer apply and rollback not independently tested; historical migration chain incomplete.",
+    "No database migration."
+  ]
+}

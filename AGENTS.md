@@ -12,12 +12,12 @@ Continue the recorded NEXT ACTION.
 Never silently change an accepted project decision.
 Verify current source and QA evidence before proposing changes.
 
-## Verified development baseline (2026-11-25, Asia/Manila)
+## Verified development baseline (2026-11-26, Asia/Manila)
 
-- Stable source: `main`, v0.2.449. Active development: `develop/hostinger-v0.2.449` or an owner-approved feature branch from the current baseline. Reconstructed source commit: `e668405638e67db5fd855bf9bf81c418b1cf31a6`.
-- Hostinger v0.2.449 installation, Financial Reports accessibility and backup availability are owner-confirmed. Live file hashes are not independently verified. Runtime version state is private; do not infer installed version from a bootstrap fallback.
-- All 256 source files verified against `docs/checkpoints/2026-11-25-v0.2.449-source-manifest.json`; exact release candidate QA 136/136 PASS. Previous 267/267 and 155/155 are historical baselines.
-- This public repository is not an automatic deployment mechanism. Migration history and installer rollback remain incomplete/unverified. Reports remain uncertified review copies. OpenCode and FreeLLMAPI are not routine development tools without specific owner authorization.
+- Stable source: `main`, v0.2.450. Start new development from current stable main or an owner-approved feature/development branch. Previous `develop/hostinger-v0.2.449` is historical.
+- Hostinger v0.2.450 installation and working Cash & Bank UI are owner-confirmed; live file hashes are not independently verified. Do not infer deployed version from a bootstrap fallback.
+- See `docs/checkpoints/2026-11-26-v0.2.450-source-manifest.json` and `docs/checkpoints/2026-11-26-v0.2.450-qa.json`. 256 source files, 3 changed; 62/62 isolated mocked Chromium UI checks. Earlier 136/136 release QA applies to v0.2.449. No migration.
+- No automatic deployment. Installer rollback and historical migration chain remain unverified/incomplete. Financial reports remain uncertified. OpenCode and FreeLLMAPI are not routine development tools without specific owner authorization.
 
 ## Repository and code layout
 
