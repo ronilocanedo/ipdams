@@ -1,14 +1,15 @@
 # IPDAMS - Current development state / active handoff
 
 **As of:** 2026-11-26 (Asia/Manila)
-**Status:** v0.2.450 installed and working (owner confirmed); owner approved source promotion to main.
+**Status:** v0.2.454 installed (owner-confirmed) and promotion approved. Source reconstructed from the verified v0.2.450 baseline and exact four-patch chain v0.2.451-454.
 
-- Stable baseline: main, v0.2.450. Previous development branch v0.2.449 retained as history. New features start from current stable main or approved feature/development branches.
-- Cash & Bank grouped navigation, compact cards, authorized issuance fallback, existing check lifecycle and reporting preserved. UI-only update: app.html, assets/app.js, assets/cash-bank-349.css. No PHP or migration.
-- Source manifest: [v0.2.450](checkpoints/2026-11-26-v0.2.450-source-manifest.json). [QA](checkpoints/2026-11-26-v0.2.450-qa.json): 62/62 desktop/mobile component checks, mocked backend. Prior 136/136 is v0.2.449 evidence. No real payments or production tests.
-- Live production hashes, actual installer apply/rollback, full application integration, real check event and reconciliation submission not independently tested. Historical migration chain incomplete. Backup availability confirmed for v0.2.449; not independently reverified for this update.
-- Deferred: report formatting, permanent fund allocation, taxable/all DV types, per-download UACS and tax, historical and replacement checks, complete reimbursement settlement, property/textbook lifecycle, password-reset security improvement. Preserve all prior evidence in Git history.
+- Stable source `main`; 258 source files in manifest, six modified and two added since v0.2.450. No migration.
+- Appendix 43: reference-style Non-IU and internal IU register, VAT/EWTX, four ranked monthly UACS columns and OTHERS continuation, negative withholding recap, actual DV date, dated school/Division signatories. SGOD Chief is optional in existing versioned Division settings; original travel roles preserved.
+- Evidence: [source manifest](checkpoints/2026-11-26-v0.2.454-source-manifest.json), [QA](checkpoints/2026-11-26-v0.2.454-qa.json). 98/98 latest component assertions; not a MariaDB or production financial regression. Earlier 62/62 v0.2.450 component checks and 136/136 v0.2.449 release QA remain historical.
+- Pending: focused Appendix 43 MariaDB HTTP integration (11 scheduled checks, not run/reported), installer apply/rollback, independent live production file hashes, official report certification, large multipage layout, per-download allocation/UACS/tax, historical migrations. Confirm correct SGOD appointment in actual report; owner has confirmed installation, not separately reported this end-to-end check. Backup availability previously owner-confirmed for v0.2.449; not reverified for this chain.
+- Preserve existing financial controls, official numbering, checks and DV date consistency, role scopes, audit history. Continue permanent allocation, complete reimbursement settlement, property/textbook lifecycle and password reset security as separately approved backlog.
 
 ## NEXT ACTION
 
-Continue owner-selected new feature development from v0.2.450 (next proposed v0.2.451). Follow README release policy and AGENTS.md. No automatic deployments, no production testing, no repeated unchanged QA. Explicit approval for commits, pushes and production operations.
+Continue owner-selected development from v0.2.454; next proposed version v0.2.455. Review actual code and use relevant isolated synthetic QA. Follow README release policy and explicit owner approval gates. No automatic deployment, no production testing, no unnecessary repetition of unchanged tests. Do not represent installation confirmation as proof of actual MariaDB test execution.
+

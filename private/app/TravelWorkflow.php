@@ -62,11 +62,14 @@ final class TravelWorkflow {
         return ['code'=>$code,'label'=>$labels[$code],'reference'=>$reference,'school_fund'=>$fund===null?null:[
             'id'=>(int)$fund['id'],'name'=>$fund['name'],'source_code'=>$fund['source_code']]];
     }
-    /** Division-approved letter signatories. Schools may read ONLY the four
+    /** Division-approved letter signatories. Schools may read ONLY the configured
      * approved office-holder names and heading, not the Division staff roster.
      * Previous snapshots remain untouched when an appointment changes. */
     private const SIGNATORY_KEY='travel_activity_request_signatories';
+    // Travel forms retain the original four mandatory roles. SGOD is an optional
+    // report signatory in the same versioned Division configuration.
     private const SIGNATORY_ROLES=['budget_officer','division_accountant','asds','sds'];
+    private const REPORT_SIGNATORY_ROLES=['sgod_chief'];
     private function divisionFor(int $org): int {
         $o=one($this->db,'SELECT id,kind,parent_division_id FROM organizations WHERE id=? AND active=1',[$org]);
         demand($o!==null,'Workspace organization not found',404);
@@ -101,7 +104,7 @@ final class TravelWorkflow {
         $isDivision=$org===$config['division_id'];
         $canManage=$isDivision && in_array($this->user['role'],['DIVISION','SUPER_ADMIN'],true);
         $roles=[];
-        foreach(self::SIGNATORY_ROLES as $role){
+        foreach(array_merge(self::SIGNATORY_ROLES,self::REPORT_SIGNATORY_ROLES) as $role){
             $row=$config['roles'][$role]??null;
             $roles[$role]=is_array($row)?$row:null;
         }
@@ -136,12 +139,29 @@ final class TravelWorkflow {
         $salutation=requiredString($data,'salutation',15);
         demand(in_array($salutation,['Madam:','Sir:','Sir/Madam:'],true),'Choose a valid official salutation');
         // Appointments are versioned and audited; users are not asked for a change reason.
-        $reason='Division travel signatories updated';
+        $reason='Division signatories updated';
         $roles=[];
         demand(is_array($data['roles']??null),'Provide one approved Division employee for each signatory');
         foreach(self::SIGNATORY_ROLES as $role){
             $raw=$data['roles'][$role]??null;
             demand((is_int($raw) && $raw>0) || (is_string($raw) && ctype_digit($raw) && (int)$raw>0),'Choose the Division officer for '.str_replace('_',' ',$role));
+            $roles[$role]=$this->currentDivisionStaff($division,(int)$raw);
+        }
+        // Older clients omit optional report roles. Preserve the saved appointment
+        // in that case, rather than silently clearing it. An explicit empty value
+        // clears the appointment; a new ID must be an active Division employee.
+        foreach(self::REPORT_SIGNATORY_ROLES as $role){
+            if(!array_key_exists($role,$data['roles'])){
+                if(array_key_exists($role,$prev['roles']))$roles[$role]=$prev['roles'][$role];
+                continue;
+            }
+            $raw=$data['roles'][$role];
+            if($raw===null||$raw===''){
+                if(isset($prev['roles'][$role]))$roles[$role]=null;
+                elseif(array_key_exists($role,$prev['roles']))$roles[$role]=$prev['roles'][$role];
+                continue;
+            }
+            demand((is_int($raw)&&$raw>0)||(is_string($raw)&&ctype_digit($raw)&&(int)$raw>0),'Choose an active Division employee for '.str_replace('_',' ',$role));
             $roles[$role]=$this->currentDivisionStaff($division,(int)$raw);
         }
         $record=['region_heading'=>$region,'salutation'=>$salutation,'roles'=>$roles];
@@ -152,7 +172,7 @@ final class TravelWorkflow {
                 (new DateTimeImmutable('now',new DateTimeZone('Asia/Manila')))->format('Y-m-d'),$reason]);
         $version=(int)$this->db->lastInsertId();
         $this->audit($division,'TRAVEL_SIGNATORIES_CONFIGURED','TRAVEL_SIGNATORIES',$version,
-            ['before_version'=>$prev['version_id'],'officer_ids'=>array_map(static fn($r)=>$r['employee_id'],$roles),'reason'=>$reason]);
+            ['before_version'=>$prev['version_id'],'officer_ids'=>array_map(static fn($r)=>$r['employee_id']??null,$roles),'reason'=>$reason]);
         return ['version_id'=>$version,'division_id'=>$division];
     }
     private function snapshottedSignatories(int $org): array {

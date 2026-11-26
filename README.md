@@ -2,10 +2,10 @@
 
 ## Current stable baseline - 26 November 2026 (Asia/Manila)
 
-- **IPDAMS v0.2.450** is installed and working on Hostinger (owner-confirmed). Cash & Bank follows Property & Accountability navigation; check issuance remains in DV and authorized register fallback.
-- **`main` is the stable source baseline.** Start new development from the latest main or an approved feature/development branch. `develop/hostinger-v0.2.449` is the previous baseline.
-- [Source manifest](docs/checkpoints/2026-11-26-v0.2.450-source-manifest.json): 256 verified source files, 3 changed. [QA review](docs/checkpoints/2026-11-26-v0.2.450-qa.json): 62/62 desktop/mobile Chromium component checks with mocked backend; no database migration. Earlier 136/136 QA applies to v0.2.449, not a new full regression of v0.2.450.
-- Live production hashes, installer apply/rollback and real financial workflow submissions were not independently tested. Reports remain uncertified review copies. No production records or secrets belong in GitHub.
+- **IPDAMS v0.2.454** is installed on Hostinger (owner-confirmed; promotion approved). Appendix 43 now has reference-style layout, IU/Non-IU distinction, ranked UACS columns, DV date and configured Division signatories including SGOD Chief.
+- **`main` is the stable source baseline.** Start new work from current main or an owner-approved feature/development branch.
+- [Source manifest](docs/checkpoints/2026-11-26-v0.2.454-source-manifest.json): 258 source files, 8 changed/added since v0.2.450. [QA review](docs/checkpoints/2026-11-26-v0.2.454-qa.json): 98/98 latest PHP/stub PDO and mocked Chromium checks. Earlier QA is historical and not additive. No migration.
+- Actual MariaDB HTTP integration, live hashes and installer apply/rollback remain independently unverified. Reports are uncertified review copies; per-download attribution remains incomplete. No production data or secrets belong in GitHub.
 - No automatic deployment. Follow the release policy below and obtain explicit owner approval for future commits, pushes, migrations, installation and releases.
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.

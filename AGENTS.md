@@ -14,10 +14,10 @@ Verify current source and QA evidence before proposing changes.
 
 ## Verified development baseline (2026-11-26, Asia/Manila)
 
-- Stable source: `main`, v0.2.450. Start new development from current stable main or an owner-approved feature/development branch. Previous `develop/hostinger-v0.2.449` is historical.
-- Hostinger v0.2.450 installation and working Cash & Bank UI are owner-confirmed; live file hashes are not independently verified. Do not infer deployed version from a bootstrap fallback.
-- See `docs/checkpoints/2026-11-26-v0.2.450-source-manifest.json` and `docs/checkpoints/2026-11-26-v0.2.450-qa.json`. 256 source files, 3 changed; 62/62 isolated mocked Chromium UI checks. Earlier 136/136 release QA applies to v0.2.449. No migration.
-- No automatic deployment. Installer rollback and historical migration chain remain unverified/incomplete. Financial reports remain uncertified. OpenCode and FreeLLMAPI are not routine development tools without specific owner authorization.
+- Stable source: `main`, v0.2.454. Start new development from current stable main or an owner-approved feature/development branch.
+- Owner confirmed installation and approved promotion. Live Hostinger hashes not independently verified. Do not infer runtime version from a bootstrap fallback.
+- See `docs/checkpoints/2026-11-26-v0.2.454-source-manifest.json` and `docs/checkpoints/2026-11-26-v0.2.454-qa.json`. 258 source files, 8 changed/added since v0.2.450; 98/98 latest component checks (PHP/stub PDO and mocked Chromium). Actual MariaDB integration pending. No migration.
+- No automatic deployment. Installer rollback and historical migration chain remain unverified/incomplete. Reports remain uncertified. OpenCode and FreeLLMAPI are not routine development tools without specific owner authorization.
 
 ## Repository and code layout
 

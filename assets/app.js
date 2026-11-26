@@ -2455,7 +2455,7 @@ class App extends React.Component {
             this.setState({travelSignatoriesLoading:true,travelSignatoriesError:''});
             try{const data=await this.get('travel.signatories.settings',{organization_id:org});
                 if(String(this.state.organization_id)!==org)return;
-                const ids={};['budget_officer','division_accountant','asds','sds'].forEach(key=>ids[key]=String(data.roles?.[key]?.employee_id||''));
+                const ids={};['budget_officer','division_accountant','asds','sds','sgod_chief'].forEach(key=>ids[key]=String(data.roles?.[key]?.employee_id||''));
                 this.setState({travelSignatories:data,travelSignatoriesLoading:false,travelSignatoryIds:ids,
                     travelSignatoryRegion:data.region_heading||'',travelSignatorySalutation:data.salutation||'Sir/Madam:',
                     travelSignatoryReason:''});
@@ -2468,7 +2468,7 @@ class App extends React.Component {
                 expected_version:d.version_id,region_heading:s.travelSignatoryRegion.trim(),
                 salutation:s.travelSignatorySalutation,roles:s.travelSignatoryIds
             },{refresh:false});
-            if(r){this.setState({success:'Division Activity Request signatories recorded. New documents will snapshot these appointments; prior drafts are unchanged.'});
+            if(r){this.setState({success:'Division signatories recorded. New travel documents will snapshot their four appointments; reports use dated configuration.'});
                 await this.loadTravelSignatories();}
         };
         this.travelSignatoriesView = () => {
@@ -2476,18 +2476,18 @@ class App extends React.Component {
             const tabs=[['suppliers','Suppliers'],['items','Item Catalog'],['requesting_units','Requesting Units'],['employees','Employees'],['officials','BAC & Heads'],['travel_signatories','Division Travel Signatories'],['letterhead','Document Letterhead'],['classifications','Division Classifications'],['property_registry','Property Registry'],['units','Units of Measure'],['atcs','Withholding Tax / ATC'],['vat_config','VAT Configuration'],['uacs','UACS Accounts']];
             const officialRoles=[['budget_officer','Division Budget Officer — Certification of Available Allotment'],
                 ['division_accountant','Division Accountant — Certification of Availability of Funds'],
-                ['asds','ASDS — Recommending Approval'],['sds','SDS — Approval / Disapproval']];
+                ['asds','ASDS — Recommending Approval'],['sds','SDS — Approval / Disapproval'],['sgod_chief','SGOD Chief — Appendix 43 / Report Signatories']];
             const tabsNode=h('div',{className:'master-tabs',role:'tablist','aria-label':'Reference data'},...tabs.map(([key,label])=>h('button',{key,type:'button',role:'tab',
                 'aria-selected':key==='travel_signatories',className:'master-tab '+(key==='travel_signatories'?'selected':''),
                 onClick:()=>this.setState({masterSection:key,travelSignatoriesError:''})},label)));
             const canManage=!!d?.can_manage;
-            return h('div',{className:'section-stack'},this.header('Division Travel Signatories',
-                    'Configure four independent officials for Activity Request and Travel Authority. Each change is versioned, never a digital signature.'),
+            return h('div',{className:'section-stack'},this.header('Division Signatories',
+                    'Configure officials for travel documents and reports. Each change is dated and versioned.'),
                 tabsNode,
                 h('section',{className:'surface'},
-                    h('div',{className:'section-head'},h('h3',null,'Activity Request · prescribed signatories'),
+                    h('div',{className:'section-head'},h('h3',null,'Division · prescribed signatories'),
                         h('button',{type:'button',className:'outline',disabled:s.travelSignatoriesLoading,onClick:this.loadTravelSignatories},s.travelSignatoriesLoading?'Loading…':'Refresh')),
-                    h('p',{className:'body-muted'},'Configured at Division level. Schools can view the authorized signatory names. Printed forms use the assignment saved in each document version and leave actual signatures blank.'),
+                    h('p',{className:'body-muted'},'Schools can view the authorized names. Travel documents retain their saved appointments; Appendix 43 uses the SGOD Chief effective at the end of the report month.'),
                     s.travelSignatoriesError?h('p',{className:'error'},s.travelSignatoriesError):null,
                     !d?h('p',{className:'hint'},'Load the Division signatory settings.'):null,
                     d?h('form',{onSubmit:this.saveTravelSignatories},
@@ -2499,7 +2499,7 @@ class App extends React.Component {
                                 h('select',{required:true,disabled:!canManage,value:s.travelSignatorySalutation,onChange:e=>this.setState({travelSignatorySalutation:e.target.value})},
                                     ...['Sir/Madam:','Madam:','Sir:'].map(v=>h('option',{key:v,value:v},v)))),
                             ...officialRoles.map(([key,label])=>h('label',{key,className:'field'},h('span',null,label),
-                                canManage?h('select',{value:s.travelSignatoryIds[key]||'',required:true,
+                                canManage?h('select',{value:s.travelSignatoryIds[key]||'',required:key!=='sgod_chief',
                                     onChange:e=>this.setState({travelSignatoryIds:{...s.travelSignatoryIds,[key]:e.target.value}})},
                                     h('option',{value:''},'Select active Division employee'),
                                     ...(d.staff||[]).map(p=>h('option',{key:p.employee_id,value:String(p.employee_id)},p.full_name+' · '+(p.designation||p.position_title||'')))):
@@ -14323,7 +14323,7 @@ h('div',{className:'employee-claim-actions'},
                 stage==='REQUEST'&&showRequestForm?h('section',{className:'surface travel-working'},
                     h('h3',null,s.travelEditId?'Revise Activity Request draft':'Prepare Activity Request (Annex A)'),
                     h('p',{className:'body-muted'},'The printed Annex A uses the supplied prescribed margins and indentation, and the four officials configured in Reference Data → Division Travel Signatories. Printed names are not electronic signatures.'),
-                    s.travelSignatories && (!s.travelSignatories.version_id || Object.values(s.travelSignatories.roles||{}).some(v=>!v?.full_name))?
+                    s.travelSignatories && (!s.travelSignatories.version_id || ['budget_officer','division_accountant','asds','sds'].some(key=>!s.travelSignatories.roles?.[key]?.full_name))?
                         h('p',{className:'hint',role:'status'},'Division signatories are not fully configured. Ask an authorized Division user to complete all four roles in Reference Data → Division Travel Signatories; older drafts require an audited refresh.'):null,
                     h('p',{className:'body-muted'},'Select which office bears the expense. Division- and Region-chargeable requests remain documentary only and do not charge school MOOE.'),
                     h('button',{type:'button',className:'outline',onClick:()=>this.setState({tab:'Reference Data',masterSection:'travel_signatories'})},'View Division Travel Signatories'),

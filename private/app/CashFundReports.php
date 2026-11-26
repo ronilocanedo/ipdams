@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/bootstrap.php';
+require_once __DIR__.'/Appendix43Register.php';
 /**
  * v0.2.449 READ-ONLY financial reporting WORKPAPERS. No post, mutation, or inferred
  * accounting settlement. Official certification requires source review.
@@ -254,8 +255,9 @@ final class CashFundReports {
             WHERE d.organization_id=? AND d.fund_id=? AND d.status='FINALIZED'
               AND EXISTS (SELECT 1 FROM checks c WHERE c.organization_id=? AND c.bank_account_id=? AND c.dv_id=d.id AND c.created_at<?)
             ORDER BY w.dv_id,w.id LIMIT 10001",[$org,$fundId,$org,$bankId,$exclusiveEnd])->fetchAll(PDO::FETCH_ASSOC);
-        $accounting=q($db,"SELECT v.dv_id,l.uacs_code,l.debit,l.credit,l.explanation
+        $accounting=q($db,"SELECT v.dv_id,l.uacs_code,l.debit,l.credit,l.explanation,u.account_name
             FROM dv_accounting_versions v JOIN voucher_accounting_lines l ON l.accounting_version_id=v.id
+            LEFT JOIN uacs_accounts u ON u.code=l.uacs_code
             JOIN disbursement_vouchers d ON d.id=v.dv_id
             WHERE d.organization_id=? AND d.fund_id=? AND d.status='FINALIZED'
               AND v.id=(SELECT v2.id FROM dv_accounting_versions v2 WHERE v2.dv_id=v.dv_id ORDER BY v2.version_no DESC,v2.id DESC LIMIT 1)
@@ -272,7 +274,18 @@ final class CashFundReports {
         $fundCount=(int)(one($db,"SELECT COUNT(DISTINCT fund_id) n FROM fund_events WHERE organization_id=? AND bank_account_id=? AND event_type='ALLOTMENT' AND bank_credit_date<=?",[$org,$bankId,$end])['n']??1);
         $out=self::pure($fund,$bank,$downloads,$checks,$events,$tax,$accounting,$leaves,$recon,$reconLines,$period,$fundCount);
         $out['warnings'][]='Tax disposition and accounting versions are current saved snapshots, not a certified historical as-of ledger. Review original approved documents for the selected month.';
-        $out['organization']=one($db,'SELECT id,name,code,kind,address FROM organizations WHERE id=?',[$org]);
+        $out['organization']=one($db,'SELECT id,name,code,kind,address,parent_division_id FROM organizations WHERE id=?',[$org]);
+        if(($p['report']??'')==='A43'){
+            $counts=q($db,"SELECT h.dv_id,COUNT(*) n FROM checks h JOIN disbursement_vouchers d ON d.id=h.dv_id AND d.organization_id=h.organization_id
+                WHERE h.organization_id=? AND d.fund_id=? AND h.created_at<? GROUP BY h.dv_id LIMIT 10001",[$org,$fundId,$exclusiveEnd])->fetchAll(PDO::FETCH_ASSOC);
+            demand(count($counts)<=10000,'DV check history exceeds safe reporting capacity',409);
+            $countByDv=array_column($counts,'n','dv_id');
+            foreach($out['dvRows'] as &$row)$row['check']['register_check_count']=(int)($countByDv[$row['check']['dv_id']]??0);unset($row);
+            $meta=Appendix43Register::metadata($db,$out['organization'],$end);
+            $out['appendix43']=Appendix43Register::build($out,$accounting,$tax,$meta);
+            $out['warnings']=array_values(array_filter($out['warnings'],static fn($w)=>!str_starts_with($w,'Appendix 43 recapitulation (gross less utilization)')));
+            $out['warnings']=array_merge($out['warnings'],$out['appendix43']['notes']);
+        }
         $out['options']=[
             'funds'=>q($db,'SELECT id,name,source_code,fiscal_year FROM funds WHERE organization_id=? ORDER BY fiscal_year DESC,source_code LIMIT 201',[$org])->fetchAll(PDO::FETCH_ASSOC),
             'banks'=>q($db,'SELECT id,bank_name,account_label,masked_account FROM bank_accounts WHERE organization_id=? ORDER BY bank_name,account_label LIMIT 201',[$org])->fetchAll(PDO::FETCH_ASSOC),

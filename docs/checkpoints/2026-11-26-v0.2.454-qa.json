@@ -1,0 +1,470 @@
+{
+  "version": "0.2.454",
+  "owner_report": "Installed; owner requested promotion to main. Live hashes and end-to-end report behavior not independently verified.",
+  "prior_tests_not_additive": true,
+  "latest_component_assertions": {
+    "test-results.json": [
+      {
+        "name": "Non-IU advance header",
+        "status": "PASS"
+      },
+      {
+        "name": "Separate VAT and EWT",
+        "status": "PASS"
+      },
+      {
+        "name": "Retained withholding deducted exactly once",
+        "status": "PASS"
+      },
+      {
+        "name": "Remittable withholding deducted separately",
+        "status": "PASS"
+      },
+      {
+        "name": "Four monthly top UACS by gross amount",
+        "status": "PASS"
+      },
+      {
+        "name": "Seven distinct UACS saved",
+        "status": "PASS"
+      },
+      {
+        "name": "Three other classifications in one payment",
+        "status": "PASS"
+      },
+      {
+        "name": "Gross 25,900 less 900 equals 25,000",
+        "status": "PASS"
+      },
+      {
+        "name": "Payment and recap reconcile",
+        "status": "PASS"
+      },
+      {
+        "name": "Opening plus receipts less payments equals closing",
+        "status": "PASS"
+      },
+      {
+        "name": "Unreleased cancelled check shown as zero cash",
+        "status": "PASS"
+      },
+      {
+        "name": "No certification assertion",
+        "status": "PASS"
+      },
+      {
+        "name": "IUS 1010404000 actual cash credit",
+        "status": "PASS"
+      },
+      {
+        "name": "IUS 1010202024 actual cash credit",
+        "status": "PASS"
+      },
+      {
+        "name": "DIVISION 1010202000 actual cash credit",
+        "status": "PASS"
+      },
+      {
+        "name": "IU never defaults to advances",
+        "status": "PASS"
+      },
+      {
+        "name": "Unknown school classification withheld",
+        "status": "PASS"
+      },
+      {
+        "name": "Cross-bank or split check history blocked",
+        "status": "PASS"
+      },
+      {
+        "name": "Unbalanced saved lines not plugged",
+        "status": "PASS"
+      },
+      {
+        "name": "Reversed retained component not deducted",
+        "status": "PASS"
+      },
+      {
+        "name": "Unclassified tax flagged not inferred",
+        "status": "PASS"
+      },
+      {
+        "name": "Multiple downloads not falsely allocated",
+        "status": "PASS"
+      },
+      {
+        "name": "Effective supersession respected",
+        "status": "PASS"
+      },
+      {
+        "name": "Exactly two continuation rows for three OTHERS",
+        "status": "PASS"
+      },
+      {
+        "name": "Reference tax headings",
+        "status": "PASS"
+      },
+      {
+        "name": "Negative retained displayed",
+        "status": "PASS"
+      },
+      {
+        "name": "No duplicate payment on continuation rows",
+        "status": "PASS"
+      },
+      {
+        "name": "Reference caption, signoff and recap",
+        "status": "PASS"
+      },
+      {
+        "name": "IU printed workpaper not official appendix",
+        "status": "PASS"
+      },
+      {
+        "name": "Date uses saved August DV despite September release",
+        "status": "PASS"
+      },
+      {
+        "name": "Particulars contains supplier only",
+        "status": "PASS"
+      },
+      {
+        "name": "Missing DV date stays blank",
+        "status": "PASS"
+      },
+      {
+        "name": "Invalid calendar DV date stays blank",
+        "status": "PASS"
+      },
+      {
+        "name": "Cancelled check displays DV date",
+        "status": "PASS"
+      },
+      {
+        "name": "Fund receipt still uses bank credit date",
+        "status": "PASS"
+      },
+      {
+        "name": "Different DV dates do not change monthly cash totals",
+        "status": "PASS"
+      },
+      {
+        "name": "Running balance ordered by actual cash events",
+        "status": "PASS"
+      },
+      {
+        "name": "Continuation rows unchanged",
+        "status": "PASS"
+      },
+      {
+        "name": "Three actual names and designations printed in correct order",
+        "status": "PASS"
+      },
+      {
+        "name": "Populated signatories do not alter reconciliation",
+        "status": "PASS"
+      },
+      {
+        "name": "Missing roles show specific blank lines",
+        "status": "PASS"
+      },
+      {
+        "name": "Unconfigured roles generate visible review note",
+        "status": "PASS"
+      }
+    ],
+    "sgod-results.json": [
+      {
+        "name": "Legacy configuration exposes optional blank SGOD",
+        "status": "PASS"
+      },
+      {
+        "name": "Division roster excludes inactive employees",
+        "status": "PASS"
+      },
+      {
+        "name": "School gets only approved role names, no roster",
+        "status": "PASS"
+      },
+      {
+        "name": "School cannot save signatory",
+        "status": "PASS"
+      },
+      {
+        "name": "No SGOD required for existing travel settings",
+        "status": "PASS"
+      },
+      {
+        "name": "Non-Division employee rejected",
+        "status": "PASS"
+      },
+      {
+        "name": "Expired employee rejected",
+        "status": "PASS"
+      },
+      {
+        "name": "Malformed role rejected",
+        "status": "PASS"
+      },
+      {
+        "name": "SGOD saved using existing versioned configuration",
+        "status": "PASS"
+      },
+      {
+        "name": "Existing four appointments intact",
+        "status": "PASS"
+      },
+      {
+        "name": "Audit records SGOD ID",
+        "status": "PASS"
+      },
+      {
+        "name": "Stale configuration rejected",
+        "status": "PASS"
+      },
+      {
+        "name": "School can view saved chief without staff roster",
+        "status": "PASS"
+      },
+      {
+        "name": "Travel snapshot remains original four roles",
+        "status": "PASS"
+      },
+      {
+        "name": "Report uses explicit employee despite generic designation",
+        "status": "PASS"
+      },
+      {
+        "name": "No title guessing when role missing",
+        "status": "PASS"
+      },
+      {
+        "name": "No report official if assignment absent",
+        "status": "PASS"
+      },
+      {
+        "name": "Overlapping assignments remain blank",
+        "status": "PASS"
+      },
+      {
+        "name": "Received and SDS unchanged",
+        "status": "PASS"
+      },
+      {
+        "name": "Older client omitting optional field preserves SGOD",
+        "status": "PASS"
+      },
+      {
+        "name": "Explicit clear is versioned and audited",
+        "status": "PASS"
+      },
+      {
+        "name": "Cleared signatory remains blank",
+        "status": "PASS"
+      }
+    ],
+    "signatory-results.json": [
+      {
+        "name": "All three officials from authoritative records",
+        "status": "PASS"
+      },
+      {
+        "name": "Saved school-specific historical designation retained",
+        "status": "PASS"
+      },
+      {
+        "name": "Division mismatch never prints receiver",
+        "status": "PASS"
+      },
+      {
+        "name": "Unlinked school no signatures",
+        "status": "PASS"
+      },
+      {
+        "name": "Missing school assignment remains blank",
+        "status": "PASS"
+      },
+      {
+        "name": "Missing staff does not invent SGOD/SDS",
+        "status": "PASS"
+      },
+      {
+        "name": "CID chief never substitutes for SGOD",
+        "status": "PASS"
+      },
+      {
+        "name": "Explicitly assigned SGOD remains authoritative even if other chiefs exist",
+        "status": "PASS"
+      },
+      {
+        "name": "Overlapping chief assignments remain blank",
+        "status": "PASS"
+      },
+      {
+        "name": "SDS role falls back to verified office head",
+        "status": "PASS"
+      },
+      {
+        "name": "Unconfigured SDS does not guess from staff roster",
+        "status": "PASS"
+      },
+      {
+        "name": "ASDS is not SDS",
+        "status": "PASS"
+      },
+      {
+        "name": "Conflicting SDS appointments stay blank",
+        "status": "PASS"
+      },
+      {
+        "name": "Missing configured SDS assignment stays blank",
+        "status": "PASS"
+      },
+      {
+        "name": "Actual metadata resolver returns all three officials",
+        "status": "PASS"
+      },
+      {
+        "name": "Only read-only SELECT statements",
+        "status": "PASS"
+      },
+      {
+        "name": "School assignment scoped to report school and cutoff",
+        "status": "PASS"
+      },
+      {
+        "name": "Division staff scoped to parent and effective date",
+        "status": "PASS"
+      },
+      {
+        "name": "SDS configuration scoped to linked Division and cutoff",
+        "status": "PASS"
+      },
+      {
+        "name": "Division internal register does not borrow school signatories",
+        "status": "PASS"
+      }
+    ],
+    "browser-results.json": [
+      {
+        "name": "desktop optional SGOD selector",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop active employees available",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop saved role submitted",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop selected role reloaded",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop school read-only role name",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop school no save button",
+        "status": "PASS"
+      },
+      {
+        "name": "desktop no page exceptions",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile optional SGOD selector",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile active employees available",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile saved role submitted",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile selected role reloaded",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile school read-only role name",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile school no save button",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile no page exceptions",
+        "status": "PASS"
+      }
+    ]
+  },
+  "counts": {
+    "report": 42,
+    "sgod_configuration": 22,
+    "signatory_resolution": 20,
+    "mocked_browser": 14,
+    "total_pass": 98,
+    "fail": 0
+  },
+  "not_tested": [
+    "Actual MariaDB HTTP integration (including pending 11-check focused QA)",
+    "Installer apply/rollback independently",
+    "Live Hostinger source hashes",
+    "Large multipage print behavior and official format certification",
+    "Individual download attribution and other reports beyond Appendix 43"
+  ],
+  "database_migration": false,
+  "production_modified_by_assistant": false,
+  "patch_chain": [
+    {
+      "version": "0.2.451",
+      "from_version": "0.2.450",
+      "filename": "IPDAMS_v0.2.451_APPENDIX43_UPDATE_CANDIDATE.zip",
+      "sha256": "1e030520e5e0577592f05611cf007d2584a7cdd6c326c4b4e420c201e7d44da1",
+      "files": {
+        "app/CashFundReports.php": "c8223f8fb52885afd8b629f68fb029fdc15c7e2b6ce79704b4c23f67e1071fa8",
+        "public/api/cash-fund-reports.php": "0b575ed7b10f86d82b3d538b3d1fcd9edb30a82fbef0dd59e2c6faa623530328",
+        "public/assets/cash-fund-reports.css": "6a1035a25911e0b1a361e80beeda4220884fc1bf9938e64acf2e68ce6b19306b",
+        "app/Appendix43Register.php": "93efb89e33c7665d910cac4d6fc0c59496104d51722366af5f54c810bf4928d0",
+        "app/Appendix43Print.php": "9779852178c2c7a9b566a29c81c4aea3f80d27842b1032f1bf2ec88084dec5b9"
+      }
+    },
+    {
+      "version": "0.2.452",
+      "from_version": "0.2.451",
+      "filename": "IPDAMS_v0.2.452_APPENDIX43_DATE_UPDATE.zip",
+      "sha256": "9286121ad32eacb410a31d2107b0810c0ba627c1aa4684847e7137bdcb9f4ab9",
+      "files": {
+        "app/Appendix43Print.php": "f07978133ea3c4976491c13ec43f9d9f6e93670de389984d90017f0e1801b6b1"
+      }
+    },
+    {
+      "version": "0.2.453",
+      "from_version": "0.2.452",
+      "filename": "IPDAMS_v0.2.453_APPENDIX43_SIGNATORIES_UPDATE.zip",
+      "sha256": "42a2b74eed356ffdf623c2d97e2abbd7b9351a3ad42c91c7ade6b56ff3ec75bb",
+      "files": {
+        "app/Appendix43Print.php": "fd1bebc519fe80868648ac70725b8cbf84815d49b7cb7fc9fb3b8e48986d1d19",
+        "app/Appendix43Register.php": "958bcc1d847b28e26929a065efc1f343ce2dc09c7eac0ce55da714e6a0f5efd3"
+      }
+    },
+    {
+      "version": "0.2.454",
+      "from_version": "0.2.453",
+      "filename": "IPDAMS_v0.2.454_DIVISION_SGOD_SIGNATORY_UPDATE.zip",
+      "sha256": "4d2fb84d8b150ee5842e5cfe3a60a6b9f10ba9e54e7704185a0b671355abdc4c",
+      "files": {
+        "public/app.html": "8e87d87d1d5c2143eb7fac34ee1dd0195d58ef7dc66efe9f3556ef369c243d38",
+        "public/assets/app.js": "1eebdb254126353c793a4da1763bff01d096f61bcdf4d7eb5773591e8aea549f",
+        "app/TravelWorkflow.php": "27a59de3e2b033085bb1b2d3818138becec5f51dcad987add346389d247cc445",
+        "app/Appendix43Register.php": "61a25fa9e3ed59f27c6f0744a54d972afbb0228fa095edbb04a264f5a8b18e8c"
+      }
+    }
+  ]
+}

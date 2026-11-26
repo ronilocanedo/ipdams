@@ -40,13 +40,13 @@ try{
           'banks'=>q($db,'SELECT id,bank_name,account_label,masked_account FROM bank_accounts WHERE organization_id=? ORDER BY bank_name LIMIT 201',[$org])->fetchAll(PDO::FETCH_ASSOC)];
         if(!$fundId)$fundId=(int)($choices['funds'][0]['id']??0);
         if(!$bankId)$bankId=(int)($choices['banks'][0]['id']??0);
-        if($fundId&&$bankId)$data=CashFundReports::load($db,$user,['organization_id'=>$org,'fund_id'=>$fundId,'bank_account_id'=>$bankId,'period'=>$period]);
+        if($fundId&&$bankId)$data=CashFundReports::load($db,$user,['organization_id'=>$org,'fund_id'=>$fundId,'bank_account_id'=>$bankId,'period'=>$period,'report'=>$r]);
         else $err='Configure a fund source and a bank account before preparing financial reports.';
     }else $err='There is no authorized organization for this account.';
 }catch(DomainError $e){http_response_code($e->status);$err=$e->getMessage();}
 catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_response_code(500);$err='Financial report could not be prepared. Technical review is required; nothing was posted.';}
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IPDAMS · Cash and Fund Reports</title><link rel="stylesheet" href="../assets/cash-fund-reports.css"><script src="../assets/cash-fund-reports.js" defer></script></head>
+<title>IPDAMS · Cash and Fund Reports</title><link rel="stylesheet" href="../assets/cash-fund-reports.css?v=0.2.451"><script src="../assets/cash-fund-reports.js" defer></script></head>
 <body class="report-<?=er($r)?>"><div class="toolbar noprint">
  <div><div class="eyebrow">IPDAMS / CASH &amp; BANK</div><h1>Fund liquidation &amp; cash reports</h1><p>Prepared from existing source records. Printing never posts funds, alters taxes or changes check status.</p></div>
  <button type="button" data-report-print <?=$data?'':'disabled'?>>Print selected report</button>
@@ -69,12 +69,14 @@ catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_r
  $name=(string)$reportCodes[$r];$warningCount=count($d['warnings']); ?>
  <div class="context noprint"><strong><?=er($name)?></strong><span><?=er($orgName)?> · <?=er($fund['source_code'])?> · <?=er($periodTitle)?></span><span>Review required: <?=$warningCount?> item(s)</span></div>
  <div class="sheet">
+ <?php if($r!=='A43'):?>
  <div class="appendix"><?=er($r==='S1'?'Schedule 1':'Appendix '.substr($r,1))?></div>
  <div class="center heading"><h2><?=er(match($r){'A80'=>'Monthly Bank Reconciliation Statement','S1'=>'List of Outstanding Checks','A35'=>'Report of Checks Issued','A40'=>'Cash Disbursements Record','A43'=>'Cash Disbursements Register','A67'=>'Report of Accountability for Accountable Forms'})?></h2>
  <strong><?=er($orgName)?></strong><div><?=er($fund['source_code'].' · '.$fund['name'].' · FY '.$fund['fiscal_year'])?></div>
  <div><?=er($bank['bank_name'].' / '.$bank['account_label'].' / '.$bank['masked_account'])?></div>
  <div><?=er(in_array($r,['A80','S1'],true)?'As of '.$asOf:'Period: '.$periodTitle)?></div></div>
  <div class="review-banner">REVIEW COPY — NOT CERTIFIED · Source-document reconciliation required</div>
+ <?php endif;?>
  <?php if($r==='A80'):?>
  <p class="caption">Bank reconciliation is recorded for the whole bank account. A selected fund's bank-book projection is shown separately below and is not a replacement for the official bank statement.</p>
  <table class="statement"><thead><tr><th>Particulars</th><th>Agency / book</th><th>Bank statement</th><th>Explanatory comment</th></tr></thead><tbody>
@@ -108,18 +110,7 @@ catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_r
  <?php endforeach;?><tr class="total"><td colspan="4">Period totals (reversals shown separately)</td><td class="num"><?=mo($d['credit'])?></td><td class="num"><?=mo($d['payment'])?></td><td class="num"><?=mo($d['closing'])?></td></tr>
  <?php if($d['periodReversals']):?><tr><td colspan="7">The issued-check commitment book has <?=mo($d['periodReversals'])?> of cancellation/replacement reversals; this is not a bank cash receipt or confirmed refund.</td></tr><?php endif;?></tbody></table>
  <p class="caption">The running balance uses verified bank credits minus recorded RELEASED checks. It is a draft cash workpaper, not a certified bank statement or independent cash advance record.</p>
- <?php elseif($r==='A43'):?>
- <table class="tight"><thead><tr><th>Date</th><th>DV No.</th><th>Check No.</th><th>Payee / Particulars</th><th>Gross DV</th><th>EWT / VAT withheld</th><th>Net check</th><th>Source UACS</th><th>School-utilized tax (negative recap)</th></tr></thead><tbody>
- <?php foreach($d['dvRows'] as $row):$c=$row['check'];?><tr><td><?=er($c['check_date'])?></td><td><?=er($c['dv_number'])?></td><td><?=er($c['check_number'])?></td><td><?=er($c['payee_name']??$c['dv_payee'])?></td>
- <td class="num"><?=moneyRead($c['dv_gross'])?></td><td class="num"><?=mo($row['tax_cents'])?></td><td class="num"><?=mo($row['amount_cents'])?></td><td><?=er(implode(', ',array_keys($row['uacs']))?:'Review source DV')?></td><td class="num"><?=$row['school_utilization_cents']?'('.mo($row['school_utilization_cents']).')':'—'?></td></tr><?php endforeach;?>
- <tr class="total"><th colspan="6">Recorded released-check payments in period</th><td class="num"><?=mo($d['payment'])?></td><td colspan="2"></td></tr></tbody></table>
- <h3>Recapitulation by saved UACS classification</h3><table class="recap"><thead><tr><th>Account / UACS object code</th><th>Amount</th></tr></thead><tbody>
- <?php foreach($d['uacs'] as $code=>$amount):?><tr><td><?=er($code)?></td><td class="num"><?=mo($amount)?></td></tr><?php endforeach;?>
- <tr class="total"><td>Gross classified expenditures (saved accounting)</td><td class="num"><?=mo($d['grossClassified'])?></td></tr>
- <tr><td>Less: school-utilized withholding · saved components (not a bank transaction)</td><td class="num"><?=$d['negativeTax']?mo(-$d['negativeTax']):'0.00'?></td></tr>
- <tr class="total"><td>Recap after school-utilization adjustment</td><td class="num"><?=mo($d['recapCash'])?></td></tr>
- <tr><td>Released check payments for comparison</td><td class="num"><?=mo($d['payment'])?></td></tr></tbody></table>
- <p class="caption">Only original components marked SCHOOL_UTILIZATION are shown as the negative presentation adjustment. Pending/uncertain confirmations require review. A tax liability and a check are never created by this report.</p>
+ <?php elseif($r==='A43'): require $privateApp.'/Appendix43Print.php'; ?>
  <?php elseif($r==='A67'):?>
  <table><thead><tr><th>Name of accountable form</th><th>Checkbook reference</th><th>Face value</th><th>Beginning quantity*</th><th>Registered this month</th><th>Issued this month</th><th>Remaining quantity*</th><th>Inclusive serials</th></tr></thead><tbody>
  <?php $byBook=[];foreach($d['leavesPeriod'] as $leaf)$byBook[$leaf['book_reference']][]=$leaf;
@@ -128,8 +119,8 @@ catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_r
  usort($serials,'strnatcmp');?><tr><td>Bank checks</td><td><?=er($book)?></td><td>Bank checks (see verified physical stock)</td><td class="num"><?=$start?></td><td class="num"><?=$receipts?></td><td class="num"><?=$issued?></td><td class="num"><?=($start+$receipts-$issued)?></td><td><?=er(($serials[0]??'—').' – '.($serials[count($serials)-1]??'—'))?></td></tr><?php endforeach;?>
  </tbody></table><p class="caption">*Historical beginning/ending quantities are projections from registration and issuance timestamps, not independently certified book-stock counts. Spoiled/void/lost and transferred leaves require evidence review.</p>
  <?php endif;?>
- <div class="signatures"><div>Prepared by:<div class="sigline"></div><small>Printed name, designation and date</small></div><div>Certified correct by:<div class="sigline"></div><small>Authorized official's physical signature and date</small></div></div>
+ <?php if($r!=='A43'):?><div class="signatures"><div>Prepared by:<div class="sigline"></div><small>Printed name, designation and date</small></div><div>Certified correct by:<div class="sigline"></div><small>Authorized official's physical signature and date</small></div></div><?php endif;?>
  </div>
  <?php if($d['warnings']):?><section class="warnings"><h3>Review required before certification</h3><ol><?php foreach(array_unique($d['warnings']) as $w):?><li><?=er($w)?></li><?php endforeach;?></ol></section><?php endif;?>
- <p class="footer noprint">IPDAMS v0.2.449 reporting workpaper · Read only · Source records remain unchanged · These previews do not attest completion of liquidation or bank reconciliation.</p>
+ <p class="footer noprint">IPDAMS v0.2.451 reporting workpaper · Read only · Source records remain unchanged · These previews do not attest completion of liquidation or bank reconciliation.</p>
 <?php endif;?></body></html>
