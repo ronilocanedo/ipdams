@@ -2,18 +2,17 @@
 
 ## Current stable baseline - 26 November 2026 (Asia/Manila)
 
-- **IPDAMS v0.2.457** installed on Hostinger; owner confirmed all seven post-installation page checks working and explicitly approved Main promotion.
-- **`main` is the stable source baseline.** Integrated finance: account-wide reconciliation, historical snapshots, explicit fund-download allocations, fund utilization and Division read-only monitoring. No online liquidation submission or approval.
-- [Source manifest and release evidence](docs/checkpoints/2026-11-26-v0.2.457-source-manifest.json): 276 source files including four migration SQL sources. 302 synthetic acceptance passes across 18 suites; 75 pure assertions independently rerun, not additive. Two-stage installation v0.2.456 then v0.2.457.
-- Live source hashes, migration logs, production schema/preflight, backup and cash attribution onboarding remain independently unverified. No production financial testing. Historical unattributed payments may block new spending; direct SQL writes disabled. No file-only rollback after DDL.
+- **IPDAMS v0.2.458** installed on Hostinger and working (owner-confirmed; promotion explicitly approved). Super Admin textbook access follows the selected active school or Division workspace, retaining office ownership and actual audit actor.
+- **`main` is the stable source baseline.** [Source manifest](docs/checkpoints/2026-11-26-v0.2.458-source-manifest.json): 276 source files, six modified, no new migration. [Targeted QA](docs/checkpoints/2026-11-26-v0.2.458-qa.json): 95/95 PHP stub-PDO and mocked JavaScript assertions; six syntax checks.
+- Integrated finance v0.2.457 remains intact; its 302 synthetic acceptance passes are historical, not additive. No online liquidation submission or approval. Live source hashes, production migration logs and actual browser/MariaDB regression for v0.2.458 remain independently unverified. Existing admin read-only view is client-side, not a server authorization boundary.
 - No automatic deployment. Follow the release policy below and obtain explicit owner approval for future commits, pushes, migrations, installation and releases.
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.
 
-## Latest completed milestone - Integrated Finance R4
+## Latest completed milestone - Super Admin textbook access
 
-- v0.2.457 owner-confirmed installed and working; application source promoted with explicit authorization. See the [historical R4 release candidate checkpoint](docs/checkpoints/2026-11-26-integrated-finance-r4-release-candidate.md) and the current source manifest above.
-- Next development version: v0.2.458. Review actual source before further changes.
+- v0.2.458 owner-confirmed working; no migration. The prior [Integrated Finance R4 checkpoint](docs/checkpoints/2026-11-26-integrated-finance-r4-release-candidate.md) and v0.2.457 source manifest remain historical evidence.
+- Next development version: v0.2.459. Review actual source before further changes.
 
 ## Standard development and release policy
 

@@ -40,7 +40,7 @@ final class TextbookTransferWorkflow {
         $o=one($this->db,"SELECT id,name,kind,active,parent_division_id FROM organizations WHERE id=?",[$id]);
         self::check($o!==null && (int)$o['active']===1 && in_array($o['kind'],['DIVISION','SCHOOL'],true),
             'Office is not active or accessible',403);
-        if($requireScope)self::check(($this->user['role']??'')===$o['kind'],
+        if($requireScope)self::check(in_array($this->user['role']??'',[$o['kind'],'SUPER_ADMIN'],true),
             'Use an authenticated office account for the current workspace',403);
         return $o;
     }

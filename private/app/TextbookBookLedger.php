@@ -22,7 +22,7 @@ final class TextbookBookLedger {
         scope($this->db,$this->user,$org);
         $office=one($this->db,'SELECT id,name,kind,active FROM organizations WHERE id=?',[$org]);
         self::guard($office!==null && (int)$office['active']===1 &&
-            in_array($office['kind'],['SCHOOL','DIVISION'],true) && ($this->user['role']??'')===$office['kind'],
+            in_array($office['kind'],['SCHOOL','DIVISION'],true) && in_array($this->user['role']??'',[$office['kind'],'SUPER_ADMIN'],true),
             'An active school or Division workspace is required',403);
         if($view==='OFFICE')return [['id'=>$org,'name'=>(string)$office['name']]];
         self::guard($view==='DIVISION' && $office['kind']==='DIVISION',

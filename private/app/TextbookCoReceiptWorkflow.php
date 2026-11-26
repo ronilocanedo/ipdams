@@ -36,7 +36,7 @@ final class TextbookCoReceiptWorkflow {
         demand($org>0,'Select the receiving office',422);
         scope($this->db,$this->user,$org);
         $o=one($this->db,"SELECT id,kind,active FROM organizations WHERE id=? AND active=1 AND kind IN ('DIVISION','SCHOOL')",[$org]);
-        demand($o!==null && ($this->user['role']??'')===(string)$o['kind'],
+        demand($o!==null && in_array($this->user['role']??'',[$o['kind'],'SUPER_ADMIN'],true),
             'Sign in with the receiving Division or school account',403);
         return $o;
     }

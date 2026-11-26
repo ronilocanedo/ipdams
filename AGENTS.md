@@ -14,9 +14,9 @@ Verify current source and QA evidence before proposing changes.
 
 ## Verified development baseline (2026-11-26, Asia/Manila)
 
-- Stable source: `main`, v0.2.457. Owner confirmed installation, all seven post-installation page checks working and promotion approval. Start from current Main or an approved feature/development branch.
-- See `docs/checkpoints/2026-11-26-v0.2.457-source-manifest.json`: 276 source files including 4 migration SQL sources; 302 synthetic tests passed, 75 pure assertions independently rerun. Live production hashes and migration logs not independently verified.
-- Preserve explicit allocation/cutoff safeguards, scoped Division access, direct SQL write restriction, audit history and original workflows. Historical attribution requires evidence. No automatic deployment, production testing or file-only rollback after DDL.
+- Stable source: `main`, v0.2.458, owner-confirmed installed and working; explicit promotion approval. See `docs/checkpoints/2026-11-26-v0.2.458-source-manifest.json` and `docs/checkpoints/2026-11-26-v0.2.458-qa.json`: 276 source files, 95 targeted stub-PDO/mocked JS passes, no migration.
+- Super Admin textbook workspace role follows selected active office, with actual audit actor and existing ownership controls retained. Read-only view remains client-side. Actual MariaDB/HTTP/browser regression and live hashes not independently verified.
+- Preserve integrated finance v0.2.457 safeguards (302 historical synthetic passes, not additive), explicit allocations, historical cutoff, Division scope and direct SQL write restriction. Historical attribution requires evidence. No automatic deployment, production testing or file-only rollback after DDL.
 
 ## Repository and code layout
 

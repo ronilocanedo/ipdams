@@ -66,7 +66,7 @@ final class TextbookBookProfiles {
         demand($org>0,'Choose a school or Division workspace',422);
         scope($this->db,$this->user,$org);
         $o=one($this->db,"SELECT id,kind,parent_division_id FROM organizations WHERE id=? AND active=1 AND kind IN ('SCHOOL','DIVISION')",[$org]);
-        demand($o!==null && ($this->user['role']??null)===$o['kind'],
+        demand($o!==null && in_array($this->user['role']??'',[$o['kind'],'SUPER_ADMIN'],true),
             'Use your receiving school or Division sign-in to manage books',403);
         if($o['kind']==='SCHOOL')demand((int)$o['parent_division_id']>0,
             'School must be linked to its supervising Division before registering books',409);
@@ -74,9 +74,11 @@ final class TextbookBookProfiles {
     }
     /** A Division edits its own entries and those from schools in its hierarchy. */
     private function canEdit(array $s,array $workspace):bool {
-        if(($this->user['role']??'')==='SCHOOL')return $workspace['kind']==='SCHOOL'
+        // Super Admin operates in the selected office; never replace the audit actor.
+        $role=($this->user['role']??'')==='SUPER_ADMIN'?$workspace['kind']:($this->user['role']??'');
+        if($role==='SCHOOL')return $workspace['kind']==='SCHOOL'
             && (int)$workspace['id']===(int)$s['registered_by_organization_id'];
-        if(($this->user['role']??'')==='DIVISION'){
+        if($role==='DIVISION'){
             if($workspace['kind']!=='DIVISION')return false;
             $owner=(int)$s['registered_by_organization_id'];
             if(($s['origin_kind']??'')==='DIVISION')return $owner===(int)$workspace['id'];

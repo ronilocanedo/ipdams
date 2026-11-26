@@ -1,0 +1,428 @@
+{
+  "version": "0.2.458",
+  "baseline": "0.2.457",
+  "baseline_commit": "1a1109ed82c1ab7a64cea63c3aac4603c84b90ff",
+  "baseline_files_verified": 276,
+  "unchanged_files": 270,
+  "changed_files": {
+    "private/app/TextbookBookProfiles.php": "34516a9ea8eb33e7003847ac77d1f4ec7a62a7d30d96c08cdfb605a72542642a",
+    "private/app/TextbookCoReceiptWorkflow.php": "028be4777de28eaaaba5b7066cf6abefe1a7aa0be6905a4642eb3b7520328b21",
+    "private/app/TextbookTransferWorkflow.php": "e54a3f4adfcf8269a18831e73dab075b7cc89c1734625c8a54919ecece97a3fb",
+    "private/app/TextbookLifecycleWorkflow.php": "bbc53bed487b7d723ea63612601e0283cda45d9a4a71a1ee69595b8bdd212dc6",
+    "private/app/TextbookBookLedger.php": "1b65bd7e369e7134fe8d1198e66894110650ed78fdc5bc9fa62b9984a0ddcf18",
+    "assets/app.js": "3aaef7d9fcfdc4e274004d203f48dfc4ab5107fb888dea50b85c77282aa92f0d"
+  },
+  "php": {
+    "pass": 82,
+    "fail": 0,
+    "tests": [
+      {
+        "name": "TextbookBookProfiles admin active office 1",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles admin active office 2",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles admin active office 3",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles admin active office 4",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles admin invalid office 5 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles admin invalid office 7 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles admin invalid office 999 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles school own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles division own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles school cross-scope denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles division school mode denied even with scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookProfiles unknown role denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow admin active office 1",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow admin active office 2",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow admin active office 3",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow admin active office 4",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow admin invalid office 5 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow admin invalid office 7 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow admin invalid office 999 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow school own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow division own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow school cross-scope denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow division school mode denied even with scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookCoReceiptWorkflow unknown role denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow admin active office 1",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow admin active office 2",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow admin active office 3",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow admin active office 4",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow admin invalid office 5 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow admin invalid office 7 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow admin invalid office 999 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow school own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow division own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow school cross-scope denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow division school mode denied even with scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookTransferWorkflow unknown role denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow admin active office 1",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow admin active office 2",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow admin active office 3",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow admin active office 4",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow admin invalid office 5 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow admin invalid office 7 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow admin invalid office 999 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow school own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow division own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow school cross-scope denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow division school mode denied even with scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookLifecycleWorkflow unknown role denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger admin active office 1",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger admin active office 2",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger admin active office 3",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger admin active office 4",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger admin invalid office 5 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger admin invalid office 7 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger admin invalid office 999 denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger school own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger division own scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger school cross-scope denied",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger division school mode denied even with scope",
+        "status": "PASS"
+      },
+      {
+        "name": "TextbookBookLedger unknown role denied",
+        "status": "PASS"
+      },
+      {
+        "name": "Book edit ownership admin workspace 2",
+        "status": "PASS"
+      },
+      {
+        "name": "Book edit ownership admin workspace 1",
+        "status": "PASS"
+      },
+      {
+        "name": "Book edit ownership admin workspace 3",
+        "status": "PASS"
+      },
+      {
+        "name": "Book edit ownership admin workspace 4",
+        "status": "PASS"
+      },
+      {
+        "name": "Other school draft cannot be viewed",
+        "status": "PASS"
+      },
+      {
+        "name": "Verified book shared without ownership",
+        "status": "PASS"
+      },
+      {
+        "name": "Stale parent provenance cannot be edited",
+        "status": "PASS"
+      },
+      {
+        "name": "Unlinked school book registration still blocked",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin Division ledger only supervised schools",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin school cannot access Division ledger view",
+        "status": "PASS"
+      },
+      {
+        "name": "School teacher list loads",
+        "status": "PASS"
+      },
+      {
+        "name": "Teacher list unavailable in Division",
+        "status": "PASS"
+      },
+      {
+        "name": "School cannot record Division disposal authorization",
+        "status": "PASS"
+      },
+      {
+        "name": "Cross-Division transfer destination still denied",
+        "status": "PASS"
+      },
+      {
+        "name": "Same-school transfer denied",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin book list loads 1",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin CO receipt list loads 1",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin transfer list loads 1",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin book list loads 2",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin CO receipt list loads 2",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin transfer list loads 2",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin creates draft under selected school and authentic actor, no stock posting",
+        "status": "PASS"
+      }
+    ]
+  },
+  "js": {
+    "pass": 13,
+    "fail": 0,
+    "tests": [
+      {
+        "name": "Admin selected school role",
+        "status": "PASS"
+      },
+      {
+        "name": "School lifecycle fetch includes teachers",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin school renders teacher issue action",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin school cannot authorize disposal from UI",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin Division role and disposal UI",
+        "status": "PASS"
+      },
+      {
+        "name": "Invalid admin workspace skips lifecycle fetch",
+        "status": "PASS"
+      },
+      {
+        "name": "Ordinary role unchanged",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin editing enabled in active mode",
+        "status": "PASS"
+      },
+      {
+        "name": "Admin read-only opens book without editor",
+        "status": "PASS"
+      },
+      {
+        "name": "Read-only transfer detail does not start request form",
+        "status": "PASS"
+      },
+      {
+        "name": "Read-only teacher issue action absent",
+        "status": "PASS"
+      },
+      {
+        "name": "Read-only API POST still rejected before fetch",
+        "status": "PASS"
+      },
+      {
+        "name": "Actor and role unchanged by office switch",
+        "status": "PASS"
+      }
+    ]
+  },
+  "syntax": "6/6 PASS",
+  "manifest_validation": "PASS",
+  "zip_integrity": "PASS",
+  "patch_sha256": "263772c1b21089950e3b9c0e40f837fdf50003d0926e8f185ee8d5d200b1aae2",
+  "database_migration": false,
+  "not_tested": [
+    "Actual MariaDB/HTTP integration and real desktop/mobile browser regression for this patch",
+    "Independent live Hostinger hashes, migration logs and installer rollback",
+    "Server-enforced read-only admin session (existing safeguard is client-side)"
+  ],
+  "decisions": [
+    "Super Admin uses selected office type for textbook capabilities; not impersonated and not blanket edit authority across origins.",
+    "Preserve existing global client-side Office Viewer write protection; not a new server-enforced read-only session.",
+    "Legacy linked-custodian checks and original preparer cancellation remain intact."
+  ],
+  "owner_report": "Installed v0.2.458 and working; explicit authorization to commit and promote to Main.",
+  "independent_rerun_for_promotion": {
+    "php_pass": 82,
+    "mocked_js_pass": 13,
+    "syntax_pass": 6
+  }
+}

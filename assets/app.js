@@ -4617,12 +4617,12 @@ h('div',{className:'employee-claim-actions'},
             try{
                 const data=await this.get('textbook.book_profile.detail',{organization_id:org,book_id:bookId});
                 if(token!==this.bookProfileDetailToken || String(this.state.organization_id)!==org)return;
-                const fields=data.snapshot?.fields||{};
-                this.setState({tbCatalogView:data,tbCatalogOpen:!!data.can_edit,
-                    tbCatalogEditingId:data.can_edit?data.id:0,tbCatalogExpectedVersion:data.version,
+                const fields=data.snapshot?.fields||{},edit=!!data.can_edit&&!this.textbookViewer();
+                this.setState({tbCatalogView:data,tbCatalogOpen:edit,
+                    tbCatalogEditingId:edit?data.id:0,tbCatalogExpectedVersion:data.version,
                     tbCatalogReason:'',tbCatalogDiscardConfirm:false,tbCatalogDraft:{...blankTextbookBookProfile(),...fields,
                         confirmed_official_title:false},tbCoError:''},()=>{
-                            if(data.can_edit)document.querySelector('.textbook-modal-dialog')?.focus();
+                            if(edit)document.querySelector('.textbook-modal-dialog')?.focus();
                         });
             }catch(e){if(String(this.state.organization_id)===org)this.setState({tbCoError:e.message||'Could not open book'});}
         };
@@ -11535,7 +11535,7 @@ h('div',{className:'employee-claim-actions'},
                 expected_version:state.tbCatalogExpectedVersion||undefined,
                 correction_reason:state.tbCatalogReason,publish
             });
-            const catalogEditor = state.tbCatalogOpen?H('form',{onSubmit:e=>e.preventDefault(),className:'textbook-book-profile-form'},
+            const catalogEditor = state.tbCatalogOpen&&!this.textbookViewer()?H('form',{onSubmit:e=>e.preventDefault(),className:'textbook-book-profile-form'},
                         H('h4',{className:'textbook-dialog-subtitle'},state.tbCatalogEditingId?'Edit book details':'Add book · complete profile'),
                         H('p',{className:'body-muted'},'Only title and material type are required for a draft. The receiving office owns this profile, and its Division can also edit it. Other offices can use verified books but cannot edit them. No stock is credited here.'),
                         (()=>{
@@ -11678,7 +11678,7 @@ h('div',{className:'employee-claim-actions'},
                                 'Additional matches exist. Enter more of the title, author or ISBN to narrow the results.'):null):
                             H('p',{className:'textbook-co-book-hint'},'No eligible ISBN records matched. Check the spelling, or register and verify the book first.')):null);
             };
-            const receiptEditor = state.tbCoFormOpen?H('form',{onSubmit:e=>{e.preventDefault();
+            const receiptEditor = state.tbCoFormOpen&&!this.textbookViewer()?H('form',{onSubmit:e=>{e.preventDefault();
                         if(form.lines.some(l=>!String(l.isbn||'').trim())){
                             this.setState({tbCoError:'Select an eligible book from the search results for every receipt line.'});return;
                         }
@@ -11720,7 +11720,7 @@ h('div',{className:'employee-claim-actions'},
                             H('div',null,H('p',{className:'body-muted'},
                                 'This receipt predates automatic IAR creation. Generate its linked IAR without changing the recorded stock.'),
                                 button('Generate linked IAR',()=>this.tbCoAction('textbook.co_receipt.iar.issue',
-                                    {receipt_id:detail.id}),'outline',busy||status==='CANCELLED')),
+                                    {receipt_id:detail.id}),'outline',busy||status==='CANCELLED'||this.textbookViewer())),
                         H('small',null,'The printed IAR shows the actual names recorded on paper. No electronic approval or digital signature is required.')),
                     H('p',{className:'body-muted'},'CO delivery '+snap.co_delivery_reference+' · '+snap.received_on+
                         ' · '+(snap.receipt_path==='CO_TO_DIVISION'?'Received by Division':'Received directly by school')+
@@ -11732,13 +11732,13 @@ h('div',{className:'employee-claim-actions'},
                             H('td',null,line.expected_quantity),H('td',null,line.delivered_quantity??'—'),
                             H('td',null,line.serviceable_quantity??'—'),H('td',null,line.damaged_quantity??'—'),
                             H('td',null,line.held_quantity??'—')))))),
-                    status==='DRAFT'&&Number(snap.created_by)===Number(state.user?.id)?
+                    !this.textbookViewer()&&status==='DRAFT'&&Number(snap.created_by)===Number(state.user?.id)?
                         H('div',{className:'row-actions'},
                             field('Cancellation reason',state.tbCoCancellationReason,
                                 v=>this.setState({tbCoCancellationReason:v}),'text',500),
                             button('Cancel unrecorded draft',()=>this.tbCoAction('textbook.co_receipt.cancel_draft',{
                                 receipt_id:detail.id,cancellation_reason:state.tbCoCancellationReason}),'outline')):null,
-                    ['DRAFT','SUBMITTED','INSPECTED'].includes(status)?H('form',{onSubmit:e=>{
+                    !this.textbookViewer()&&['DRAFT','SUBMITTED','INSPECTED'].includes(status)?H('form',{onSubmit:e=>{
                         e.preventDefault();
                         this.tbCoAction('textbook.co_receipt.record',{
                             receipt_id:detail.id,inspected_on:state.tbCoInspectionDate,
@@ -11793,7 +11793,7 @@ h('div',{className:'employee-claim-actions'},
                         H('div',{className:'row-actions'},H('button',{type:'submit',className:'primary',
                             disabled:busy||!state.tbCoInspectorAttested||!state.tbCoInspectorName.trim()||!state.tbCoReceivingName.trim()},
                             'Record Physical Receipt & Update Stock'))):null,
-                    ['DRAFT','SUBMITTED','INSPECTED'].includes(status)?H('div',{style:{marginTop:'14px'}},
+                    !this.textbookViewer()&&['DRAFT','SUBMITTED','INSPECTED'].includes(status)?H('div',{style:{marginTop:'14px'}},
                         H('h4',null,'Record documented rejection (no stock credited)'),
                         H('p',{className:'body-muted'},'Use this only when the authentic receiving papers show the delivery was rejected in full. A valid documentary reason (20+ characters) and paper reference (8+ characters) are required.'),
                         H('div',{className:'form-grid'},
@@ -11821,10 +11821,10 @@ h('div',{className:'employee-claim-actions'},
                     button('+ Add Book',()=>this.setState({textbookSection:'books',tbCoFormOpen:false,tbCoDetail:null,
                         tbCatalogOpen:true,tbCatalogEditingId:0,tbCatalogExpectedVersion:0,tbCatalogView:null,
                         tbCatalogReason:'',tbCatalogDiscardConfirm:false,tbProfilesConfirmDiscardId:0,
-                        tbCatalogDraft:blankTextbookBookProfile(),tbCoError:''}),'outline'),
+                        tbCatalogDraft:blankTextbookBookProfile(),tbCoError:''}),'outline',busy||this.textbookViewer()),
                     button('+ New CO receipt',()=>this.setState({tbCoFormOpen:true,tbCoPickerIndex:-1,tbCoPickerRows:[],
                         tbCoPickerLoading:false,tbCatalogOpen:false,
-                        tbCatalogView:null,tbCoDetail:null,tbCoError:''}),'primary')),
+                        tbCatalogView:null,tbCoDetail:null,tbCoError:''}),'primary',busy||this.textbookViewer())),
                 H('p',{className:'body-muted'},'Record the actual Central Office delivery in its receiving office. Save a draft, then record inspected physical quantities and real paper signatories once. No separate electronic inspection or approval logins.'),
                 records.length?H('div',{className:'textbook-table-scroll'},H('table',{className:'textbook-data-table'},
                     H('thead',null,H('tr',null,...['Receipt','CO delivery reference','Received on','Status','Titles','Linked IAR','Action'].map(t=>H('th',{key:t,scope:'col'},t)))),
@@ -11893,7 +11893,7 @@ h('div',{className:'employee-claim-actions'},
                 const s=d.snapshot;const own=Number(org)===Number(s.source_organization_id);
                 const person=await this.get('textbook.transfer.signatories',{organization_id:org,transfer_id:transferId}).catch(()=>null);
                 if(String(this.state.organization_id)!==org)return;
-                const modal=!own&&s.path==='ALLOCATION_REQUEST'&&s.status==='ALLOCATED'?'request':
+                const modal=this.textbookViewer()?'view':!own&&s.path==='ALLOCATION_REQUEST'&&s.status==='ALLOCATED'?'request':
                     own&&s.status==='REQUESTED'?'dispatch':
                     !own&&['IN_TRANSIT','PARTIALLY_RECEIVED'].includes(s.status)?'receive':'view';
                 this.setState({tbTransferDetail:d,tbTransferModal:modal,tbTransferLoadingDetail:false,
@@ -12116,7 +12116,7 @@ h('div',{className:'employee-claim-actions'},
                     H('summary',null,'Physical receipt history ('+transfer.receipt_events.length+')'),
                     ...transfer.receipt_events.map((event,i)=>H('p',{key:i,className:'body-muted'},
                         event.received_on+' · '+event.received_by_name+' · '+event.quantity+' copies · '+(event.receipt_reference||'No paper reference entered')))):null,
-                source&&['ALLOCATED','REQUESTED'].includes(transfer.status)?H('div',{className:'textbook-transfer-cancel'},
+                !this.textbookViewer()&&source&&['ALLOCATED','REQUESTED'].includes(transfer.status)?H('div',{className:'textbook-transfer-cancel'},
                     textArea('Cancellation reason',s.tbTransferCancelReason,v=>this.setState({tbTransferCancelReason:v})),
                     btn('Cancel unissued allocation',()=>{
                         if(window.confirm('Cancel this unissued allocation? This releases its reserved books and preserves the request audit.'))
@@ -12124,7 +12124,7 @@ h('div',{className:'employee-claim-actions'},
                                 {transfer_id:details.id,reason:s.tbTransferCancelReason});
                     },true,busy||String(s.tbTransferCancelReason).trim().length<8)):null,
                 H('div',{className:'textbook-row-actions'},btn('Close',modalClose))):null;
-            const body=s.tbTransferModal==='create'?createForm:
+            const body=this.textbookViewer()?transferStatus:s.tbTransferModal==='create'?createForm:
                 s.tbTransferModal==='request'?requestForm:s.tbTransferModal==='dispatch'?dispatchForm:
                 s.tbTransferModal==='receive'?receiveForm:s.tbTransferModal==='view'?transferStatus:null;
             const content=H('div',{className:'textbook-tab-content'},
@@ -12132,7 +12132,7 @@ h('div',{className:'employee-claim-actions'},
                     H('div',{className:'section-head'},H('div',null,H('h3',null,'Textbook Allocations & Transfers'),
                         H('p',{className:'body-muted'},'Issue RIS and ITR for paper signatures. Only actual dispatched copies leave source stock; receiver stock increases on recorded physical receipt.')),
                         btn(s.tbTransferLoading?'Loading…':'Refresh transfers',this.loadTextbookTransfers,true,s.tbTransferLoading),
-                        btn('+ Transfer Books',newTransfer,false,s.tbTransferLoading||stocks.length===0||schools.length===0)),
+                        btn('+ Transfer Books',newTransfer,false,this.textbookViewer()||s.tbTransferLoading||stocks.length===0||schools.length===0)),
                     s.tbTransferNotice?H('p',{role:'status',className:'textbook-workspace-notice'},s.tbTransferNotice):null,
                     s.tbTransferError?H('p',{role:'alert',className:'textbook-form-error'},s.tbTransferError):null,
                     H('div',{className:'textbook-transfer-paths'},
@@ -12157,8 +12157,16 @@ h('div',{className:'employee-claim-actions'},
                     H('div',null,s.tbTransferError?H('p',{role:'alert',className:'textbook-form-error'},s.tbTransferError):null,body),modalClose):null);
         };
         // v0.2.284 — school teacher accountability, paper disposal authority, report registers.
+        // Textbook UI follows the selected office, without impersonating its account.
+        this.textbookWorkspaceRole = () => {
+            const role=this.state.user?.role;
+            if(role!=='SUPER_ADMIN')return role;
+            const office=this.state.orgs.find(o=>String(o.id)===String(this.state.organization_id));
+            return ['SCHOOL','DIVISION'].includes(office?.kind)?office.kind:'';
+        };
+        this.textbookViewer = () => this.state.user?.role==='SUPER_ADMIN'&&!!this.state.superAdminViewOnly;
         this.loadTextbookLifecycle = async () => {
-            const org=String(this.state.organization_id||''),role=this.state.user?.role;
+            const org=String(this.state.organization_id||''),role=this.textbookWorkspaceRole();
             if(!org || !['SCHOOL','DIVISION'].includes(role))return;
             const token=this.tbLifecycleRequest=(this.tbLifecycleRequest||0)+1;
             this.setState({tbLifecycleLoading:true,tbLifecycleError:'',tbLifecycleAvailable:[],tbTeacherRows:[],tbDisposalRows:[],tbLifecycleReport:null});
@@ -12214,7 +12222,7 @@ h('div',{className:'employee-claim-actions'},
                 tbLifecycleError:(e.message||'Unable to record document')+'. Check the register before retrying a stock transaction.'});}
         };
         this.textbookLifecyclePanel = (section) => {
-            const H=React.createElement,s=this.state,role=s.user?.role;
+            const H=React.createElement,s=this.state,role=this.textbookWorkspaceRole();
             const f=s.tbLifecycleForm||{},selected=s.tbLifecycleSelected||{},busy=!!s.tbLifecycleBusy;
             const btn=(label,onClick,primary=false,disabled=false)=>H('button',{type:'button',className:primary?'primary':'outline',onClick,disabled},label);
             const formSet=(key,v)=>this.setState(prev=>({tbLifecycleForm:{...prev.tbLifecycleForm,[key]:v,
@@ -12234,7 +12242,7 @@ h('div',{className:'employee-claim-actions'},
                 .filter(b=>Number(b.available)>0&&(!serviceable||b.serviceable))
                 .map(b=>[b.batch_id,b.title+' · '+b.isbn+' · '+b.condition+' · '+b.batch+' · Available '+b.available])];
             const teacherRows=s.tbTeacherRows||[],disposalRows=s.tbDisposalRows||[];
-            const modal=s.tbLifecycleModal;
+            const modal=this.textbookViewer()?'':s.tbLifecycleModal;
             const paper=()=>field('Physical paper document / signed reference','paper_reference');
             const quantity=()=>field('Number of copies','quantity','number');
             const actions=H('div',{className:'textbook-row-actions'},
@@ -12284,26 +12292,26 @@ h('div',{className:'employee-claim-actions'},
                         ['DONATION','Donation under approved procedure'],['OTHER','Other approved means']]),
                     paper(),textarea('Disposal evidence / observations','remarks')):null,
                 actions):null;
-            const canSchool=role==='SCHOOL';
+            const canSchool=role==='SCHOOL', canWrite=!this.textbookViewer();
             const teacherPanel=H('section',{className:'surface textbook-register-section'},
                 H('div',{className:'section-head'},H('div',null,H('h3',null,'Teacher Book Accountability'),
                     H('p',{className:'body-muted'},'Record the physical issue to a teacher, return of copies, reported losses and damage. Teacher signatures remain on paper.')),
-                    btn('Refresh',this.loadTextbookLifecycle),canSchool?btn('+ Issue Books to Teacher',()=>this.tbLifecycleOpen('issue'),true):null),
+                    btn('Refresh',this.loadTextbookLifecycle),canSchool&&canWrite?btn('+ Issue Books to Teacher',()=>this.tbLifecycleOpen('issue'),true):null),
                 !canSchool?H('p',{className:'body-muted'},'Teacher-level stewardship is maintained in the receiving school workspace.'):null,
                 canSchool?rows(['Issue number','Teacher','Book / ISBN','Issued','Unreturned','Lost pending relief','Status','Actions'],teacherRows.map(r=>[
                     r.number,r.teacher_name,H('span',null,r.title,H('small',{className:'textbook-cell-secondary'},r.isbn)),
                     r.issued,r.unreturned,r.lost_pending,H('span',{className:'textbook-status'},r.status),
                     H('div',{className:'textbook-row-actions'},
-                        btn('Return',()=>this.tbLifecycleOpen('return',r),false,r.available_to_return<=0&&r.lost_pending<=0),
-                        btn('Lost',()=>this.tbLifecycleOpen('loss',r),false,r.available_to_return<=0),
-                        btn('Damage',()=>this.tbLifecycleOpen('teacher_damage',r),false,r.available_to_return<=0),
+                        btn('Return',()=>this.tbLifecycleOpen('return',r),false,!canWrite||(r.available_to_return<=0&&r.lost_pending<=0)),
+                        btn('Lost',()=>this.tbLifecycleOpen('loss',r),false,!canWrite||r.available_to_return<=0),
+                        btn('Damage',()=>this.tbLifecycleOpen('teacher_damage',r),false,!canWrite||r.available_to_return<=0),
                         H('a',{className:'textbook-transfer-print',href:'api/index.php?route=textbook.teacher.print&organization_id='+encodeURIComponent(s.organization_id)+'&issue_id='+r.id,
                             target:'_blank',rel:'noopener noreferrer'},'Print slip'))])):null);
             const disposalPanel=H('section',{className:'surface textbook-register-section'},
                 H('div',{className:'section-head'},H('div',null,H('h3',null,'Damage & Disposal'),
                     H('p',{className:'body-muted'},'Quarantine physical damage; mark unserviceable/obsolete copies, record Division paper authority, then actual disposal.')),
-                    btn('Refresh',this.loadTextbookLifecycle),btn('+ Record Damaged Stock',()=>this.tbLifecycleOpen('quarantine'),false),
-                    btn('+ Mark for Disposal',()=>this.tbLifecycleOpen('mark'),true)),
+                    btn('Refresh',this.loadTextbookLifecycle),btn('+ Record Damaged Stock',()=>this.tbLifecycleOpen('quarantine'),false,!canWrite),
+                    btn('+ Mark for Disposal',()=>this.tbLifecycleOpen('mark'),true,!canWrite)),
                 H('p',{className:'body-muted'},'Division approval here means recording an authentic written authorization and supporting reference. The system is not a substitute for mandated disposal committee/COA processes.'),
                 rows(['Document','School / office','Book / condition','Proposed','Remaining','Status','Written authority','Last disposal','Action'],disposalRows.map(r=>[
                     r.number,r.source,H('span',null,r.title,H('small',{className:'textbook-cell-secondary'},r.condition)),
@@ -12311,10 +12319,10 @@ h('div',{className:'employee-claim-actions'},
                     r.authorized?.paper_reference||'Not recorded',
                     r.last_disposal_date?(r.last_disposal_date+' · '+r.last_disposal_method):'—',
                     H('div',{className:'textbook-row-actions'},
-                        role==='DIVISION'&&r.status==='MARKED'?btn('Record authorization',()=>this.tbLifecycleOpen('authorize',r),true):null,
-                        role==='DIVISION'&&r.status==='MARKED'?btn('Not authorized',()=>this.tbLifecycleOpen('deny',r)):null,
-                        r.source_organization_id===Number(s.organization_id)&&r.status==='MARKED'?btn('Withdraw proposal',()=>this.tbLifecycleOpen('withdraw',r)):null,
-                        r.source_organization_id===Number(s.organization_id)&&['AUTHORIZED','PARTIALLY_DISPOSED'].includes(r.status)?
+                        canWrite&&role==='DIVISION'&&r.status==='MARKED'?btn('Record authorization',()=>this.tbLifecycleOpen('authorize',r),true):null,
+                        canWrite&&role==='DIVISION'&&r.status==='MARKED'?btn('Not authorized',()=>this.tbLifecycleOpen('deny',r)):null,
+                        canWrite&&r.source_organization_id===Number(s.organization_id)&&r.status==='MARKED'?btn('Withdraw proposal',()=>this.tbLifecycleOpen('withdraw',r)):null,
+                        canWrite&&r.source_organization_id===Number(s.organization_id)&&['AUTHORIZED','PARTIALLY_DISPOSED'].includes(r.status)?
                             btn('Record Disposed',()=>this.tbLifecycleOpen('dispose',r),true):null,
                         r.status==='DISPOSED'?H('span',{className:'body-muted'},'Completed'):null)])));
             const report=s.tbLifecycleReport||{},summary=report.summary||{};
@@ -12408,7 +12416,7 @@ h('div',{className:'employee-claim-actions'},
             const booksPanel=H('div',{className:'textbook-tab-content'},
                 H('section',{className:'surface textbook-register-section'},
                     H('div',{className:'section-head'},H('h3',null,'Registered books & drafts'),
-                        button('+ Add Book',openNewBook,'primary'),
+                        button('+ Add Book',openNewBook,'primary',this.textbookViewer()),
                         button(state.tbProfilesLoading?'Loading…':'Refresh',()=>this.loadBookProfiles(1),'outline',state.tbProfilesLoading)),
                     H('p',{className:'body-muted'},'Schools register books they physically receive. Only the registering school and its Division can edit; verified editions are shared. Adding a book never changes stock.'),
                     H('form',{className:'textbook-search-row',onSubmit:e=>{e.preventDefault();this.loadBookProfiles(1);this.loadTextbookDirectory(1);}},
@@ -12436,11 +12444,11 @@ h('div',{className:'employee-claim-actions'},
                                 H('td',null,book.publisher||'—'),
                                 H('td',null,H('span',{className:'textbook-status textbook-status-'+String(book.status||'').toLowerCase()},book.status)),
                                 H('td',null,H('div',{className:'textbook-row-actions'},
-                                    button(book.status==='PENDING_VERIFICATION'?'Pending verification':(book.can_edit?'Edit':'View'),
+                                    button(book.status==='PENDING_VERIFICATION'?'Pending verification':(book.can_edit&&!this.textbookViewer()?'Edit':'View'),
                                         ()=>this.openBookProfile(book.id),'outline',book.can_view_details===false),
                                     button('Details',()=>this.loadBookLedger(book.id,'OFFICE'),
                                         'outline',book.can_view_details===false),
-                                    book.status==='DRAFT'&&book.can_edit?button('Discard draft',
+                                    book.status==='DRAFT'&&book.can_edit&&!this.textbookViewer()?button('Discard draft',
                                         ()=>this.setState({tbProfilesConfirmDiscardId:book.id}),'outline',state.tbCoBusy):null))))))):
                         H('p',{className:'body-muted'},state.tbProfilesLoading?'Loading…':'No active book profiles match your search. Use Add Book to create a new draft.'),
                     H('div',{className:'textbook-pagination'},
@@ -12494,7 +12502,7 @@ h('div',{className:'employee-claim-actions'},
             const ledgerPanel=ledgerVisible?H('div',{className:'textbook-ledger-content'},
                 H('p',{className:'body-muted'},'Read-only book ledger · registered inventory transactions, not electronic approvals.'),
                 state.tbBookLedgerError?H('p',{className:'textbook-form-error',role:'alert'},state.tbBookLedgerError):null,
-                state.user?.role==='DIVISION'?H('label',{className:'field textbook-ledger-scope'},
+                this.textbookWorkspaceRole()==='DIVISION'?H('label',{className:'field textbook-ledger-scope'},
                     H('span',null,'Ledger scope'),H('select',{value:state.tbBookLedgerScope,
                         disabled:state.tbBookLedgerLoading,onChange:e=>this.loadBookLedger(state.tbBookLedgerId,e.target.value)},
                         H('option',{value:'OFFICE'},'My Division Office only'),
@@ -12554,8 +12562,8 @@ h('div',{className:'employee-claim-actions'},
                                     H('td',null,String(r.quantity)),H('td',null,r.reference),H('td',null,r.note)))))):
                             H('p',{className:'body-muted'},'No loss, damage or disposal documentary events for this book.'),
                         state.tbBookLedgerLoading?H('p',{role:'status'},'Loading older entries…'):null)) :null):null;
-            const discardDraft=bookRows.find(book=>book.id===state.tbProfilesConfirmDiscardId&&book.status==='DRAFT'&&book.can_edit);
-            const readonly=state.tbCatalogView&&!state.tbCatalogOpen;
+            const discardDraft=!this.textbookViewer()&&bookRows.find(book=>book.id===state.tbProfilesConfirmDiscardId&&book.status==='DRAFT'&&book.can_edit);
+            const readonly=state.tbCatalogView&&(!state.tbCatalogOpen||this.textbookViewer());
             const readonlyFields=readonly?(state.tbCatalogView.snapshot?.fields||{}):{};
             const readonlyPanel=readonly?H('div',{className:'textbook-readonly-detail'},
                 H('p',{className:'body-muted'},'This book is read-only here. Revision records remain available to its registering office and supervising Division.'),

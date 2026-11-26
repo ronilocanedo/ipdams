@@ -32,7 +32,7 @@ final class TextbookLifecycleWorkflow {
         self::check($org>0,'Select your office');scope($this->db,$this->user,$org);
         $o=one($this->db,'SELECT id,name,kind,active,parent_division_id FROM organizations WHERE id=?',[$org]);
         self::check($o!==null && (int)$o['active']===1 && in_array($o['kind'],['SCHOOL','DIVISION'],true),'Office is unavailable',403);
-        self::check(($this->user['role']??'')===$o['kind'], 'Use the matching authorized school or Division workspace',403);
+        self::check(in_array($this->user['role']??'',[$o['kind'],'SUPER_ADMIN'],true), 'Use the matching authorized school or Division workspace',403);
         self::check($kind==='ANY'||$o['kind']===$kind,'This action is not available in the selected workspace',403);
         return $o;
     }

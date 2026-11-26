@@ -1,13 +1,12 @@
 # IPDAMS - Current development state / active handoff
 
 **As of:** 2026-11-26 (Asia/Manila)
-**Stable source:** v0.2.457, owner-confirmed installed and all seven read-only page checks working; explicit Main promotion approved.
+**Stable source:** v0.2.458, owner-confirmed installed and working; Main promotion explicitly approved.
 
-- Source reconstructed from 258 verified v0.2.454 blobs plus exact v0.2.456 bridge and v0.2.457 integrated installer payloads. 276 source files, 12 modified and 18 added (including four migration SQL sources). [Source manifest and evidence](checkpoints/2026-11-26-v0.2.457-source-manifest.json).
-- R4: 302 synthetic passes across 18 suites including actual HTTP installer and recovery; 75 pure assertions independently rerun (included in 302), 25 syntax checks. No repeated production tests. Prior checkpoint is historical.
-- Account-wide bank reconciliation, immutable historical snapshots, individual fund-download allocation and utilization, scoped Division report access and monitoring. No online liquidation submission or acceptance. Direct SQL writes disabled.
-- Pending independent verification: live source hashes, actual production schema and migration logs, backup/preflight and cache execution, historical attribution onboarding; no new production financial tests. Review any blocked historical fund before spending; never infer attribution. Restore site and database together if post-DDL recovery is required.
+- Six modified source files (five textbook services and assets/app.js); 270 unchanged; 276 total. [Source manifest](checkpoints/2026-11-26-v0.2.458-source-manifest.json) and [targeted QA](checkpoints/2026-11-26-v0.2.458-qa.json): 82 PHP stub-PDO and 13 mocked JS checks independently rerun; six syntax checks. No migration or new stock posting on installation.
+- Super Admin uses selected active school/Division context without impersonation; retain ownership, audit actor, lifecycle controls and existing client-side read-only view. Server-enforced read-only session not introduced.
+- Integrated Finance R4 v0.2.457 remains intact. 302 historical synthetic checks, not additive. Pending independent evidence: live hashes, actual production migration logs/schema and historical attribution onboarding. Actual MariaDB/HTTP, real browser regression and installer rollback for v0.2.458 remain untested. No production testing.
 
 ## NEXT ACTION
 
-Continue owner-selected improvements from verified v0.2.457; next development version v0.2.458. Maintain explicit approvals, isolated synthetic QA and financial integrity. Do not repeat completed tests without reason.
+Continue owner-selected enhancements from verified v0.2.458; next version v0.2.459. Maintain explicit approvals, isolated synthetic QA, office scope and financial integrity. Avoid redundant tests.
