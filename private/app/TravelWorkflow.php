@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/bootstrap.php';
 require_once __DIR__.'/AnnualDocumentNumbering.php';
+require_once __DIR__.'/FinancialCutoff.php';
 /**
  * Activity Request & Travel Authority PREPARATION ONLY, v0.2.104.
  * Reuses document registry/immutable version ledger, with registry row as its own
@@ -130,6 +131,8 @@ final class TravelWorkflow {
         $division=$this->divisionFor($org);
         demand($org===$division && in_array($this->user['role'],['DIVISION','SUPER_ADMIN'],true),
             'Only authorized Division staff may configure Division signatories',403);
+        demand(FinancialCutoff::isCoordinated($this->db),'Division report signatories require a coordinated READ COMMITTED transaction',409);
+        FinancialCutoff::beginWriter($this->db,$this->user,'travel.signatories.save',$data);
         one($this->db,'SELECT id FROM organizations WHERE id=? FOR UPDATE',[$division]);
         $prev=$this->signatoryConfig($org);
         demand(isset($data['expected_version']) && is_numeric($data['expected_version']) &&

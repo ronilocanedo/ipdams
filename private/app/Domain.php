@@ -14,6 +14,8 @@ require_once __DIR__.'/ReimbursementFinalization.php';
 require_once __DIR__.'/FundCashFundingPreview.php';
 require_once __DIR__.'/FundCashFinalization.php';
 require_once __DIR__.'/TaxTransferRules.php';
+require_once __DIR__.'/FinancialReview.php';
+require_once __DIR__.'/FinancialAllocation.php';
 final class Domain {
     // Stable reference codes for the Division's semi-expendable classifications.
     // The accounting parent category remains SEMI_EXPENDABLE (ICS and procurement).
@@ -341,7 +343,8 @@ final class Domain {
         demand(in_array($type,['IUS','NON_IUS'],true),'Select IUS or Non-IUS');
         $effective=self::policyDate($d['effective_from']??null);$reason=requiredString($d,'reason',500);
         demand(in_array($this->user['role'],['DIVISION','SUPER_ADMIN'],true),'Division administrator required',403);
-        return $this->tx(function()use($schoolId,$type,$effective,$reason){
+        $coordinator=$this->reportMetadataCoordinator($d,$schoolId);
+        return $this->financialTx('organization.school.classification',$coordinator,function()use($schoolId,$type,$effective,$reason){
             $school=one($this->db,"SELECT id,parent_division_id FROM organizations WHERE id=? AND kind='SCHOOL' AND active=1 FOR UPDATE",[$schoolId]);
             demand($school!==null&&(int)$school['parent_division_id']>0,'Active Division-linked school required',404);
             $division=(int)$school['parent_division_id'];$this->divisionForActor($division);
@@ -684,6 +687,29 @@ final class Domain {
             'This school transaction requires specifically authorized operational access.',403);
     }
     private function tx(callable $work): mixed { $outer=$this->db->inTransaction(); if(!$outer)$this->db->beginTransaction(); try{$r=$work();if(!$outer)$this->db->commit();return $r;}catch(Throwable $e){if(!$outer&&$this->db->inTransaction())$this->db->rollBack();throw $e;} }
+    /** Financial invariants belong to Domain as well as HTTP dispatch. Direct
+     * callers get an owned READ COMMITTED transaction. Joining an arbitrary
+     * caller's stale snapshot is refused; reviewed callers must coordinate it.
+     */
+    private function financialTx(string $route,array $input,callable $work):mixed {
+        $outer=$this->db->inTransaction();
+        if(!$outer)$this->db->exec('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        else demand(FinancialCutoff::isCoordinated($this->db),'Financial Domain calls require a coordinated READ COMMITTED transaction',409);
+        return $this->tx(function()use($route,$input,$work,$outer){
+            if(!$outer)FinancialCutoff::markCoordinated($this->db);
+            try{FinancialCutoff::beginWriter($this->db,$this->user,$route,$input);$out=$work();(new FinancialAllocation($this->db,$this->user))->afterMutation($route,$input,$out);return $out;}
+            finally{if(!$outer)FinancialCutoff::unmarkCoordinated($this->db);}
+        });
+    }
+    /** Target-based profile/classification endpoints need a gate even when a
+     * direct caller omits the HTTP workspace field. The linked Division's
+     * configuration gate coordinates the report identities of its schools. */
+    private function reportMetadataCoordinator(array $input,int $target):array {
+        $row=one($this->db,'SELECT id,kind,parent_division_id FROM organizations WHERE id=?',[$target]);
+        demand($row!==null,'Organization not found',404);
+        $input['organization_id']=$row['kind']==='SCHOOL'&&(int)($row['parent_division_id']??0)>0?(int)$row['parent_division_id']:(int)$row['id'];
+        return $input;
+    }
     private function insert(string $table,array $data): int {
         demand((bool)preg_match('/^[a-z_]+$/',$table),'Invalid table');
         foreach(array_keys($data) as $field) demand((bool)preg_match('/^[a-z_]+$/',$field),'Invalid column');
@@ -851,7 +877,7 @@ final class Domain {
     public function recordBankDownload(array $d): array {
         $org=$this->org($d);
         demand(in_array($this->user['role'],['SUPER_ADMIN','DIVISION'],true),'Finance administrator required',403);
-        return $this->tx(function()use($d,$org){
+        return $this->financialTx('bank.download.record',$d,function()use($d,$org){
             $fund=$this->record('funds',idOf($d,'fund_id'),$org,true);
             $amount=moneyCents($d['amount']??'');demand($amount>0,'Positive bank download required');
             $credit=$this->bankDownloadInput($d,$org);
@@ -873,7 +899,7 @@ final class Domain {
     public function linkHistoricalBankDownload(array $d): array {
         $org=$this->org($d);
         demand(in_array($this->user['role'],['SUPER_ADMIN','DIVISION'],true),'Finance administrator required',403);
-        return $this->tx(function()use($d,$org){
+        return $this->financialTx('bank.download.link_existing',$d,function()use($d,$org){
             $eventId=idOf($d,'fund_event_id');
             $candidate=one($this->db,"SELECT fund_id FROM fund_events WHERE id=? AND organization_id=? AND event_type='ALLOTMENT'",[$eventId,$org]);
             demand($candidate!==null,'Original allotment not found in this school',404);
@@ -956,7 +982,7 @@ final class Domain {
         // the now-tested Cash & Bank register. This validates all original
         // credit/check links and historical cancel/replace evidence.
         require_once __DIR__.'/BankFundRegister.php';
-        $book=BankFundRegister::read($this->db,$org);
+        $book=BankFundRegister::read($this->db,$org,true);
         $knownBank=false;$knownFund=false;
         foreach($book['banks'] as $row)if((int)$row['bank_account_id']===$bankId)$knownBank=true;
         foreach($book['funds'] as $row)if((int)$row['fund_id']===$fundId)$knownFund=true;
@@ -985,8 +1011,13 @@ final class Domain {
             'The fund/account cash book has a negative balance; finance review is required.',409);
         // Spendability is bounded BOTH by the selected-fund subledger and
         // by the pooled physical bank book, never by another fund's credits.
+        $minimum=0;
+        if(class_exists('BankReconciliation')&&FinancialAllocation::installed($this->db)){
+            $accountCash+=BankReconciliation::bookAdjustments($this->db,$org,$bankId,self::todayManila());
+            $minimum=BankReconciliation::maintaining($this->db,$org,$bankId);
+        }
         $cash=min($fundCash,$accountCash);
-        return ['fund_cash_cents'=>$cash,'minimum_cents'=>0,
+        return ['fund_cash_cents'=>$cash,'minimum_cents'=>$minimum,
             'bank_reconciliation_id'=>null,'cash_basis'=>'SCHOOL_FUND_BANK_BOOK_AFTER_ISSUED_CHECKS',
             'actual_bank_cash_requires_officer_attestation'=>true,
             'fund_credits_cents'=>$fundCredits,'fund_committed_checks_cents'=>$fundChecks,
@@ -1100,7 +1131,7 @@ final class Domain {
         }
         $id=idOf($d,'bank_account_id');
         $label=requiredString($d,'account_label',120);
-        return $this->tx(function()use($org,$id,$label){
+        return $this->financialTx('bank.label.rename',$d,function()use($org,$id,$label){
             $existing=$this->record('bank_accounts',$id,$org,true);
             $old=(string)$existing['account_label'];
             demand($old!==$label,'The account label has not changed',422);
@@ -1829,7 +1860,8 @@ final class Domain {
             demand(filter_var($expectedClassVersion,FILTER_VALIDATE_INT)!==false && (int)$expectedClassVersion>=0,
                 'Refresh the school profile before changing its classification');
         }
-        return $this->tx(function()use($orgId,$name,$profile,$requestedCode,$expectedCode,$changeReason,
+        $coordinator=$this->reportMetadataCoordinator($d,$orgId);
+        return $this->financialTx('organization.profile.update',$coordinator,function()use($orgId,$name,$profile,$requestedCode,$expectedCode,$changeReason,
             $hasImplementation,$implementation,$implementationDate,$implementationReason,$expectedClassVersion,
             $hasBirIdentity,$birIdentity){
             $org=one($this->db,'SELECT * FROM organizations WHERE id=? FOR UPDATE',[$orgId]);demand($org!==null,'Organization not found',404);
@@ -1858,8 +1890,10 @@ final class Domain {
                 $classChanged=$previousClass===null ||
                     $previousClass['classification']!==$implementation ||
                     $previousClass['effective_from']!==$implementationDate;
-                if($classChanged) demand($implementationReason!=='',
-                    'Explain the change to implementation classification or its effective date');
+                if($classChanged){
+                    demand($implementationReason!=='','Explain the change to implementation classification or its effective date');
+                    FinancialCutoff::assertOpen($this->db,$orgId,$implementationDate);
+                }
             }
             $newCode=(string)$org['code'];
             if($org['kind']==='SCHOOL' && $requestedCode!==null && $requestedCode!==$newCode){
@@ -2802,7 +2836,7 @@ final class Domain {
     /** Only the active school directory can be selected. A name on a print is NOT an electronic certification. */
     public function saveDvSectionSignatories(array $d): array {
         $org=$this->org($d);$this->operationalWriteAllowed($org);
-        return $this->tx(function()use($d,$org){
+        return $this->financialTx('staff.dv.signatories.save',$d,function()use($d,$org){
             $meta=one($this->db,"SELECT id,kind FROM organizations WHERE id=? AND active=1 FOR UPDATE",[$org]);
             demand($meta!==null && $meta['kind']==='SCHOOL','School workspace required for DV appointments.',403);
             $previous=$this->dvSignatoriesVersion($org);
@@ -2978,7 +3012,7 @@ final class Domain {
         $effective=self::transactionDocumentDate(requiredString($d,'effective_from',10),'MOOE assignment effectivity');
         $expected=$d['expected_version']??null;
         demand(is_numeric($expected) && (int)$expected>=0,'Refresh assignments before saving.',422);
-        return $this->tx(function()use($d,$division,$school,$employee,$effective,$expected){
+        return $this->financialTx('division.mooe.assignment.save',$d,function()use($d,$division,$school,$employee,$effective,$expected){
             $drow=one($this->db,"SELECT id FROM organizations WHERE id=? AND kind='DIVISION' AND active=1 FOR UPDATE",[$division]);
             demand($drow!==null,'Select a Division workspace to manage school MOOE assignments.',403);
             $srow=one($this->db,"SELECT id,name FROM organizations WHERE id=? AND parent_division_id=? AND kind='SCHOOL' AND active=1 FOR UPDATE",[$school,$division]);
@@ -3020,7 +3054,7 @@ final class Domain {
             $id=$this->insert('configuration_versions',['organization_id'=>$school,'config_key'=>self::SCHOOL_MOOE_KEY,
                 'config_json'=>json_encode($data,JSON_THROW_ON_ERROR),'effective_from'=>$effective,
                 'review_note'=>'School Division MOOE accounting in-charge appointment']);
-            $this->audit($school,'UPDATED','SCHOOL_DIVISION_MOOE_ASSIGNMENT',$id,[
+            $this->audit($school,'UPDATED','MOOE_ASSIGNMENT',$id,[
                 'division_id'=>$division,'employee_id'=>$employee,'previous_version'=>$data['previous_version_id'],
                 'effective_from'=>$effective,'historical_appointment_attested'=>$gap]);
             return ['version_id'=>$id,'school_id'=>$school,'effective_from'=>$effective,'employee_id'=>$employee,
@@ -3053,7 +3087,7 @@ final class Domain {
         $org=$this->org($d);$this->operationalWriteAllowed($org);
         $action=requiredString($d,'action',20);
         demand(in_array($action,['ADD','EDIT','PROFILE','RENAME','DEACTIVATE','REACTIVATE'],true),'Unsupported employee action');
-        return $this->tx(function()use($org,$d,$action){
+        return $this->financialTx('staff.employee.change',$d,function()use($org,$d,$action){
             $meta=one($this->db,'SELECT id FROM organizations WHERE id=? AND active=1 FOR UPDATE',[$org]);
             demand($meta!==null,'Organization unavailable',404);
             $today=self::todayManila();
@@ -3209,7 +3243,7 @@ final class Domain {
     /** Office head is a documented directory appointment; not a digital approval. */
     public function saveOfficeHead(array $d): array {
         $org=$this->org($d);$this->operationalWriteAllowed($org);
-        return $this->tx(function()use($org,$d){
+        return $this->financialTx('staff.head.save',$d,function()use($org,$d){
             $meta=one($this->db,'SELECT id FROM organizations WHERE id=? AND active=1 FOR UPDATE',[$org]);
             demand($meta!==null,'Organization unavailable',404);
             $previous=$this->schoolHeadVersion($org);
@@ -4180,7 +4214,7 @@ final class Domain {
         $org=$this->org($d);$this->operationalWriteAllowed($org);
         foreach(array_keys($d) as $key)demand(in_array($key,['organization_id','dv_id','expected_token','reason'],true),
             'Tax disposition is determined by the Division fund policy; rates, bases, amounts and accounts cannot be submitted.',400);
-        return $this->tx(function()use($org,$d){
+        return $this->financialTx('dv.tax.disposition.correct',$d,function()use($org,$d){
             $dv=$this->record('disbursement_vouchers',idOf($d,'dv_id'),$org,true);
             demand($dv['status']==='DRAFT' && empty($dv['display_number']) && $dv['dv_type']==='REGULAR',
                 'Only unnumbered Regular Draft DVs may correct the tax disposition here.',409);
@@ -4407,7 +4441,7 @@ final class Domain {
         return $lead."\n- ".$purpose.$countLabel.' - '.$amount;
     }
     /** Draft-only narrative correction. No digital approval or change to taxes/amounts. */
-    public function updateDvParticulars(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
+    public function updateDvParticulars(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->financialTx('dv.particulars.update',$d,function()use($org,$d){
         foreach(array_keys($d) as $key)demand(in_array($key,['organization_id','dv_id','particulars','expected_particulars'],true),
             'This action can update only DV Particulars; amounts, tax, payee and accounting entries remain locked.',400);
         $dv=$this->record('disbursement_vouchers',idOf($d,'dv_id'),$org,true);
@@ -5000,7 +5034,7 @@ final class Domain {
         demand(!isset($d['division_bank_account_id'])&&!isset($d['confirmed_receiving_account']),
             'Do not provide a Division bank for new tax-remittance DVs.',422);
         $fundId=idOf($d,'fund_id');
-        return $this->tx(function()use($org,$fundId,$ids,$d){
+        return $this->financialTx('tax.transfer.create',$d,function()use($org,$fundId,$ids,$d){
             $fund=$this->record('funds',$fundId,$org,true);
             $school=one($this->db,"SELECT id,kind,parent_division_id FROM organizations WHERE id=? AND active=1 FOR UPDATE",[$org]);
             demand($school && $school['kind']==='SCHOOL' && (int)$school['parent_division_id']>0,
@@ -5054,7 +5088,7 @@ final class Domain {
         $org=$this->org($d);
         demand(in_array($this->user['role'],['DIVISION','SUPER_ADMIN'],true),
             'Division receipt acknowledgment requires an authorized Division finance user.',403);
-        return $this->tx(function()use($org,$d){
+        return $this->financialTx('tax.transfer.receive',$d,function()use($org,$d){
             $transfer=one($this->db,'SELECT * FROM school_tax_transfers WHERE id=? AND division_id=? FOR UPDATE',
                 [idOf($d,'transfer_id'),$org]);
             demand($transfer!==null,'Transfer not assigned to the current Division.',404);
@@ -5109,7 +5143,7 @@ final class Domain {
         $org=$this->org($d);
         demand(in_array($this->user['role'],['DIVISION','SUPER_ADMIN'],true),
             'Division accounting reconciliation requires an authorized Division finance user.',403);
-        return $this->tx(function()use($org,$d){
+        return $this->financialTx('tax.transfer.reconcile',$d,function()use($org,$d){
             $transfer=one($this->db,'SELECT * FROM school_tax_transfers WHERE id=? AND division_id=? FOR UPDATE',
                 [idOf($d,'transfer_id'),$org]);
             demand($transfer && $transfer['status']==='DO_ACCOUNTING_PENDING',
@@ -5252,7 +5286,7 @@ final class Domain {
      * Finalized vouchers with recorded checks require separate adjusting-entry
      * documentation; this path never overwrites a paid historical workpaper.
      */
-    public function updateDraftDV(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
+    public function updateDraftDV(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->financialTx('dv.update',$d,function()use($org,$d){
         demand($this->taxTransferRecord($org,idOf($d,'dv_id'))===null,
             'A withholding-transfer DV uses locked source components and automatic two-line accounting; update of source allocations is not allowed.',409);
         foreach(array_keys($d) as $key)demand(in_array($key,['organization_id','dv_id','expected_token','bill_reference','uacs_allocations','reason'],true),
@@ -6111,7 +6145,7 @@ final class Domain {
             AND display_number IS NOT NULL",[$org]);
         return !empty($row['last_date'])?(string)$row['last_date']:null;
     }
-    public function finalizeDV(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
+    public function finalizeDV(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->financialTx('dv.finalize',$d,function()use($org,$d){
         $dvId=idOf($d,'dv_id');
         // Acquire the SOURCE-FUND mutex before the DV row. Fund events and DV
         // cancellation take the same mutex and lock order. This prevents
@@ -6380,7 +6414,7 @@ final class Domain {
             'net'=>$dv['net'],'check_id'=>$checkId,'check_number'=>(string)$leaf['serial'],
             'check_status'=>'ASSIGNED_FOR_PRINTING'];
     });}
-    public function reviseAccounts(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
+    public function reviseAccounts(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->financialTx('dv.accounting',$d,function()use($org,$d){
         $dv=$this->record('disbursement_vouchers',idOf($d,'dv_id'),$org,true);demand($dv['status']==='FINALIZED','Only finalized DV accounting can be revised');
         demand(one($this->db,'SELECT id FROM checks WHERE dv_id=? LIMIT 1',[$dv['id']])===null,
             'A recorded check requires a separate adjustment; the DV journal is historical',409);
@@ -6445,7 +6479,17 @@ final class Domain {
         demand(mbSafeLen($evidence)<=255,'Automatic reference too long; contact administrator',409);
         return ['evidence_reference'=>$evidence,'authority_reference'=>$authority,'policy_version_id'=>$version];
     }
-    public function confirmTax(array $d): array {$org=$this->org($d);allowedToWrite($this->user);return $this->tx(function()use($org,$d){
+    public function retainedAllocationAuthority(array $d):array {
+        $org=$this->org($d);$this->operationalWriteAllowed($org);
+        demand(FinancialCutoff::isCoordinated($this->db),'Retained authority requires a coordinated transaction',409);
+        $tax=one($this->db,'SELECT w.*,v.fund_id AS dv_fund FROM withholding_components w JOIN disbursement_vouchers v ON v.id=w.dv_id WHERE w.id=? AND v.organization_id=?', [idOf($d,'component_id'),$org]);
+        demand($tax!==null&&$tax['disposition']==='SCHOOL_UTILIZATION','Eligible retained component required',409);
+        $refs=$this->savedRetainedTaxReferences($org,$tax);$fund=$this->record('funds',(int)$tax['dv_fund'],$org);$record=one($this->db,'SELECT config_key FROM configuration_versions WHERE id=?',[$refs['policy_version_id']]);demand(($record['config_key']??'')===self::fundPolicyKey((string)$fund['source_code'],'NON_IUS'),'Original retained authority is not an approved fund-policy record',409);$snapshot=one($this->db,"SELECT snapshot_json FROM document_versions WHERE organization_id=? AND doc_type='DV' AND entity_id=? ORDER BY version_no,id LIMIT 1",[$org,$tax['dv_id']]);
+        $policy=json_decode((string)($snapshot['snapshot_json']??''),true,512,JSON_THROW_ON_ERROR)['withholding_policy']??[];$classification=(int)($policy['school_class_version_id']??0);
+        $row=one($this->db,"SELECT config_json,effective_from FROM configuration_versions WHERE id=? AND organization_id=? AND config_key='SCHOOL_IMPLEMENTATION_CLASS'",[$classification,$org]);$dv=one($this->db,'SELECT document_date FROM disbursement_vouchers WHERE id=?',[$tax['dv_id']]);
+        demand($row!==null&&$row['effective_from']<=$dv['document_date']&&(json_decode($row['config_json'],true,512,JSON_THROW_ON_ERROR)['classification']??'')==='NON_IUS','Original Non-IU classification version cannot be verified',409);return $refs;
+    }
+    public function confirmTax(array $d): array {$org=$this->org($d);allowedToWrite($this->user);return $this->financialTx('tax.confirm',$d,function()use($org,$d){
         $tax=one($this->db,"SELECT w.*,v.organization_id,v.status dv_status,v.fund_id dv_fund FROM withholding_components w JOIN disbursement_vouchers v ON v.id=w.dv_id WHERE w.id=? FOR UPDATE",[idOf($d,'component_id')]);demand($tax!==null&&(int)$tax['organization_id']===$org&&$tax['dv_status']==='FINALIZED','Withholding component unavailable');$state=requiredString($d,'state',30);demand(in_array($state,['CONFIRMED_CREDIT','REMITTED'],true),'Invalid tax completion');
         demand(($state==='CONFIRMED_CREDIT'&&$tax['disposition']==='SCHOOL_UTILIZATION')||($state==='REMITTED'&&$tax['disposition']==='REMIT'),'Tax disposition mismatch');
         demand(one($this->db,"SELECT 1 FROM tax_disposition_events WHERE component_id=? AND state IN ('CONFIRMED_CREDIT','REMITTED')",[$tax['id']])===null,'Tax component already closed');
@@ -6658,7 +6702,7 @@ final class Domain {
         $events=q($this->db,"SELECT e.* FROM stock_events e JOIN ris_lines l ON l.id=e.source_id WHERE e.source_type='RIS_LINE' AND e.event_type='RIS_ISSUE' AND l.ris_id=?",[$ris['id']])->fetchAll();foreach($events as $e){$this->record('inventory_lots',(int)$e['lot_id'],$org,true);$this->insert('stock_events',['organization_id'=>$org,'lot_id'=>$e['lot_id'],'event_type'=>'RIS_RETURN','quantity_delta'=>substr($e['quantity_delta'],1),'source_type'=>'RIS_REVERSAL','source_id'=>$e['id'],'created_by'=>$this->user['id']]);}
         q($this->db,"UPDATE requisition_issue_slips SET status='REVERSED' WHERE id=?",[$ris['id']]);$this->snapshot($org,'RIS',(int)$ris['id'],['status'=>'REVERSED'],$reason);$this->audit($org,'REVERSED','RIS',(int)$ris['id'],['reason'=>$reason]);return ['id'=>(int)$ris['id'],'status'=>'REVERSED'];
     });}
-    public function addFundEvent(array $d): array {$org=$this->org($d);demand(in_array($this->user['role'],['SUPER_ADMIN','DIVISION'],true),'Finance administrator required',403);return $this->tx(function()use($org,$d){
+    public function addFundEvent(array $d): array {$org=$this->org($d);demand(in_array($this->user['role'],['SUPER_ADMIN','DIVISION'],true),'Finance administrator required',403);return $this->financialTx('fund.event',$d,function()use($org,$d){
         $fund=$this->record('funds',idOf($d,'fund_id'),$org,true);$event=requiredString($d,'event_type',30);demand(in_array($event,['RELEASE','OBLIGATION','OBLIGATION_REVERSAL','ADJUSTMENT'],true),'Bank downloads must be recorded using Record D.O. Bank Download; direct manual allotments are disabled');$amount=moneyCents($d['amount']??'');demand($amount>0,'Positive ledger amount required');$ref=requiredString($d,'reference',100);$reason=requiredString($d,'reason',500);
         // D.O. MOOE downloading is verified through a bank-linked event, not
         // manual ALLOTMENT or an unbacked positive ADJUSTMENT. Other fund types
@@ -6990,8 +7034,14 @@ final class Domain {
             'Confirm the proposed serial matches the actual blank, intact physical check before recording issuance.',409);
         return $leaf;
     }
-    public function createCheck(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
+    public function createCheck(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->financialTx('check.create',$d,function()use($org,$d){
         $dv=$this->record('disbursement_vouchers',idOf($d,'dv_id'),$org,true);demand($dv['status']==='FINALIZED','Finalized DV needed');
+        // Legacy issuance must retain the same gross authority control as a
+        // new finalization. An explicit download map cannot cure an already
+        // overcommitted fund or turn an unpaid legacy DV into new authority.
+        $budget=$this->fundAvailabilityTotals($org,(int)$dv['fund_id']);$text=(string)$budget['available_allocation'];$remaining=str_starts_with($text,'-')?-moneyCents(substr($text,1)):moneyCents($text);
+        demand($budget['has_allocation'],'Source fund has no verified gross allocation authority',409);
+        if($remaining<0){$mode=$this->schoolUtilizableFundingMode($org,(int)$dv['fund_id'],true);demand($mode['enabled'],'Source fund gross authority is overcommitted; reconcile it before legacy check issuance',409);$eligible=$this->confirmedRetainedAuthority($org,(int)$dv['fund_id']);demand($remaining+$eligible['recorded_eligible_cents']>=0,'Source fund gross shortfall exceeds recorded eligible retained authority',409);}
         demand(one($this->db,'SELECT id FROM checks WHERE dv_id=? LIMIT 1',[$dv['id']])===null,
             'This finalized DV has a check record. Use an audited check replacement procedure; ordinary check creation cannot duplicate an assigned serial.',409);
         // Legacy finalized vouchers without any linked check remain eligible for
@@ -7021,7 +7071,7 @@ final class Domain {
         $this->audit($org,'ISSUED','CHECK',$id,['payee_basis'=>$basis,'payee_name'=>$payeeName,'dv_id'=>(int)$dv['id']]);
         return ['id'=>$id,'status'=>'ISSUED','payee_name'=>$payeeName,'payee_basis'=>$basis];
     });}
-    public function updateCheck(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
+    public function updateCheck(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->financialTx('check.status',$d,function()use($org,$d){
         // Match DV cancellation's DV-before-check order and serialize all leaves
         // in a replacement chain, including concurrent releases.
         $candidate=$this->record('checks',idOf($d,'check_id'),$org);
@@ -7075,7 +7125,7 @@ final class Domain {
         }
         return $released;
     }
-    public function replaceCheck(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
+    public function replaceCheck(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->financialTx('check.replace',$d,function()use($org,$d){
         $candidate=$this->record('checks',idOf($d,'old_check_id'),$org);
         $dv=$this->record('disbursement_vouchers',(int)$candidate['dv_id'],$org,true);
         $taxTransfer=$this->taxTransferRecord($org,(int)$dv['id'],true);
@@ -7515,7 +7565,7 @@ final class Domain {
         $d['doc_type']='DV';
         return $this->cancelDocument($d,true);
     }
-    public function cancelDocument(array $d,bool $draftOnly=false): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d,$draftOnly){
+    public function cancelDocument(array $d,bool $draftOnly=false): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->financialTx('document.cancel',$d,function()use($org,$d,$draftOnly){
         $type=requiredString($d,'doc_type',10);$table=['PR'=>'purchase_requests','PO'=>'purchase_orders','DV'=>'disbursement_vouchers','IAR'=>'iars'][$type]??null;demand($table!==null,'Unsupported cancellation type');
         // Cancellation releases a FINALIZED DV's fund claim. Serialize it with
         // new DV finalizations and finance ledger postings, fund row FIRST.
@@ -8075,11 +8125,9 @@ final class Domain {
         });
     }
     public function reconcileBank(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){
-        $bank=$this->record('bank_accounts',idOf($d,'bank_account_id'),$org,true);$period=requiredString($d,'period',7);demand((bool)preg_match('/^20\d\d-(0[1-9]|1[0-2])$/',$period),'Period must be YYYY-MM');$statement=moneyCents($d['statement_balance']??'');$book=moneyCents($d['book_balance']??'');
-        $id=$this->insert('bank_reconciliations',['bank_account_id'=>$bank['id'],'period'=>$period,'statement_balance'=>moneyString($statement),'book_balance'=>moneyString($book),'notes'=>trim((string)($d['notes']??''))]);$reconciled=$book;
-        foreach($d['lines']??[] as $l){$amount=moneyCents($l['amount']??'');demand($amount>0,'Positive adjustment amount required');$direction=requiredString($l,'direction',10);demand(in_array($direction,['ADD','SUBTRACT'],true),'Invalid adjustment direction');$delta=$direction==='ADD'?$amount:-$amount;$reconciled+=$delta;$this->insert('reconciliation_lines',['reconciliation_id'=>$id,'kind'=>requiredString($l,'kind',50),'amount'=>($delta<0?'-':'').moneyString(abs($delta)),'reference'=>requiredString($l,'reference',255)]);}
-        if(($d['close']??false)===true){demand($reconciled===$statement,'Reconciliation does not balance; cannot close period');q($this->db,"UPDATE bank_reconciliations SET status='CLOSED' WHERE id=?",[$id]);}
-        $this->audit($org,'BANK_RECONCILED','BANK',(int)$bank['id'],['period'=>$period,'closed'=>($d['close']??false)===true]);return ['id'=>$id,'balance_difference'=>moneyString(abs($reconciled-$statement)),'closed'=>($d['close']??false)===true];
+        // Legacy rows remain read-only. Direct callers cannot bypass the typed
+        // draft/evidence/version gates by using the historical route name.
+        return (new FinancialReview($this->db,$this->user))->saveDraft($d);
     });}
 
     public function recordManualSignature(array $d): array {$org=$this->org($d);$this->operationalWriteAllowed($org);return $this->tx(function()use($org,$d){

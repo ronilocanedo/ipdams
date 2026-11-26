@@ -13,7 +13,9 @@ const IPDAMS_RESET_TABLES = [
  'bank_accounts','checkbook_leaves','checks','payment_events','bank_reconciliations','reconciliation_lines','inventory_lots','stock_events',
  'requisition_issue_slips','ris_lines','assets','accountability_documents','asset_movements','textbook_titles',
  'textbook_batches','textbook_movements','manual_signature_records','supplier_atcs','accountability_movement_links','travel_itinerary_plans','travel_itinerary_plan_versions',
-  'travel_claim_expense_reviews','travel_claim_expense_review_versions','travel_dv_accounting_approvals','travel_dv_claim_links','ipdams_schema_migrations'
+  'travel_claim_expense_reviews','travel_claim_expense_review_versions','travel_dv_accounting_approvals','travel_dv_claim_links','ipdams_schema_migrations',
+  'password_reset_requests','password_reset_attempts',
+  'finance_allocation_sets','finance_allocation_lines','finance_allocation_events','bank_reconciliation_sources'
 ];
 const IPDAMS_RESET_PRESERVE = ['organizations','users','user_organization_scopes'];
 const IPDAMS_RESET_MAX_ROWS = 8000;

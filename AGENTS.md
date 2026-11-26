@@ -14,10 +14,9 @@ Verify current source and QA evidence before proposing changes.
 
 ## Verified development baseline (2026-11-26, Asia/Manila)
 
-- Stable source: `main`, v0.2.454. Start new development from current stable main or an owner-approved feature/development branch.
-- Owner confirmed installation and approved promotion. Live Hostinger hashes not independently verified. Do not infer runtime version from a bootstrap fallback.
-- See `docs/checkpoints/2026-11-26-v0.2.454-source-manifest.json` and `docs/checkpoints/2026-11-26-v0.2.454-qa.json`. 258 source files, 8 changed/added since v0.2.450; 98/98 latest component checks (PHP/stub PDO and mocked Chromium). Actual MariaDB integration pending. No migration.
-- No automatic deployment. Installer rollback and historical migration chain remain unverified/incomplete. Reports remain uncertified. OpenCode and FreeLLMAPI are not routine development tools without specific owner authorization.
+- Stable source: `main`, v0.2.457. Owner confirmed installation, all seven post-installation page checks working and promotion approval. Start from current Main or an approved feature/development branch.
+- See `docs/checkpoints/2026-11-26-v0.2.457-source-manifest.json`: 276 source files including 4 migration SQL sources; 302 synthetic tests passed, 75 pure assertions independently rerun. Live production hashes and migration logs not independently verified.
+- Preserve explicit allocation/cutoff safeguards, scoped Division access, direct SQL write restriction, audit history and original workflows. Historical attribution requires evidence. No automatic deployment, production testing or file-only rollback after DDL.
 
 ## Repository and code layout
 

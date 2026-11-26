@@ -1,11 +1,13 @@
-# IPDAMS — Current development state / active handoff
+# IPDAMS - Current development state / active handoff
 
 **As of:** 2026-11-26 (Asia/Manila)
-**Stable installed source:** v0.2.454, owner-confirmed; Main application files unchanged (258 verified hashes).
-**Latest development milestone:** Integrated Finance R4; packaged v0.2.456 capability bridge and v0.2.457 integrated release candidates, not installed.
+**Stable source:** v0.2.457, owner-confirmed installed and all seven read-only page checks working; explicit Main promotion approved.
 
-See [R4 development acceptance and release candidate checkpoint](checkpoints/2026-11-26-integrated-finance-r4-release-candidate.md) for tested scope, package hashes, evidence and limitations. Synthetic acceptance 302/302 across 18 suites; 75 pure checks independently rerun, not additive. Previous stable [source manifest](checkpoints/2026-11-26-v0.2.454-source-manifest.json) and [QA](checkpoints/2026-11-26-v0.2.454-qa.json) remain the installed baseline records.
+- Source reconstructed from 258 verified v0.2.454 blobs plus exact v0.2.456 bridge and v0.2.457 integrated installer payloads. 276 source files, 12 modified and 18 added (including four migration SQL sources). [Source manifest and evidence](checkpoints/2026-11-26-v0.2.457-source-manifest.json).
+- R4: 302 synthetic passes across 18 suites including actual HTTP installer and recovery; 75 pure assertions independently rerun (included in 302), 25 syntax checks. No repeated production tests. Prior checkpoint is historical.
+- Account-wide bank reconciliation, immutable historical snapshots, individual fund-download allocation and utilization, scoped Division report access and monitoring. No online liquidation submission or acceptance. Direct SQL writes disabled.
+- Pending independent verification: live source hashes, actual production schema and migration logs, backup/preflight and cache execution, historical attribution onboarding; no new production financial tests. Review any blocked historical fund before spending; never infer attribution. Restore site and database together if post-DDL recovery is required.
 
 ## NEXT ACTION
 
-Production read-only schema compatibility, site/database backups, historical allocation onboarding and executable-cache refresh plan. Two-stage owner-authorized installation, confirm actual operation, then exact-source promotion to Main. Keep R4 candidate source and evidence isolated until then. No automatic deployment, no production testing, no manual DDL or file-only rollback after migrations. No online liquidation submission/approval workflow. Do not count synthetic test passes as production verification.
+Continue owner-selected improvements from verified v0.2.457; next development version v0.2.458. Maintain explicit approvals, isolated synthetic QA and financial integrity. Do not repeat completed tests without reason.

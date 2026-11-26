@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/bootstrap.php';
 require_once __DIR__.'/Appendix43Register.php';
+require_once __DIR__.'/FinanceAccess.php';
 /**
  * v0.2.449 READ-ONLY financial reporting WORKPAPERS. No post, mutation, or inferred
  * accounting settlement. Official certification requires source review.
@@ -29,7 +30,13 @@ final class CashFundReports {
     public static function pure(array $fund,array $bank,array $downloads,array $checks,array $events,
         array $tax,array $accounting,array $leaves,array $recon,array $reconLines,string $period,int $bankFundCount=1): array {
         $end=self::cutoff($period);$from=$period.'-01';$prev=(new DateTimeImmutable($from))->modify('-1 day')->format('Y-m-d');
-        $warnings=[];$periodChecks=[];$periodReleased=[];$outstanding=[];$allPeriodDownloads=[];
+        $warnings=[];$reviewItems=[];
+        // Keep the full legacy warning list for compatibility, but tag every item
+        // with its report scope and purpose. No financial calculation is changed.
+        $warn=static function(string $code,string $message,array $reports,string $kind='review') use (&$warnings,&$reviewItems):void {
+            $warnings[]=$message;$reviewItems[]=compact('code','message','reports','kind');
+        };
+        $periodChecks=[];$periodReleased=[];$outstanding=[];$allPeriodDownloads=[];
         $taxByDv=[];$acctByDv=[];
         foreach($tax as $w)$taxByDv[(int)$w['dv_id']][]=$w;
         foreach($accounting as $a)$acctByDv[(int)$a['dv_id']][]=$a;
@@ -57,15 +64,15 @@ final class CashFundReports {
         foreach($checks as $c){
             $ancestor=(int)($c['replaces_check_id']??0);
             if($ancestor<=0)continue;
-            $warnings[]='Replacement check '.$c['check_number'].' requires bank settlement and reversal evidence review; released-event totals are not certified cash settlement.';
+            $warn('replacement','Replacement check '.$c['check_number'].' requires bank settlement and reversal evidence review; released-event totals are not certified cash settlement.',['A80','S1','A35','A40','A43'],'review');
             $seen=[(int)$c['id']=>true];
             while($ancestor>0){
                 if(isset($seen[$ancestor]) || !isset($checksById[$ancestor])){
-                    $warnings[]='Replacement history is cyclic or incomplete for check '.$c['check_number'].'. Review required.';break;
+                    $warn('replacement_history','Replacement history is cyclic or incomplete for check '.$c['check_number'].'. Review required.',['A80','S1','A35','A40','A43'],'review');break;
                 }
                 $seen[$ancestor]=true;
                 if(isset($releaseDates[(int)$c['id']]) && isset($releaseDates[$ancestor])){
-                    $warnings[]='Replacement check '.$c['check_number'].' and its ancestor both have RELEASED events. Review bank settlement evidence before certifying the cash report.';break;
+                    $warn('replacement','Replacement check '.$c['check_number'].' and its ancestor both have RELEASED events. Review bank settlement evidence before certifying the cash report.',['A80','S1','A35','A40','A43'],'review');break;
                 }
                 $ancestor=(int)($checksById[$ancestor]['replaces_check_id']??0);
             }
@@ -92,14 +99,14 @@ final class CashFundReports {
             if($issueDate>$end)continue;
             $dvDate=(string)($c['dv_date']??'');
             if(!preg_match('/^20\d{2}-\d{2}-\d{2}$/D',$dvDate)){
-                $warnings[]='Check '.($c['check_number']??$c['id']).' lacks a valid finalized DV document date. Do not certify a printed check date until the original DV is verified.';
+                $warn('check_date','Check '.($c['check_number']??$c['id']).' lacks a valid finalized DV document date. Do not certify a printed check date until the original DV is verified.',['S1','A35','A40','A43'],'review');
                 $dvDate='';
             }
             $stage=self::stageAt($c,$events,$end);
             $c['stage_at_end']=$stage;
             $c['check_date']=$dvDate; // printed instrument date, not inferred from issuance
             $c['issue_date']=$issueDate; // when the recorded check was actually issued
-            if($stage==='STOPPED'||$stage==='STALE')$warnings[]='Check '.$c['check_number'].' is '.$stage.'; its bank-book treatment needs finance review.';
+            if($stage==='STOPPED'||$stage==='STALE')$warn('check_lifecycle','Check '.$c['check_number'].' is '.$stage.'; its bank-book treatment needs finance review.',['A80','S1','A35','A40','A43'],'review');
             if($issueDate>=$from){$periodChecks[]=$c;$issuedValue+=self::cents($c['amount']);}
             $releaseDate=$releaseDates[(int)$c['id']]??null;
             if($releaseDate!==null){
@@ -108,7 +115,7 @@ final class CashFundReports {
                 if(!isset($clearDates[(int)$c['id']]) && !in_array($stage,['CANCELLED','REPLACED','STOPPED','STALE'],true))
                     $outstanding[]=$c;
             } elseif(in_array($stage,['RELEASED','CLEARED'],true)) {
-                $warnings[]='Check '.$c['check_number'].' has status '.$stage.' but lacks a recorded RELEASED event; cannot include it in certified cash disbursements.';
+                $warn('check_lifecycle','Check '.$c['check_number'].' has status '.$stage.' but lacks a recorded RELEASED event; cannot include it in certified cash disbursements.',['A80','S1','A35','A40','A43'],'review');
             }
         }
         $periodReversals=0;
@@ -139,12 +146,12 @@ final class CashFundReports {
                     if(($w['disposition']??'')==='SCHOOL_UTILIZATION'){
                         $latest=(string)($w['latest_state']??'');
                         if(in_array($latest,['REVERSED','REMITTED'],true)){
-                            $warnings[]='DV '.($c['dv_number']??$dv).' has reversed/remitted school-utilization evidence; review tax status before recapitulating.';
+                            $warn('tax_or_accounting','DV '.($c['dv_number']??$dv).' has reversed/remitted school-utilization evidence; review tax status before recapitulating.',['A43','A35'],'review');
                             $reconciliationReady=false;
                         } else {
                             $schoolUtilization+=$cents;
                             if(!in_array($latest,['CONFIRMED_CREDIT'],true)){
-                                $warnings[]='DV '.($c['dv_number']??$dv).' school-utilized withholding is '.$latest.'; confirmation is still required for certification.';
+                                $warn('tax_or_accounting','DV '.($c['dv_number']??$dv).' school-utilized withholding is '.$latest.'; confirmation is still required for certification.',['A43','A35'],'review');
                                 $reconciliationReady=false;
                             }
                         }
@@ -161,7 +168,7 @@ final class CashFundReports {
                 }
                 $negativeTax+=$schoolUtilization;
                 if(!($acctByDv[$dv]??[])){
-                    $warnings[]='DV '.($c['dv_number']??$dv).' lacks an approved/saved accounting version for UACS classification.';
+                    $warn('tax_or_accounting','DV '.($c['dv_number']??$dv).' lacks an approved/saved accounting version for UACS classification.',['A43','A35'],'review');
                     $reconciliationReady=false;
                 }
                 // A DV may be paid by multiple checks. Do not assign its full gross to a single check without evidence.
@@ -174,7 +181,7 @@ final class CashFundReports {
                     if($releaseDates[$rid]<$from || $releaseDates[$rid]>$end)$allSamePeriod=false;
                 }
                 if(!$allSamePeriod||$activeTotal!==self::cents($c['dv_net'])){
-                    $warnings[]='DV '.($c['dv_number']??$dv).' has partial, split or mismatched check settlement; its full gross allocations cannot yet be certified against this period.';
+                    $warn('tax_or_accounting','DV '.($c['dv_number']??$dv).' has partial, split or mismatched check settlement; its full gross allocations cannot yet be certified against this period.',['A43','A35'],'review');
                     $reconciliationReady=false;
                 }
             }
@@ -186,18 +193,18 @@ final class CashFundReports {
         // gross expenses include other periods, split checks or non-utilized REMIT taxes.
         $grossClassified=array_sum($uacs);
         $recapCash=$grossClassified-$negativeTax;
-        if($recon===[] || ($recon['status']??'')!=='CLOSED')$warnings[]='No CLOSED bank reconciliation for this account and month; Appendix 80 cannot be certified.';
-        if($bankFundCount>1)$warnings[]='The selected bank account has transactions for multiple funds. Account-wide bank statement figures are not a separate statement for this fund.';
-        if(count($allPeriodDownloads)>1)$warnings[]='Multiple downloads in the month share this fund; individual DV liquidation cannot be assigned to a specific download without an explicit source link.';
-        if(!$reconciliationReady)$warnings[]='Appendix 43 is a draft workpaper until accounting classifications and utilization evidence are reviewed.';
-        if($grossClassified>0 && $recapCash!==$payment)$warnings[]='Appendix 43 recapitulation (gross less utilization) does not match period check commitments; review split checks, other tax dispositions and source accounting.';
-        if(!$downloads)$warnings[]='No verified bank-linked fund download was found through the reporting date.';
-        if($period===(new DateTimeImmutable('now',new DateTimeZone('Asia/Manila')))->format('Y-m'))
-            $warnings[]='The selected calendar month is not yet closed; printed totals are provisional.';
-        if(!$leaves)$warnings[]='No registered physical check leaves for Appendix 67.';
+        if($recon===[] || ($recon['status']??'')!=='CLOSED')$warn('bank_close','No CLOSED bank reconciliation for this account and month; Appendix 80 cannot be certified.',['A80'],'review');
+        if($bankFundCount>1){$warn('shared_bank','The selected bank account has transactions for multiple funds. Account-wide bank statement figures are not a separate statement for this fund.',['A80'],'context');$reviewItems[]=['code'=>'shared_bank_scope','message'=>'This account is shared by multiple funds. The selected fund check list does not establish complete account-wide check history.','reports'=>['S1','A67'],'kind'=>'review'];}
+        if(count($allPeriodDownloads)>1)$warn('download_attribution','Multiple downloads in the month share this fund; individual DV liquidation cannot be assigned to a specific download without an explicit source link.',['A43','A40'],'context');
+        if(!$reconciliationReady)$warn('a43_classification','Appendix 43 is a draft workpaper until accounting classifications and utilization evidence are reviewed.',['A43'],'review');
+        if($grossClassified>0 && $recapCash!==$payment)$warn('legacy_recap','Appendix 43 recapitulation (gross less utilization) does not match period check commitments; review split checks, other tax dispositions and source accounting.',['A43'],'review');
+        if(!$downloads)$warn('no_download','No verified bank-linked fund download was found through the reporting date.',['A80','A40','A43'],'review');
+        if($end>=(new DateTimeImmutable('today',new DateTimeZone('Asia/Manila')))->format('Y-m-d'))
+            $warn('period_open','The selected calendar month is not yet closed; printed totals are provisional.',['A80','S1','A35','A40','A43','A67'],'provisional');
+        if(!$leaves)$warn('no_leaves','No registered physical check leaves for Appendix 67.',['A67'],'review');
         $reconAdjust=0;foreach($reconLines as $r){$v=(string)$r['amount'];$reconAdjust+=str_starts_with($v,'-')?-self::cents(substr($v,1)):self::cents($v);}
         if($recon && self::cents($recon['book_balance'])+$reconAdjust!==self::cents($recon['statement_balance']))
-            $warnings[]='Saved bank reconciliation adjustment total does not tie to recorded statement balance.';
+            $warn('recon_difference','Saved bank reconciliation adjustment total does not tie to recorded statement balance.',['A80'],'review');
         $leavesPeriod=[];$leafOpen=0;$leafReceipts=0;$leafIssues=0;
         foreach($leaves as $leaf){
             $date=substr((string)$leaf['created_at'],0,10);
@@ -214,17 +221,30 @@ final class CashFundReports {
             if($leaf['issued_this_month'])$leafIssues++;
             $leavesPeriod[]=$leaf;
             if(in_array((string)($leaf['status']??''),['SPOILED','VOID','LOST'],true))
-                $warnings[]='Appendix 67 has unusable check leaves. Verify dated spoiled/lost/void evidence before reporting historical book stock.';
+                $warn('unusable_leaves','Appendix 67 has unusable check leaves. Verify dated spoiled/lost/void evidence before reporting historical book stock.',['A67'],'review');
         }
         $outstandingCents=array_sum(array_map(static fn($c)=>self::cents($c['amount']),$outstanding));
         return compact('fund','bank','period','from','end','prev','opening','closing','credit','payment','periodReversals','allPeriodDownloads',
             'periodChecks','periodReleased','bookOpening','bookClosing','issuedValue','outstanding','outstandingCents','dvRows','uacs','negativeTax','taxStats','grossClassified','recapCash',
-            'warnings','recon','reconLines','reconAdjust','leavesPeriod','leafOpen','leafReceipts','leafIssues')+
+            'warnings','reviewItems','recon','reconLines','reconAdjust','leavesPeriod','leafOpen','leafReceipts','leafIssues')+
             ['certified'=>false,'report_basis'=>'READ-ONLY / SOURCE-DOCUMENT WORKPAPER'];
+    }
+    /** Report-specific review; informational limitations never imply certification. */
+    public static function reviewForReport(array $data,string $report):array {
+        $review=[];$context=[];$provisional=[];
+        foreach($data['reviewItems']??[] as $item){
+            if(!in_array($report,$item['reports'],true))continue;
+            $message=(string)$item['message'];
+            if($item['kind']==='provisional')$provisional[$message]=$message;
+            elseif($item['kind']==='context')$context[$message]=$message;
+            else $review[$message]=$message;
+        }
+        return ['review'=>array_values($review),'context'=>array_values($context),
+            'provisional'=>array_values($provisional),'certified'=>false];
     }
     public static function load(PDO $db,array $user,array $p): array {
         demand(($user['role']??'')!=='VIEWER','Detailed bank and liquidation reports are restricted',403);
-        $org=idOf($p,'organization_id');scope($db,$user,$org);
+        $org=idOf($p,'organization_id');FinanceAccess::read($db,$user,$org);
         $fundId=idOf($p,'fund_id');$bankId=idOf($p,'bank_account_id');$period=(string)($p['period']??'');$end=self::cutoff($period);
         $exclusiveEnd=(new DateTimeImmutable($end))->modify('+1 day')->format('Y-m-d').' 00:00:00';
         demand($period<=date('Y-m'),'Future reporting period is not available',422);
@@ -271,9 +291,14 @@ final class CashFundReports {
         $recon=one($db,'SELECT id,bank_account_id,period,status,statement_balance,book_balance,notes FROM bank_reconciliations WHERE bank_account_id=? AND period=?',[$bankId,$period])??[];
         $reconLines=$recon?q($db,'SELECT kind,amount,reference FROM reconciliation_lines WHERE reconciliation_id=? ORDER BY id LIMIT 501',[(int)$recon['id']])->fetchAll(PDO::FETCH_ASSOC):[];
         demand(count($reconLines)<=500,'Reconciliation adjustment source exceeds reporting capacity.',409);
-        $fundCount=(int)(one($db,"SELECT COUNT(DISTINCT fund_id) n FROM fund_events WHERE organization_id=? AND bank_account_id=? AND event_type='ALLOTMENT' AND bank_credit_date<=?",[$org,$bankId,$end])['n']??1);
+        $fundCount=(int)(one($db,"SELECT COUNT(*) n FROM (
+            SELECT fund_id FROM fund_events WHERE organization_id=? AND bank_account_id=? AND event_type='ALLOTMENT' AND bank_credit_date<=?
+            UNION SELECT d.fund_id FROM checks c JOIN disbursement_vouchers d ON d.id=c.dv_id AND d.organization_id=c.organization_id
+            WHERE c.organization_id=? AND c.bank_account_id=? AND c.created_at<?
+        ) AS linked_funds",[$org,$bankId,$end,$org,$bankId,$exclusiveEnd])['n']??0);
         $out=self::pure($fund,$bank,$downloads,$checks,$events,$tax,$accounting,$leaves,$recon,$reconLines,$period,$fundCount);
         $out['warnings'][]='Tax disposition and accounting versions are current saved snapshots, not a certified historical as-of ledger. Review original approved documents for the selected month.';
+        $out['reviewItems'][]=['code'=>'current_snapshots','message'=>end($out['warnings']),'reports'=>['A35','A43'],'kind'=>'context'];
         $out['organization']=one($db,'SELECT id,name,code,kind,address,parent_division_id FROM organizations WHERE id=?',[$org]);
         if(($p['report']??'')==='A43'){
             $counts=q($db,"SELECT h.dv_id,COUNT(*) n FROM checks h JOIN disbursement_vouchers d ON d.id=h.dv_id AND d.organization_id=h.organization_id
@@ -285,6 +310,8 @@ final class CashFundReports {
             $out['appendix43']=Appendix43Register::build($out,$accounting,$tax,$meta);
             $out['warnings']=array_values(array_filter($out['warnings'],static fn($w)=>!str_starts_with($w,'Appendix 43 recapitulation (gross less utilization)')));
             $out['warnings']=array_merge($out['warnings'],$out['appendix43']['notes']);
+            $out['reviewItems']=array_values(array_filter($out['reviewItems'],static fn($item)=>$item['code']!=='legacy_recap'));
+            foreach($out['appendix43']['notes'] as $note)$out['reviewItems'][]=['code'=>'a43_detail','message'=>$note,'reports'=>['A43'],'kind'=>str_starts_with($note,'This is a monthly fund/bank register,')||str_starts_with($note,'IU/Division variant')?'context':'review'];
         }
         $out['options']=[
             'funds'=>q($db,'SELECT id,name,source_code,fiscal_year FROM funds WHERE organization_id=? ORDER BY fiscal_year DESC,source_code LIMIT 201',[$org])->fetchAll(PDO::FETCH_ASSOC),

@@ -28,6 +28,10 @@ require_once dirname(__DIR__).'/private/app/TravelBranding.php';
 require_once dirname(__DIR__).'/private/app/RetainedTaxHandoff.php';
 require_once dirname(__DIR__).'/private/app/DivisionWithholdingRegister.php';
 require_once dirname(__DIR__).'/private/app/PasswordRecovery.php';
+require_once dirname(__DIR__).'/private/app/FinancialReview.php';
+require_once dirname(__DIR__).'/private/app/FinancialAllocation.php';
+require_once dirname(__DIR__).'/private/app/FinancialCutoff.php';
+require_once dirname(__DIR__).'/private/app/FinanceMonitoring.php';
 ini_set('display_errors','0');
 ini_set('log_errors','1');
 header('X-Content-Type-Options: nosniff');
@@ -131,6 +135,10 @@ try {
     }
     if($method==='GET'){
         DivisionSchoolAccess::requireGet($db,$user,$route,$_GET);
+        $financeReads=['finance.review.bank'=>'read','finance.review.snapshot'=>'snapshot','finance.review.downloads'=>'downloads'];
+        if(isset($financeReads[$route]))jsonOut((new FinancialReview($db,$user))->{$financeReads[$route]}($_GET));
+        if($route==='finance.allocation.options')jsonOut((new FinancialAllocation($db,$user))->options($_GET));
+        if($route==='finance.monitor')jsonOut((new FinanceMonitoring($db,$user))->read($_GET));
         if($route==='property.registration.detail')jsonOut($domain->propertyRegistrationDetail($_GET));
         if($route==='division.inventory.consolidation')jsonOut(DivisionConsolidation::read($db,$user,$_GET));
         if($route==='textbook.directory')jsonOut(TextbookDirectory::read($db,$user,$_GET));
@@ -293,7 +301,8 @@ try {
         'check.stock.register'=>'registerPhysicalCheckbook','check.stock.unusable'=>'markPhysicalLeafUnusable','check.stock.correct'=>'correctPhysicalLeafStatus',
         'fund.event'=>'addFundEvent','stock.opening'=>'openingStock','asset.opening'=>'recordAsset','property.registration.correct'=>'correctPropertyRegistration','asset.iar.register'=>'registerIarProperty','asset.move'=>'moveAsset','textbook.opening'=>'textbookOpening','textbook.move'=>'textbookMove','dv.draft.cancel'=>'cancelDraftDV','document.cancel'=>'cancelDocument','po.amend'=>'amendPO','accountability.issue'=>'issueAccountability','bank.reconcile'=>'reconcileBank','document.signed-copy'=>'recordManualSignature',
     ];
-    demand(isset($calls[$route]) || in_array($route,['master.item.registry.link','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.documents.check','travel.claim.ctc.save','travel.claim.verify','travel.plan.save','travel.review.save','role.functions.grant','role.functions.revoke','tax.handoff.notify','tax.handoff.ack'],true) || isset($coReceiptActions[$route]) || isset($bookProfileActions[$route]) || isset($transferActions[$route]) || isset($lifecycleActions[$route]),'Unknown POST endpoint',404);
+    $financeActions=['finance.review.opening'=>'opening','finance.review.source'=>'source','finance.review.close'=>'close','finance.review.reopen'=>'reopen','finance.allocation.plan'=>'plan','finance.allocation.save'=>'reserve','finance.allocation.correct'=>'correctAccounting'];
+    demand(isset($financeActions[$route]) || isset($calls[$route]) || in_array($route,['finance.review.draft','finance.review.capture','master.item.registry.link','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.documents.check','travel.claim.ctc.save','travel.claim.verify','travel.plan.save','travel.review.save','role.functions.grant','role.functions.revoke','tax.handoff.notify','tax.handoff.ack'],true) || isset($coReceiptActions[$route]) || isset($bookProfileActions[$route]) || isset($transferActions[$route]) || isset($lifecycleActions[$route]),'Unknown POST endpoint',404);
     $key=$_SERVER['HTTP_X_IDEMPOTENCY_KEY']??'';
     demand(is_string($key)&&preg_match('/^[a-zA-Z0-9_.:-]{12,100}$/',$key)===1,'Valid X-Idempotency-Key required',400);
     // The source-fund row serializes grants, obligations, finalizations and DV
@@ -304,7 +313,7 @@ try {
     // Division configuration after acquiring scoped write locks.
     // Inventory/property aggregates must also observe commits made while waiting
     // for their lot, IAR, RIS or asset mutex; stale counts can over-register assets.
-    if(in_array($route,['role.functions.grant','role.functions.revoke','master.item.create','master.item.registry.link','pr.finalize','pr.update','po.create','po.amend','po.terms.correct','po.document.correct','iar.create','iar.document.correct','ris.create','ris.cancel','ris.issue','ris.reverse','stock.opening','asset.opening','property.registration.correct','asset.iar.register','asset.move','accountability.issue','textbook.opening','textbook.move','textbook.co_receipt.create','textbook.co_receipt.submit',
+    if(in_array($route,['finance.review.draft','role.functions.grant','role.functions.revoke','master.item.create','master.item.registry.link','pr.finalize','pr.update','po.create','po.amend','po.terms.correct','po.document.correct','iar.create','iar.document.correct','ris.create','ris.cancel','ris.issue','ris.reverse','stock.opening','asset.opening','property.registration.correct','asset.iar.register','asset.move','accountability.issue','textbook.opening','textbook.move','textbook.co_receipt.create','textbook.co_receipt.submit',
         'textbook.co_receipt.inspect','textbook.co_receipt.accept','textbook.co_receipt.reject',
         'textbook.co_receipt.cancel_draft','textbook.co_receipt.iar.issue','textbook.co_receipt.record','textbook.transfer.allocate',
         'textbook.transfer.request','textbook.transfer.dispatch_requested','textbook.transfer.dispatch_direct',
@@ -312,13 +321,19 @@ try {
         'textbook.teacher.loss','textbook.teacher.damage','textbook.damage.quarantine','textbook.disposal.mark',
         'textbook.disposal.authorize','textbook.disposal.deny','textbook.disposal.record','textbook.disposal.withdraw','textbook.catalog.register','textbook.catalog.update','textbook.catalog.discard_draft','travel.activity.create','travel.activity.revise','travel.activity.signatories.refresh','travel.authority.create','travel.signatories.save','travel.branding.save','travel.claim.create','travel.claim.revise','travel.claim.evidence','travel.claim.documents.check','travel.claim.ctc.save','travel.claim.verify','travel.plan.save','travel.review.save','travel.dv.approve','travel.claim.finalize','rfq.update','quote.create','quote.update','award.create','dv.create','dv.finalize','dv.tax.disposition.correct','dv.draft.cancel','tax.transfer.create','tax.transfer.receive','tax.transfer.reconcile','tax.handoff.notify','tax.handoff.ack','fund.event','document.cancel','bank.download.record','bank.download.link_existing','check.create','check.status','check.replace','check.print.profile.save','check.print.prepare','check.stock.register','check.stock.unusable','check.stock.correct','division.mooe.assignment.save','division.fund_source.save','division.fund_policy.save','division.item_uacs.save','division.item_uacs.bulk.apply','division.vat.save','organization.school.classification','master.fund.create'],true))
         $db->exec('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+    if($route==='bank.reconcile')$db->exec('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+    if(isset($financeActions[$route]))$db->exec('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
     // v0.2.79: atomically bind each idempotency key to exactly one
     // authorized route and canonical JSON body. Without this association a
     // reused key could return a success receipt for a DIFFERENT operation.
     // Existing pre-upgrade rows lack this fingerprint; fail closed rather than
     // guessing whether a legacy result belongs to the submitted request.
     $fingerprint=ipdamsRequestFingerprint($route,$body);
+    // Every marked coordinator must actually start READ COMMITTED, including
+    // target-based profile/classification writers without a workspace field.
+    $db->exec('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
     $db->beginTransaction();
+    FinancialCutoff::markCoordinated($db);
     try {
         $written=q($db,'INSERT IGNORE INTO idempotency_keys(user_id,request_key,response_json) VALUES (?,?,?)',
             [$user['id'],$key,'{}'])->rowCount();
@@ -338,6 +353,7 @@ try {
                 'This request key was already used for a different action or document. Refresh and use a new request key',409);
             $db->commit();jsonOut($saved['response']);
         }
+        FinancialCutoff::beginWriter($db,$user,$route,$body);
         // Cross-document date checks run inside idempotent issuance transaction.
         // No workflow date may precede the linked prior form; same-day allowed.
         $chronologyOrg=0;$chronology=null;
@@ -365,7 +381,14 @@ try {
             $awardDocOrg=idOf($body,'organization_id');scope($db,$user,$awardDocOrg);
             $awardDoc=AwardDocuments::forIssue($db,$awardDocOrg,$body);
         }
-        if(isset($bookProfileActions[$route])){
+        if(isset($financeActions[$route])){
+            $service=str_starts_with($route,'finance.allocation.')?new FinancialAllocation($db,$user):new FinancialReview($db,$user);
+            $out=$service->{$financeActions[$route]}($body);
+        }elseif($route==='finance.review.draft'){
+            $out=(new FinancialReview($db,$user))->saveDraft($body);
+        }elseif($route==='finance.review.capture'){
+            $out=(new FinancialReview($db,$user))->capture($body);
+        }elseif(isset($bookProfileActions[$route])){
             $out=(new TextbookBookProfiles($db,$user))->{$bookProfileActions[$route]}($body);
         }elseif(isset($coReceiptActions[$route])){
             $out=(new TextbookCoReceiptWorkflow($db,$user))->{$coReceiptActions[$route]}($body);
@@ -459,6 +482,8 @@ try {
                 new PrClassificationPreview($db,$user,$domain,new CatalogRegistryLinks($db,$user,$domain)));
             $evidence->capture($route,$body,$out);
         }
+        if(!in_array($route,['dv.finalize','check.create','check.status','check.replace','dv.accounting','document.cancel','dv.draft.cancel','dv.update','tax.confirm','fund.event','dv.tax.disposition.correct','bank.download.record','bank.download.link_existing','tax.transfer.create','tax.transfer.receive','tax.transfer.reconcile','dv.particulars.update','bank.label.rename','staff.employee.change','staff.head.save','staff.dv.signatories.save','division.mooe.assignment.save','organization.profile.update','organization.school.classification'],true))
+        (new FinancialAllocation($db,$user))->afterMutation($route,$body,$out);
         $envelope=[
             '_ipdams_request_version'=>1,
             'route'=>$route,
@@ -479,7 +504,7 @@ try {
             unset($_SESSION['password_reset_force_change']);
         }
         jsonOut($out,201);
-    }catch(Throwable $error){if($db->inTransaction())$db->rollBack();throw $error;}
+    }catch(Throwable $error){if($db->inTransaction())$db->rollBack();throw $error;}finally{FinancialCutoff::unmarkCoordinated($db);}
 } catch(DomainError $error){http_response_code($error->status);header('Content-Type: application/json');echo json_encode(['error'=>$error->getMessage()]);}
 catch(JsonException $error){http_response_code(400);header('Content-Type: application/json');echo json_encode(['error'=>'Malformed JSON request']);}
 catch(PDOException $error){

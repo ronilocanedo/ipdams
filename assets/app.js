@@ -5527,6 +5527,7 @@ h('div',{className:'employee-claim-actions'},
                                 h('p',null,lines.length+' internal allocation lines · '+(d.versions||[]).length+' finalized versions'))),
                         h('footer',{className:'pr-detail-actions'},
                             h('button',{type:'button',className:'outline',onClick:close},'Close'),
+                            h('a',{className:'pr-detail-print',target:'_blank',rel:'noopener',href:'api/finance-allocation.php?organization_id='+encodeURIComponent(this.state.organization_id)+'&dv_id='+encodeURIComponent(r.id)},r.status==='DRAFT'?'Plan download allocation ↗':'View download attribution ↗'),
                             d.edit_allowed&&this.canOperateWorkspace()?h('button',{type:'button',className:'primary',onClick:()=>this.beginDvEdit(d)},'Correct Accounting UACS'):null,
                             d.correction_readonly_reason?h('p',{className:'hint'},d.correction_readonly_reason):null,
                             r.status==='DRAFT'&&this.canOperateWorkspace()?h('button',{type:'button',
@@ -9707,6 +9708,7 @@ h('div',{className:'employee-claim-actions'},
                                             h('input',{type:'checkbox',checked:!!this.state.dvBankCashVerified,
                                                 onChange:e=>this.setState({dvBankCashVerified:e.target.checked,dvActionError:''})}),
                                             h('span',null,'I checked the actual bank funds for this payment, including outstanding commitments, bank charges, holds and any maintaining balance. The book balance alone is not a bank statement.')):null,
+                                        this.state.dvCheckBank?h('p',{className:'hint'},h('a',{href:'api/finance-allocation.php?organization_id='+encodeURIComponent(this.state.organization_id)+'&dv_id='+encodeURIComponent(r.id)+'&bank_account_id='+encodeURIComponent(this.state.dvCheckBank),target:'_blank',rel:'noopener'},'Choose explicit download sources for this DV ↗'),' · Save the plan before finalization. Every gross source and withholding component must reconcile to verified downloads; capacity is checked when finalization reserves the plan.'):null,
                                         h('p',{className:'hint'},'The chosen check will be assigned when DV finalization succeeds and will appear on the printed DV. It is NOT yet signed, released, bank-cleared, or a new cash disbursement.')),
                                     h('section',{className:'dv-finalize-particulars','aria-label':'Payment particulars'},
                                         h('h3',null,'Particulars'),
@@ -14869,60 +14871,11 @@ h('div',{className:'employee-claim-actions'},
                     banks.length?this.table('Registered accounts',['bank_name','account_label','masked_account'],banks):
                         h('p',{className:'cb-empty'},'No registered bank accounts.'));
                 const reconciliationCard=()=>h('section',{className:'surface cb-panel-surface'},
-                    h('div',{className:'cb-panel-header'},h('div',null,
-                        h('h3',null,'Bank Reconciliation'),
-                        h('p',{className:'hint'},'Reconcile actual statement and book balances, unpresented checks and maintaining balance. This is not additional funding or spending authority.'))),
-                    h('form',{onSubmit:async e=>{e.preventDefault();
-                        if(!this.canOperateWorkspace()||this.state.busy)return;
-                        const z=this.state;
-                        const book=Number(z.reconBook),statement=Number(z.reconStatement),outstanding=Number(z.reconOutstanding||0),minimum=Number(z.reconMinimum);
-                        if(!z.reconBank||!Number.isFinite(book)||!Number.isFinite(statement)||!Number.isFinite(outstanding)||!Number.isFinite(minimum)||
-                            book<0||statement<0||outstanding<0||minimum<0||
-                            Math.abs((book+outstanding)-statement)>0.001||!z.reconVerified||(z.reconEvidence||'').trim().length<8){
-                            this.setState({reconError:'Enter actual verified statement/book values, unpresented checks, bank maintaining balance and evidence. The statement must equal book plus unpresented checks.'});return;
-                        }
-                        const evid=z.reconEvidence.trim().replace(/[\r\n;]/g,' ');
-                        this.setState({busy:true,reconError:'',reconNotice:''});
-                        try {
-                            const payload={bank_account_id:Number(z.reconBank),period:localToday().slice(0,7),
-                                statement_balance:statement.toFixed(2),book_balance:book.toFixed(2),
-                                notes:'REQUIRED_MINIMUM_PHP='+minimum.toFixed(2)+' BANK_EVIDENCE_REF='+evid+'; Officer reviewed signed/available bank records and outstanding checks.',
-                                lines:outstanding>0?[{kind:'UNCLEARED_ISSUED_CHECKS',direction:'ADD',amount:outstanding.toFixed(2),reference:evid}]:[],close:true};
-                            const saved=await this.api('bank.reconcile',{organization_id:Number(z.organization_id),...payload});
-                            this.setState({reconNotice:saved?.closed?'Closed bank reconciliation recorded. This is not additional funding. Reopen DV final review and select this bank.':'Reconciliation remains open; no cash-based DV authority created.',
-                                reconVerified:false,reconOutstanding:''});
-                        } catch(err){this.setState({reconError:err.message||'Bank reconciliation was not recorded.'});}
-                        finally{this.setState({busy:false});}
-                    }},
-                        h('div',{className:'form-grid'},
-                            h('label',{className:'field'},h('span',null,'Bank account *'),
-                                h('select',{required:true,value:s.reconBank||'',onChange:e=>this.setState({reconBank:e.target.value,reconError:''})},
-                                    h('option',{value:''},'Select actual school bank'),...banks.map(b=>h('option',{key:b.id,value:String(b.id)},b.bank_name+' / '+b.account_label)))),
-                            h('label',{className:'field'},h('span',null,'Current reconciled period'),
-                                h('input',{readOnly:true,value:localToday().slice(0,7)})),
-                            h('label',{className:'field'},h('span',null,'Statement balance (₱) *'),
-                                h('input',{type:'number',required:true,min:'0',step:'0.01',value:s.reconStatement||'',
-                                    onChange:e=>this.setState({reconStatement:e.target.value,reconError:''})})),
-                            h('label',{className:'field'},h('span',null,'Bank book cash after recorded checks (₱) *'),
-                                h('input',{type:'number',required:true,min:'0',step:'0.01',value:s.reconBook||'',
-                                    onChange:e=>this.setState({reconBook:e.target.value,reconError:''})})),
-                            h('label',{className:'field'},h('span',null,'Issued checks not yet presented (₱)'),
-                                h('input',{type:'number',min:'0',step:'0.01',value:s.reconOutstanding||'',
-                                    onChange:e=>this.setState({reconOutstanding:e.target.value,reconError:''})})),
-                            h('label',{className:'field'},h('span',null,'Bank-required maintaining balance (₱) *'),
-                                h('input',{type:'number',required:true,min:'0',step:'0.01',value:s.reconMinimum||'',
-                                    onChange:e=>this.setState({reconMinimum:e.target.value,reconError:''})})),
-                            h('label',{className:'field'},h('span',null,'Official bank statement / reconciliation evidence reference *'),
-                                h('input',{required:true,minLength:8,maxLength:100,value:s.reconEvidence||'',
-                                    onChange:e=>this.setState({reconEvidence:e.target.value,reconError:''}),
-                                    placeholder:'Bank document/date or reconciliation reference'}))),
-                        h('p',{className:'hint'},'Unpresented checks are ADDED to the book only for matching the statement; the DV cash gate itself counts every assigned, signed or released check as committed and never adds withholding as a deposit.'),
-                        h('label',{className:'dv-cancel-acknowledge'},
-                            h('input',{type:'checkbox',checked:!!s.reconVerified,onChange:e=>this.setState({reconVerified:e.target.checked,reconError:''})}),
-                            h('span',null,'I verified the actual statement and cash book, all outstanding checks and the required maintaining balance. This is not spending authority by itself.')),
-                        s.reconError?h('p',{className:'notice error',role:'alert'},s.reconError):null,
-                        s.reconNotice?h('p',{className:'notice',role:'status'},s.reconNotice):null,
-                        h('button',{type:'submit',className:'primary',disabled:!s.reconVerified||s.busy},'Record verified reconciliation')));
+                    h('div',{className:'cb-panel-header'},h('h3',null,'Bank Reconciliation')),
+                    h('p',{className:'hint'},'Reconcile the whole account from verified deposits, checks and supported adjustments. Closing requires complete sources and balanced bank and book totals; revisions preserve earlier records.'),
+                    h('a',{className:'button outline',href:'api/finance-monitor.php?organization_id='+encodeURIComponent(s.organization_id),target:'_blank',rel:'noopener'},s.user?.role==='DIVISION'?'Open Division fund utilization':'Open download utilization'),
+                    banks.length?h('a',{className:'button',href:'api/financial-review.php?organization_id='+encodeURIComponent(s.organization_id)+'&bank_account_id='+encodeURIComponent(banks[0].id)+'&period='+localToday().slice(0,7),target:'_blank',rel:'noopener'},'Open reconciliation and historical workpapers'):
+                        h('p',{className:'cb-empty'},'Configure a bank account first.'));
                 const book=s.bankRegister;
                 const money=n=>'₱'+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
                 const bankBookRows=Array.isArray(book?.rows)?book.rows:[];

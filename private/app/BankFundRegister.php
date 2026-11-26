@@ -10,19 +10,26 @@ final class BankFundRegister {
     private static function cents($value): int {return moneyCents((string)$value);}
     private static function money(int $cents): string {return moneyString($cents);}
 
-    public static function read(PDO $db,int $org): array {
+    public static function read(PDO $db,int $org,bool $verifiedOnly=false): array {
         $today=(new DateTimeImmutable('now',new DateTimeZone('Asia/Manila')))->format('Y-m-d');
         $banks=q($db,'SELECT id,bank_name,account_label,masked_account FROM bank_accounts WHERE organization_id=? ORDER BY bank_name,account_label,id',[$org])->fetchAll(PDO::FETCH_ASSOC);
         $funds=q($db,'SELECT id,name,source_code,fiscal_year FROM funds WHERE organization_id=? ORDER BY fiscal_year DESC,name,id',[$org])->fetchAll(PDO::FETCH_ASSOC);
         // Bank-linked credits only, effective as of today. Unlinked and future
         // downloads are reported separately, NEVER counted as actual cash.
+        // Financial authorization requires actual verified credit identity and
+        // supporting evidence. Keep the historical read-only book projection
+        // available by default, without allowing its unverified rows to create
+        // pooled spending capacity. Every check commitment is retained below.
+        $verifiedFilter=$verifiedOnly?" AND e.reference_type IN ('BANK_DOWNLOAD','DIVISION_RELEASE')
+                AND TRIM(COALESCE(e.bank_credit_ref,''))<>''
+                AND TRIM(COALESCE(e.bank_evidence_ref,''))<>''":'';
         $credits=q($db,"SELECT e.id,e.fund_id,e.bank_account_id,e.amount,e.bank_credit_date,e.bank_credit_ref,
                 e.bank_advice_ref,e.reason,e.created_at
             FROM fund_events e
             JOIN funds f ON f.id=e.fund_id AND f.organization_id=e.organization_id
             JOIN bank_accounts b ON b.id=e.bank_account_id AND b.organization_id=e.organization_id
             WHERE e.organization_id=? AND e.event_type='ALLOTMENT'
-                AND e.bank_credit_date IS NOT NULL AND e.bank_credit_date<=?
+                AND e.bank_credit_date IS NOT NULL AND e.bank_credit_date<=?".$verifiedFilter."
             ORDER BY e.bank_credit_date,e.id LIMIT 5001",[$org,$today])->fetchAll(PDO::FETCH_ASSOC);
         // Count checks when physical serial is ASSIGNED/ISSUED, not only when
         // cleared. Do not release a stopped or stale check without audited

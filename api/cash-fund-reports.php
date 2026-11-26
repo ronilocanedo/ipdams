@@ -5,6 +5,8 @@ $privateApp = dirname(__DIR__).'/private/app';
 if (!is_file($privateApp.'/bootstrap.php')) $privateApp = dirname(__DIR__,2).'/private/app';
 require_once $privateApp.'/bootstrap.php';
 require_once $privateApp.'/CashFundReports.php';
+require_once $privateApp.'/FinanceMonitoring.php';
+require_once $privateApp.'/FinancialSnapshots.php';
 ini_set('display_errors','0');ini_set('log_errors','1');
 ini_set('session.use_strict_mode','1');ini_set('session.cookie_httponly','1');ini_set('session.cookie_samesite','Lax');
 $isHttps=(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off')||($_SERVER['HTTP_X_FORWARDED_PROTO']??'')==='https';
@@ -34,19 +36,28 @@ try{
         ?q($db,'SELECT id,name,kind FROM organizations WHERE active=1 ORDER BY name LIMIT 201')->fetchAll(PDO::FETCH_ASSOC)
         :q($db,'SELECT o.id,o.name,o.kind FROM organizations o JOIN user_organization_scopes s ON s.organization_id=o.id WHERE s.user_id=? AND o.active=1 ORDER BY o.name LIMIT 201',[(int)$user['id']])->fetchAll(PDO::FETCH_ASSOC);
     if(!$org)$org=(int)($organizations[0]['id']??0);
-    if($org){scope($db,$user,$org);
+    if($org){FinanceAccess::read($db,$user,$org);
         demand(one($db,'SELECT id FROM organizations WHERE id=? AND active=1',[$org])!==null,'Organization unavailable',404);
         $choices=['funds'=>q($db,'SELECT id,name,source_code,fiscal_year FROM funds WHERE organization_id=? ORDER BY fiscal_year DESC,source_code LIMIT 201',[$org])->fetchAll(PDO::FETCH_ASSOC),
           'banks'=>q($db,'SELECT id,bank_name,account_label,masked_account FROM bank_accounts WHERE organization_id=? ORDER BY bank_name LIMIT 201',[$org])->fetchAll(PDO::FETCH_ASSOC)];
         if(!$fundId)$fundId=(int)($choices['funds'][0]['id']??0);
         if(!$bankId)$bankId=(int)($choices['banks'][0]['id']??0);
-        if($fundId&&$bankId)$data=CashFundReports::load($db,$user,['organization_id'=>$org,'fund_id'=>$fundId,'bank_account_id'=>$bankId,'period'=>$period,'report'=>$r]);
+        if(!empty($_GET['snapshot_id'])){
+            $data=FinancialSnapshots::report($db,$user,$_GET+['organization_id'=>$org,'period'=>$period,'fund_id'=>$fundId,'report'=>$r]);
+            $fundId=(int)$data['fund']['id'];$bankId=(int)$data['bank']['id'];$period=substr($data['from'],0,7);
+        }
+        elseif(!empty($_GET['download_id'])){
+            demand($r==='A43','Download-specific reporting is available in the cash disbursements register; bank reconciliation remains account-wide',422);
+            $data=(new FinanceMonitoring($db,$user))->downloadReport($_GET+['organization_id'=>$org,'period'=>$period]);
+            $fundId=(int)$data['fund']['id'];$bankId=(int)$data['bank']['id'];
+        }
+        elseif($fundId&&$bankId)$data=CashFundReports::load($db,$user,['organization_id'=>$org,'fund_id'=>$fundId,'bank_account_id'=>$bankId,'period'=>$period,'report'=>$r]);
         else $err='Configure a fund source and a bank account before preparing financial reports.';
     }else $err='There is no authorized organization for this account.';
 }catch(DomainError $e){http_response_code($e->status);$err=$e->getMessage();}
 catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_response_code(500);$err='Financial report could not be prepared. Technical review is required; nothing was posted.';}
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IPDAMS · Cash and Fund Reports</title><link rel="stylesheet" href="../assets/cash-fund-reports.css?v=0.2.451"><script src="../assets/cash-fund-reports.js" defer></script></head>
+<title>IPDAMS · Cash and Fund Reports</title><link rel="stylesheet" href="../assets/cash-fund-reports.css?v=0.2.455"><script src="../assets/cash-fund-reports.js" defer></script></head>
 <body class="report-<?=er($r)?>"><div class="toolbar noprint">
  <div><div class="eyebrow">IPDAMS / CASH &amp; BANK</div><h1>Fund liquidation &amp; cash reports</h1><p>Prepared from existing source records. Printing never posts funds, alters taxes or changes check status.</p></div>
  <button type="button" data-report-print <?=$data?'':'disabled'?>>Print selected report</button>
@@ -57,17 +68,22 @@ catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_r
  <label>Fund source<select name="fund_id"><?php foreach($choices['funds'] as $f):?><option value="<?=er($f['id'])?>" <?=(int)$f['id']===$fundId?'selected':''?>><?=er($f['source_code'].' · FY '.$f['fiscal_year'].' · '.$f['name'])?></option><?php endforeach;?></select></label>
  <label>Bank account<select name="bank_account_id"><?php foreach($choices['banks'] as $b):?><option value="<?=er($b['id'])?>" <?=(int)$b['id']===$bankId?'selected':''?>><?=er($b['bank_name'].' / '.$b['account_label'].' / '.$b['masked_account'])?></option><?php endforeach;?></select></label>
  <label>Report month<input name="period" type="month" required value="<?=er($period)?>"></label>
+ <label>Individual download (register only)<input name="download_id" type="number" min="1" value="<?=er($_GET['download_id']??'')?>"></label>
+ <label>Historical snapshot ID<input name="snapshot_id" type="number" min="1" value="<?=er($_GET['snapshot_id']??'')?>"></label>
  <label>Report<select name="report"><?php foreach($reportCodes as $code=>$name):?><option value="<?=er($code)?>" <?=$code===$r?'selected':''?>><?=er($name)?></option><?php endforeach;?></select></label>
  <button type="submit">Generate report</button>
 </form>
 <nav class="report-tabs noprint"><?php foreach($reportCodes as $code=>$title):
- $query=http_build_query(['organization_id'=>$org,'fund_id'=>$fundId,'bank_account_id'=>$bankId,'period'=>$period,'report'=>$code]); ?>
+ $tabParams=['organization_id'=>$org,'fund_id'=>$fundId,'bank_account_id'=>$bankId,'period'=>$period,'report'=>$code];
+ if(!empty($_GET['snapshot_id']))$tabParams['snapshot_id']=(int)$_GET['snapshot_id'];
+ if($code==='A43'&&!empty($_GET['download_id']))$tabParams['download_id']=(int)$_GET['download_id'];
+ $query=http_build_query($tabParams); ?>
  <a class="<?=$r===$code?'active':''?>" href="?<?=er($query)?>"><?=er($code)?></a><?php endforeach;?></nav>
 <?php if($err):?><div class="alert">Review required: <?=er($err)?></div><?php elseif($data):
  $d=$data;$fund=$d['fund'];$bank=$d['bank'];$orgName=(string)($d['organization']['name']??'');
  $periodTitle=(new DateTimeImmutable($d['from']))->format('F Y');$asOf=(new DateTimeImmutable($d['end']))->format('F j, Y');
- $name=(string)$reportCodes[$r];$warningCount=count($d['warnings']); ?>
- <div class="context noprint"><strong><?=er($name)?></strong><span><?=er($orgName)?> · <?=er($fund['source_code'])?> · <?=er($periodTitle)?></span><span>Review required: <?=$warningCount?> item(s)</span></div>
+ $name=(string)$reportCodes[$r];$review=CashFundReports::reviewForReport($d,$r);$warningCount=count($review['review']); ?>
+ <div class="context noprint"><strong><?=er($name)?></strong><span><?=er($orgName)?> · <?=er($fund['source_code'])?> · <?=er($periodTitle)?></span><span><?= $warningCount ? 'Review items: '.$warningCount : 'No additional report-specific review issues detected' ?></span><?php if($review['provisional']):?><strong>Provisional · month in progress</strong><?php endif;?></div>
  <div class="sheet">
  <?php if($r!=='A43'):?>
  <div class="appendix"><?=er($r==='S1'?'Schedule 1':'Appendix '.substr($r,1))?></div>
@@ -75,16 +91,39 @@ catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_r
  <strong><?=er($orgName)?></strong><div><?=er($fund['source_code'].' · '.$fund['name'].' · FY '.$fund['fiscal_year'])?></div>
  <div><?=er($bank['bank_name'].' / '.$bank['account_label'].' / '.$bank['masked_account'])?></div>
  <div><?=er(in_array($r,['A80','S1'],true)?'As of '.$asOf:'Period: '.$periodTitle)?></div></div>
- <div class="review-banner">REVIEW COPY — NOT CERTIFIED · Source-document reconciliation required</div>
+ <div class="review-banner">REVIEW COPY — NOT CERTIFIED<?= $review['provisional']?' · PROVISIONAL PERIOD':'' ?></div>
  <?php endif;?>
  <?php if($r==='A80'):?>
- <p class="caption">Bank reconciliation is recorded for the whole bank account. A selected fund's bank-book projection is shown separately below and is not a replacement for the official bank statement.</p>
- <table class="statement"><thead><tr><th>Particulars</th><th>Agency / book</th><th>Bank statement</th><th>Explanatory comment</th></tr></thead><tbody>
- <tr><th>Unadjusted balances</th><td class="num"><?=mo($d['closing'])?></td><td class="num"><?=$d['recon']?moneyRead($d['recon']['statement_balance']):'Not recorded'?></td><td>Fund-scoped RELEASED-check cash projection; bank statement is account-wide</td></tr>
- <tr><th>Outstanding checks (Schedule 1)</th><td></td><td class="num"><?=mo($d['outstandingCents'])?></td><td>Recorded uncleared checks for selected fund, not an authenticated bank adjustment</td></tr>
- <?php foreach($d['reconLines'] as $line):?><tr><td><?=er($line['kind'])?></td><td class="num"><?=er($line['amount'])?></td><td></td><td><?=er($line['reference'])?></td></tr><?php endforeach;?>
- <tr class="total"><th>Saved reconciliation controls</th><td class="num"><?=$d['recon']?moneyRead($d['recon']['book_balance']):'—'?></td><td class="num"><?=$d['recon']?moneyRead($d['recon']['statement_balance']):'—'?></td><td><?=er($d['recon']['status']??'NO CLOSED RECORD')?></td></tr>
- </tbody></table><div class="footline">Bank evidence, bank fees, interest and deposits must be checked against the actual statement; this view creates no reconciling entry.</div>
+ <h3>Bank reconciliation — whole account</h3>
+ <p class="caption">Use the actual bank statement and account-wide books, including all funds using this bank account. The saved reconciliation is not a fund-specific statement.</p>
+ <?php if(!empty($d['reconTyped'])):$typed=$d['reconTyped']; ?>
+ <table class="statement" aria-label="Typed account-wide bank reconciliation"><thead><tr><th>Side / verified particulars</th><th>Amount</th><th>Evidence</th></tr></thead><tbody>
+ <tr><th>Bank statement balance</th><td class="num"><?=mo((int)$typed['statement_cents'])?></td><td><?=er($typed['statement_evidence'])?></td></tr>
+ <?php foreach($typed['lines'] as $line)if($line['side']==='BANK'):?><tr><td><?=er($line['kind'])?></td><td class="num"><?=mo((int)$line['cents'])?></td><td><?=er($line['evidence'])?></td></tr><?php endif;?>
+ <tr class="total"><th>Adjusted bank balance</th><td class="num"><?=mo((int)$typed['totals']['adjusted_bank_cents'])?></td><td>Bank side only</td></tr>
+ <tr><th>Verified account book balance</th><td class="num"><?=mo((int)$typed['book_cents'])?></td><td><?=er($typed['book_evidence'])?></td></tr>
+ <?php foreach($typed['lines'] as $line)if($line['side']==='BOOK'):?><tr><td><?=er($line['kind'])?></td><td class="num"><?=mo((int)$line['cents'])?></td><td><?=er($line['evidence'])?></td></tr><?php endif;?>
+ <tr class="total"><th>Adjusted book balance</th><td class="num"><?=mo((int)$typed['totals']['adjusted_book_cents'])?></td><td>Book side only</td></tr>
+ <tr><th>Required maintaining balance</th><td class="num"><?=mo((int)$typed['maintaining_cents'])?></td><td>Preserved verified account requirement</td></tr>
+ <tr class="total"><th>Difference (adjusted books less adjusted bank)</th><td class="num"><?=mo((int)$typed['totals']['difference_cents'])?></td><td><?=er($typed['status'])?></td></tr></tbody></table>
+ <?php elseif($d['recon']): $savedBook=moneyCents((string)$d['recon']['book_balance']);$savedStatement=moneyCents((string)$d['recon']['statement_balance']);$adjustedBook=$savedBook+$d['reconAdjust']; ?>
+ <table class="statement"><thead><tr><th>Particulars</th><th>Amount</th><th>Reference / status</th></tr></thead><tbody>
+ <tr><th>Recorded book balance</th><td class="num"><?=mo($savedBook)?></td><td>Whole bank account</td></tr>
+ <?php foreach($d['reconLines'] as $line):?><tr><td><?=er($line['kind'])?></td><td class="num"><?=er($line['amount'])?></td><td><?=er($line['reference'])?></td></tr><?php endforeach;?>
+ <tr class="total"><th>Adjusted book balance</th><td class="num"><?=mo($adjustedBook)?></td><td>Book balance plus signed recorded adjustments</td></tr>
+ <tr><th>Recorded bank statement balance</th><td class="num"><?=mo($savedStatement)?></td><td>Whole bank account</td></tr>
+ <tr class="total"><th>Difference (adjusted book less statement)</th><td class="num"><?=mo($adjustedBook-$savedStatement)?></td><td><?=er($d['recon']['status'])?></td></tr>
+ </tbody></table>
+ <?php else:?><p class="caption">No saved reconciliation for this account and period. No bank statement or book balance has been inferred.</p><?php endif;?>
+ <h3>Selected fund — separate cash projection</h3>
+ <table><thead><tr><th>Particulars</th><th>Amount</th></tr></thead><tbody>
+ <tr><td>Opening released-check projection</td><td class="num"><?=mo($d['opening'])?></td></tr>
+ <tr><td>Verified bank-linked fund credits</td><td class="num"><?=mo($d['credit'])?></td></tr>
+ <tr><td>Recorded released checks</td><td class="num"><?=mo($d['payment'])?></td></tr>
+ <tr class="total"><td>Closing fund cash projection</td><td class="num"><?=mo($d['closing'])?></td></tr>
+ <tr><td>Outstanding checks for selected fund (Schedule 1)</td><td class="num"><?=mo($d['outstandingCents'])?></td></tr>
+ </tbody></table>
+ <p class="caption">Do not subtract these fund-specific figures again from the saved account-wide reconciliation. Verify actual statement, book balances and adjustment evidence in Cash &amp; Bank → Bank Reconciliation.</p>
  <?php elseif($r==='S1'):?>
  <table><thead><tr><th>Check date (same as DV)</th><th>Recorded issuance date</th><th>Payee</th><th>Check No.</th><th>DV No.</th><th>Amount</th><th>Status at cutoff</th></tr></thead><tbody>
  <?php foreach($d['outstanding'] as $c):?><tr><td><?=er($c['check_date']?:'DV date missing')?></td><td><?=er($c['issue_date'])?></td><td><?=er($c['payee_name']??$c['dv_payee'])?></td><td><?=er($c['check_number'])?></td><td><?=er($c['dv_number'])?></td><td class="num"><?=moneyRead($c['amount'])?></td><td><?=er($c['stage_at_end'])?></td></tr><?php endforeach;?>
@@ -121,6 +160,9 @@ catch(Throwable $e){error_log('IPDAMS CashFundReports '.$e->getMessage());http_r
  <?php endif;?>
  <?php if($r!=='A43'):?><div class="signatures"><div>Prepared by:<div class="sigline"></div><small>Printed name, designation and date</small></div><div>Certified correct by:<div class="sigline"></div><small>Authorized official's physical signature and date</small></div></div><?php endif;?>
  </div>
- <?php if($d['warnings']):?><section class="warnings"><h3>Review required before certification</h3><ol><?php foreach(array_unique($d['warnings']) as $w):?><li><?=er($w)?></li><?php endforeach;?></ol></section><?php endif;?>
- <p class="footer noprint">IPDAMS v0.2.451 reporting workpaper · Read only · Source records remain unchanged · These previews do not attest completion of liquidation or bank reconciliation.</p>
+ <?php if($review['review']):?><section class="warnings noprint"><h3>Review items for this report</h3><ul><?php foreach($review['review'] as $w):?><li><?=er($w)?></li><?php endforeach;?></ul>
+ <?php if($r==='A80'):?><p class="caption">To resolve reconciliation issues, verify the account-wide bank statement and book balance, enter supported signed adjustments in Cash &amp; Bank → Bank Reconciliation, and close only when the adjusted book balance equals the statement.</p><?php endif;?></section><?php endif;?>
+ <?php if($review['provisional']||$review['context']):?><section class="report-notes noprint"><h3>Reporting basis</h3><?php foreach($review['provisional'] as $w):?><p><strong><?=er($w)?></strong></p><?php endforeach;?><?php foreach($review['context'] as $w):?><p><?=er($w)?></p><?php endforeach;?></section><?php endif;?>
+ <?php if(!empty($d['report_basis_note'])&&$r!=='A43'):?><p class="caption"><?=er($d['report_basis_note'])?></p><?php endif;?>
+ <p class="footer noprint">Read-only reporting workpaper · Source records remain unchanged · Not a certification of liquidation or bank reconciliation.</p>
 <?php endif;?></body></html>

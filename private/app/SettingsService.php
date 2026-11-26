@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__.'/Domain.php';
 require_once __DIR__.'/ReleaseVersion.php';
+require_once __DIR__.'/FinanceSchema.php';
 const SETTINGS_MAX_ZIP = 20_000_000;
 const SETTINGS_MAX_FILES = 350;
 const SETTINGS_MAX_EXPANDED = 60_000_000;
@@ -60,7 +61,7 @@ function settingsAllowed(string $path): bool {
     return false;
 }
 function settingsCritical(string $path): bool {
-    return in_array($path,['app/bootstrap.php','app/SettingsService.php','public/settings.php','public/index.php','public/version.php'],true);
+    return in_array($path,['app/bootstrap.php','app/SettingsService.php','app/FinanceSchema.php','public/settings.php','public/index.php','public/version.php'],true);
 }
 
 /** Exact allowlist for one designated, fail-closed property-link schema rollout. */
@@ -493,12 +494,22 @@ function settingsMigrationSql(string $content): string {
     $approvedNullableBank=hash_equals(settingsTaxTransferOptionalBankDdl(),preg_replace('/\s+/',' ',trim($statement)));
     $approvedPasswordRecovery=in_array(preg_replace('/\s+/',' ',trim($statement)),
         array_map(static fn(string $ddl)=>preg_replace('/\s+/',' ',trim($ddl)),settingsPasswordRecoveryMigrationStatements()),true);
-    demand($addColumn||$insertUacs||$createCheckStock||$approvedPropertyLink||$approvedTravelTimeline||$approvedTravelDv||$approvedTaxTransfer||$approvedNullableBank||$approvedPasswordRecovery,
+    $approvedFinance=FinanceSchema::migrationKey($statement)!==null;
+    demand($addColumn||$insertUacs||$createCheckStock||$approvedPropertyLink||$approvedTravelTimeline||$approvedTravelDv||$approvedTaxTransfer||$approvedNullableBank||$approvedPasswordRecovery||$approvedFinance,
         'Only explicitly allowlisted migrations are supported');
+    return $statement;
+}
+/** Validate the approved migration identity during package parsing as well as apply. */
+function settingsMigrationPackageStatement(string $path,string $content): string {
+    $statement=settingsMigrationSql($content);
+    $key=FinanceSchema::migrationKey($statement);
+    if($key!==null)demand($path==='migrations/'.$key.'.sql','Finance migration identity and statement do not match',409);
     return $statement;
 }
 function settingsMigrationVerifyResult(PDO $db,string $sql): void {
     $normalized=preg_replace('/\s+/',' ',trim($sql));
+    $financeKey=FinanceSchema::migrationKey($normalized);
+    if($financeKey!==null){FinanceSchema::verify($db,$financeKey);return;}
     if(hash_equals(settingsTaxTransferOptionalBankDdl(),$normalized)){
         settingsVerifyOptionalBankColumn($db,true);return;
     }
@@ -561,6 +572,12 @@ function settingsApplyMigrations(PDO $db,ZipArchive $zip,array $manifest,int $ui
         $raw=$zip->getFromName($entry['path']);
         demand(is_string($raw) && hash_equals((string)$entry['sha256'],hash('sha256',$raw)),'Migration contents changed: '.$id);
         $statement=settingsMigrationSql($raw);
+        $financeKey=FinanceSchema::migrationKey($statement);
+        if($financeKey!==null){
+            // Bind the exact approved statement to its approved immutable identity.
+            demand($id===$financeKey,'Finance migration identity and statement do not match',409);
+            if(FinanceSchema::exists($db,$financeKey))FinanceSchema::verify($db,$financeKey);
+        }
         if(settingsMigrationApplied($db,$id,(string)$entry['sha256'])){
             settingsMigrationVerifyResult($db,$statement);
             $results[$id]='previously_applied';continue;
@@ -579,6 +596,9 @@ function settingsApplyMigrations(PDO $db,ZipArchive $zip,array $manifest,int $ui
             if(hash_equals(settingsTaxTransferOptionalBankDdl(),preg_replace('/\s+/',' ',trim($statement))))
                 settingsVerifyOptionalBankColumn($db,false);
             $db->exec($statement);
+            // CREATE IF NOT EXISTS can succeed on malformed tables. The ledger
+            // acknowledges only a verified result, never merely successful DDL.
+            settingsMigrationVerifyResult($db,$statement);
             $insert=$db->prepare('INSERT INTO ipdams_schema_migrations (migration_id,checksum,release_version) VALUES (?,?,?)');
             $insert->execute([$id,$entry['sha256'],$manifest['version']]);
         }
@@ -672,7 +692,7 @@ function settingsReadPackage(ZipArchive $zip): array {
         if($path===SETTINGS_MANIFEST){
             demand(strlen($data)<=20_000,'Release manifest too large');
             $manifest=json_decode($data,true,32,JSON_THROW_ON_ERROR);
-        } elseif(settingsMigrationPath($path)) {settingsMigrationSql($data);$migrations[$path]=hash('sha256',$data);} else $files[$path]=hash('sha256',$data);
+        } elseif(settingsMigrationPath($path)) {settingsMigrationPackageStatement($path,$data);$migrations[$path]=hash('sha256',$data);} else $files[$path]=hash('sha256',$data);
     }
     demand(is_array($manifest),'release.json is required for versioned updates');
     demand(count($files)>0,'Update has no application files');
@@ -964,15 +984,11 @@ function settingsReleaseHistory(): array {
     usort($releases,fn($a,$b)=>strcmp((string)($b['created']??''),(string)($a['created']??'')) ?: strcmp((string)($b['id']??''),(string)($a['id']??'')));
     return array_slice($releases,0,40);
 }
-// The SQL console behavior remains unchanged; write access is separately gated by environment configuration.
+// Technical SQL console is read-only: arbitrary DML cannot enforce the coordinated financial ledger and audit protocol.
 function settingsQuery(PDO $db,string $sql,bool $write,int $uid): array {
     $sql=trim($sql);demand(strlen($sql)>0&&strlen($sql)<=12000,'SQL must be 1–12000 characters');
     demand(!preg_match('/(;|--|#|\/\*|\*\/|\\x00|\\\\)/',$sql),'Comments, semicolons and multiple statements are not permitted');
     demand(!preg_match('/\b(INTO\s+(OUTFILE|DUMPFILE)|LOAD_FILE|BENCHMARK|SLEEP|FOR\s+UPDATE|LOCK\s+IN\s+SHARE\s+MODE)\b/i',$sql),'Unsupported or unsafe SQL construct');
     if(!$write){demand((bool)preg_match('/^(SELECT|SHOW|DESCRIBE|DESC|EXPLAIN)\b/i',$sql),'Only read queries permitted');$stmt=$db->query($sql);$rows=[];while(count($rows)<101&&($row=$stmt->fetch(PDO::FETCH_ASSOC))!==false)$rows[]=$row;return ['rows'=>array_slice($rows,0,100),'shown'=>min(count($rows),100),'truncated'=>count($rows)>100];}
-    demand(cfg('ALLOW_ADMIN_SQL_WRITE')==='1','SQL write operations disabled in environment',403);
-    demand((bool)preg_match('/^(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+`?([a-z][a-z0-9_]*)`?\b/i',$sql,$m),'Only INSERT, UPDATE and DELETE statements are available');
-    $table=strtolower($m[2]);demand(!in_array($table,['users','user_organization_scopes','audit_events','audit_logs','idempotency_keys','document_sequences','schema_migrations','migrations'],true),'Protected table cannot be modified using SQL console');
-    if(preg_match('/^(UPDATE|DELETE)\b/i',$sql))demand((bool)preg_match('/\bWHERE\b/i',$sql),'UPDATE and DELETE require WHERE');
-    $db->beginTransaction();try{$stmt=$db->prepare($sql);$stmt->execute();$count=$stmt->rowCount();demand($count<=100,'Write changed more than 100 rows; rolled back');$db->commit();settingsAudit($uid,'sql.write',['table'=>$table,'affected'=>$count,'sha256'=>hash('sha256',$sql)]);return ['affected'=>$count];}catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
+    throw new DomainError('Direct SQL writes are disabled to preserve financial cutoff, allocation and audit integrity. Use an authorized application workflow.',403);
 }

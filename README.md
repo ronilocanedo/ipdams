@@ -2,18 +2,18 @@
 
 ## Current stable baseline - 26 November 2026 (Asia/Manila)
 
-- **IPDAMS v0.2.454** is installed on Hostinger (owner-confirmed; promotion approved). Appendix 43 now has reference-style layout, IU/Non-IU distinction, ranked UACS columns, DV date and configured Division signatories including SGOD Chief.
-- **`main` is the stable source baseline.** Start new work from current main or an owner-approved feature/development branch.
-- [Source manifest](docs/checkpoints/2026-11-26-v0.2.454-source-manifest.json): 258 source files, 8 changed/added since v0.2.450. [QA review](docs/checkpoints/2026-11-26-v0.2.454-qa.json): 98/98 latest PHP/stub PDO and mocked Chromium checks. Earlier QA is historical and not additive. No migration.
-- Actual MariaDB HTTP integration, live hashes and installer apply/rollback remain independently unverified. Reports are uncertified review copies; per-download attribution remains incomplete. No production data or secrets belong in GitHub.
+- **IPDAMS v0.2.457** installed on Hostinger; owner confirmed all seven post-installation page checks working and explicitly approved Main promotion.
+- **`main` is the stable source baseline.** Integrated finance: account-wide reconciliation, historical snapshots, explicit fund-download allocations, fund utilization and Division read-only monitoring. No online liquidation submission or approval.
+- [Source manifest and release evidence](docs/checkpoints/2026-11-26-v0.2.457-source-manifest.json): 276 source files including four migration SQL sources. 302 synthetic acceptance passes across 18 suites; 75 pure assertions independently rerun, not additive. Two-stage installation v0.2.456 then v0.2.457.
+- Live source hashes, migration logs, production schema/preflight, backup and cash attribution onboarding remain independently unverified. No production financial testing. Historical unattributed payments may block new spending; direct SQL writes disabled. No file-only rollback after DDL.
 - No automatic deployment. Follow the release policy below and obtain explicit owner approval for future commits, pushes, migrations, installation and releases.
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.
 
-## Latest development milestone — Integrated Finance R4 (not installed)
+## Latest completed milestone - Integrated Finance R4
 
-- 302/302 synthetic acceptance checks across 18 suites; exact R4 payloads packaged as v0.2.456 installer capability and v0.2.457 integrated finance candidates. Production preflight and owner-confirmed installation remain pending.
-- [R4 release candidate checkpoint](docs/checkpoints/2026-11-26-integrated-finance-r4-release-candidate.md). Main application source stays at v0.2.454 until a successful installed release is confirmed.
+- v0.2.457 owner-confirmed installed and working; application source promoted with explicit authorization. See the [historical R4 release candidate checkpoint](docs/checkpoints/2026-11-26-integrated-finance-r4-release-candidate.md) and the current source manifest above.
+- Next development version: v0.2.458. Review actual source before further changes.
 
 ## Standard development and release policy
 
