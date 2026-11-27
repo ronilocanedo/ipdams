@@ -1,18 +1,18 @@
 # IPDAMS — Integrated Procurement, Disbursement and Asset Management System
 
-## Current stable baseline - 26 November 2026 (Asia/Manila)
+## Current stable baseline - 27 November 2026 (Asia/Manila)
 
-- **IPDAMS v0.2.460** installed on Hostinger (owner-confirmed; GitHub promotion explicitly approved). Unified Reports workspace and corrected fund-level utilization, historical allocation review and report printing. Post-installation fund reconciliation and print results have not been separately verified.
-- **`main` is the stable source baseline.** [Source manifest](docs/checkpoints/2026-11-26-v0.2.460-source-manifest.json): 278 source files; 18 modified and two added since v0.2.458. No new migrations. [v0.2.459 QA](docs/checkpoints/2026-11-26-v0.2.459-qa.json): 63 targeted passes; [v0.2.460 QA](docs/checkpoints/2026-11-26-v0.2.460-qa.json): 101 targeted passes. Separate synthetic test scopes, not additive.
-- Fund-level cash projection reflects recorded credits and release evidence, not certified bank balances or spending authority. Explicit historical attribution and original evidence remain required; ambiguous individual balances are withheld. Existing R4 financial controls and textbook patch preserved. Actual MariaDB/HTTP integration and rollback for these two patches, production hashes and report pagination remain unverified. No production testing.
-- No automatic deployment. Follow the release policy below and obtain explicit owner approval for future commits, pushes, migrations, installation and releases.
+- **IPDAMS v0.2.464** installed on Hostinger (owner-confirmed; GitHub promotion explicitly approved). Actual APP by fund source and reporting-year date range, grouped by saved UACS accounting title, paid DVs only, consolidated travel and training amounts.
+- **`main` is the stable source baseline.** [Source manifest](docs/checkpoints/2026-11-27-v0.2.464-source-manifest.json): 282 source files; two modified and four added since v0.2.460. No new migrations. Four separate historical targeted synthetic QA scopes: 56, 79, 97 and 42 passes, not additive. [Latest QA](docs/checkpoints/2026-11-27-v0.2.464-qa.json).
+- Actual APP uses current verified release evidence and saved DV dates, not historical as-of payment cutoff. Same item/unit/price consolidated across months; different prices separate. Travel/training consolidated by saved title; no invented quantities. Preserve review of unresolved/non-budget debits and exclude withholding transfers. Original APP comparison and approved report signatories not implemented.
+- Earlier integrated finance, textbook access and unified Reports safeguards remain intact. Historical allocation requires evidence; fund-level projection is not certified bank balance or spending authority. Actual MariaDB/HTTP integration, live hashes, actual report reconciliation, multipage/physical printing and installer rollback remain independently unverified. No production testing or automatic deployment.
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.
 
-## Latest completed milestone - Unified Reports and fund utilization
+## Latest completed milestone - Actual APP reporting
 
-- v0.2.459 and v0.2.460 owner-confirmed installed; both release manifests and targeted QA preserved. [Intermediate source manifest](docs/checkpoints/2026-11-26-v0.2.459-source-manifest.json). No automatic allocation or changes to historical transactions on installation.
-- Integrated Finance R4 and v0.2.458 textbook access remain preserved. Next proposed development version: v0.2.461. Review actual source and any reported issues before further changes.
+- v0.2.461 through v0.2.464 owner-confirmed installed. Four release manifests and QA records preserved under `docs/checkpoints/2026-11-27-v0.2.*`. No automatic postings or historical record changes on installation.
+- Next proposed development version: v0.2.465. Review actual source and any reported issues before further changes.
 
 ## Standard development and release policy
 

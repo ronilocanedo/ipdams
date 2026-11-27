@@ -12,10 +12,11 @@ Continue the recorded NEXT ACTION.
 Never silently change an accepted project decision.
 Verify current source and QA evidence before proposing changes.
 
-## Verified development baseline (2026-11-26, Asia/Manila)
+## Verified development baseline (2026-11-27, Asia/Manila)
 
-- Stable source: `main`, v0.2.460, owner-confirmed installed and explicitly approved for promotion. See `docs/checkpoints/2026-11-26-v0.2.460-source-manifest.json` and both v0.2.459/v0.2.460 QA records. 278 source files, no new migrations. Separate targeted synthetic suites: 63 and 101 passes respectively. Actual authenticated MariaDB/HTTP integration and rollback for these patches, live hashes and report pagination remain unverified.
-- Preserve grouped Reports workspace, scoped reporting, original official print layouts, actual fund-level payment projections and explicit historical allocation review. Do not infer download attribution or represent cash projections as certified balances or spending authority. No online submission/approval. Preserve v0.2.457 financial controls and v0.2.458 textbook access rules. Existing admin read-only mode is client-side. No automatic deployment, production testing or file-only rollback after DDL.
+- Stable source: `main`, v0.2.464, owner-confirmed installed and explicitly approved for promotion. See `docs/checkpoints/2026-11-27-v0.2.464-source-manifest.json` and v0.2.461-v0.2.464 QA records. 282 files, no new migrations. Separate historical synthetic suites: 56, 79, 97 and 42 passes. Actual authenticated MariaDB/HTTP integration, live hashes, report reconciliation, physical/multipage printing and installer rollback remain unverified.
+- Actual APP: separate fund/year, inclusive DV-date filters, current verified paid status only, one saved accounting-title heading, identical item/unit/price consolidated across months; consolidate local travel/training by accounting title without invented quantities. Exclude withholding remittances and preserve review of unresolved/non-budget debits. No historical as-of cutoff, approved signatories or original plan comparison yet.
+- Preserve grouped Reports, scoped reporting, official print layouts, actual fund-level payment projections, explicit historical allocation review and R4 financial safeguards. Do not infer download attribution or treat projections as certified cash or spending authority. No online submission/approval. Preserve textbook access controls; admin read-only mode remains client-side. No automatic deployment, production testing or file-only rollback after DDL.
 
 ## Repository and code layout
 

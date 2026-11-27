@@ -4888,7 +4888,7 @@ h('div',{className:'employee-claim-actions'},
             // Reuse only established report endpoints. No new grants or financial queries.
             const groups=[
                 {id:'documents',label:'Document Registers',description:'Monthly numbers, procurement, DV and document search',tabs:[
-                    ...(!viewer?[['monthly','Monthly Issuances']]:[]),['archive','Transaction Registers'],['search','Find Document'],...(!viewer?[['travel','Travel & Reimbursement']]:[])]},
+                    ...(!viewer?[['monthly','Monthly Issuances'],['actualapp','Actual Procurement (APP)']]:[]),['archive','Transaction Registers'],['search','Find Document'],...(!viewer?[['travel','Travel & Reimbursement']]:[])]},
                 ...(!viewer?[{id:'property',label:'Property & Supplies',description:'Accountability, supplies and COA annexes',tabs:[
                     ['property','COA Property Reports'],...(!divisionSchool?[['assets','Property Register'],['stocks','Supply Stock']]:[]),['accountability','ICS / PAR'],['ris','RIS']]},
                 {id:'finance',label:'Financial Reports',description:'Cash registers, liquidation and withholding',tabs:[['cash','Cash & Bank Reports'],['utilization','Fund Utilization'],...(!divisionSchool?[['tax','Withholding Tax']]:[])]},
@@ -4905,6 +4905,7 @@ h('div',{className:'employee-claim-actions'},
             const url=(path,params={})=>'api/'+path+'?'+new URLSearchParams({organization_id:org,embedded:'1',...params}).toString();
             const archive=process=>url('transactions.php',process?{process}:{});
             const sources={monthly:[url('monthly_issuances.php'),'Allocated control numbers including cancelled numbers: procurement, DV, supplies, property, travel and authorized textbook journals.'],
+                actualapp:[url('actual-procurement.php'),'Actual itemized procurement and consolidated UACS expenses from paid finalized DVs with released or cleared checks. Select a fund source and DV date range.'],
                 archive:[archive('pr'),'Filter procurement, disbursements, checks and authorized inventory/property records by year and month. Abstract and BAC Resolution are available from Award records.'],
                 property:[url('semi_expendable_reports.php',{annex:'A7'}),'COA Annex A.1, A.4–A.10: cards, registry, transfer, return, issuance, physical count, incidents and inspection. Preliminary review copies only.'],
                 assets:[archive('assets'),'Registered property evidence; use Property & Accountability for full custody and movement history.'],
