@@ -1301,6 +1301,7 @@ class App extends React.Component {
             // Clear all sensitive values after submission, including failed attempts.
             this.setState({reset_admin_password:'',reset_new_password:'',reset_confirm_password:'',reset_identity_confirmed:false,
                 ...(result?{reset_user_id:''}:{})});
+            return result;
         };
         this.makeOrganizationUser = async (e, requestedRole) => {
             const prefix=requestedRole==='DIVISION'?'new_division_user':'new_school_user';
@@ -5831,6 +5832,24 @@ h('div',{className:'employee-claim-actions'},
             }catch(e){this.setState({myFuncError:e.message});}
             finally{this.setState({myFuncBusy:false});}
         };
+        // v0.2.469: one compact account register, with native floating dialogs.
+        this.closeManagementAccountDialog = (force=false) => {
+            if(!force&&this.state.busy)return;
+            this.setState({managementAccountDialog:null,new_division_user_password:'',new_school_user_password:'',
+                reset_user_id:'',reset_admin_password:'',reset_new_password:'',reset_confirm_password:'',
+                reset_identity_confirmed:false});
+        };
+        this.openManagementAccountDialog = (kind,target=null) => {
+            const s=this.state,role=s.user?.role;
+            if(s.busy||s.workspaceLoading||s.superAdminViewOnly||!['SUPER_ADMIN','DIVISION'].includes(role))return;
+            if(kind==='reset'&&(role!=='SUPER_ADMIN'||!target||Number(target.active)!==1||
+                !['DIVISION','SCHOOL'].includes(target.role)||String(target.id)===String(s.user.id)))return;
+            this.setState({managementAccountDialog:{kind,targetId:target?String(target.id):'',org:String(s.organization_id),actor:String(s.user.id)},
+                managementAccountType:'SCHOOL',reset_user_id:target?String(target.id):'',
+                new_division_user_name:'',new_division_user_email:'',new_division_user_password:'',
+                new_school_user_name:'',new_school_user_email:'',new_school_user_password:'',
+                reset_admin_password:'',reset_new_password:'',reset_confirm_password:'',reset_identity_confirmed:false,error:'',success:''});
+        };
         this.organizationView = () => {
             const h = React.createElement;
             const role = this.state.user?.role;
@@ -6005,49 +6024,85 @@ h('div',{className:'employee-claim-actions'},
                     h('p',{className:'body-muted'},'Contact your Division Administrator to request profile changes.')));
                 if(current)panel.push(this.birProfileEditor(current.id));
             } else if(section === 'users') {
-                panel.push(surface(h('h3',null,'User Account Management'),
-                    h('p',{className:'body-muted'},'Create accounts within the correct Division or School. Actions remain attributed to your own signed-in identity.')));
-                if(role==='SUPER_ADMIN'&&divisions.length) panel.push(surface(
-                    h('h3',null,'Provision Division Administrator'),
-                    h('form',{onSubmit:e=>this.makeOrganizationUser(e,'DIVISION'),autoComplete:'off'},h('div',{className:'form-grid'},
-                        this.select('selected_division_id','Division Office',divisionOptions,'Choose Division'),
-                        this.field('new_division_user_name','Administrator full name','Full name'),
-                        this.field('new_division_user_email','Email address','name@deped.gov.ph','email'),
-                        this.field('new_division_user_password','Temporary password (12+ characters)','Unique password','password')),
-                        h('p',{className:'hint'},'Share temporary credentials privately.'),formButton('Create Division Administrator','DIVISION_USER'))));
-                if((role==='DIVISION'||role==='SUPER_ADMIN') && divisions.length) panel.push(surface(
-                    h('h3',null,'Provision School Account'),
-                    h('form',{onSubmit:e=>this.makeOrganizationUser(e,'SCHOOL'),autoComplete:'off'},h('div',{className:'form-grid'},
-                        this.select('new_user_school_id','School',schoolOptions,'Choose your school'),
-                        this.field('new_school_user_name','School user full name','Full name'),
-                        this.field('new_school_user_email','School user email','name@deped.gov.ph','email'),
-                        this.field('new_school_user_password','Temporary password (12+ characters)','Unique password','password')),
-                        h('p',{className:'hint'},'The account will only access its authorized school.'),formButton('Create School Account','SCHOOL_USER'))));
-                panel.push(this.table('Division and School users',['full_name','email','role','active'],this.state.orgUsers||[]));
-                if(role==='SUPER_ADMIN') {
-                    const resettable=(this.state.orgUsers||[]).filter(u=>Number(u.active)===1&&['DIVISION','SCHOOL'].includes(u.role));
-                    panel.push(surface(
-                        h('h3',null,'Reset an Existing User Password'),
-                        h('p',{className:'body-muted'},'Recover an existing Division or School account without changing its permissions or creating a duplicate. Only the Super Administrator can reset passwords.'),
-                        h('form',{onSubmit:this.resetOrganizationUserPassword,autoComplete:'off'},
-                            h('div',{className:'form-grid'},
-                                h('label',{className:'field'},h('span',null,'Existing user *'),
-                                    h('select',{required:true,value:this.state.reset_user_id,onChange:this.set('reset_user_id')},
-                                        h('option',{value:''},'Choose user account'),
-                                        resettable.map(u=>h('option',{key:u.id,value:String(u.id)},u.full_name+' · '+u.email+' ('+u.role+')')))),
-                                h('label',{className:'field'},h('span',null,'Your current Super Administrator password *'),
-                                    h('input',{type:'password',required:true,autoComplete:'current-password',value:this.state.reset_admin_password,onChange:this.set('reset_admin_password')})),
-                                h('label',{className:'field'},h('span',null,'New password for user (16+ characters) *'),
-                                    h('input',{type:'password',required:true,minLength:16,maxLength:256,autoComplete:'new-password',value:this.state.reset_new_password,onChange:this.set('reset_new_password')})),
-                                h('label',{className:'field'},h('span',null,'Confirm new password *'),
-                                    h('input',{type:'password',required:true,minLength:16,maxLength:256,autoComplete:'new-password',value:this.state.reset_confirm_password,onChange:this.set('reset_confirm_password')}))),
-                            h('label',{className:'field'},h('input',{type:'checkbox',required:true,checked:this.state.reset_identity_confirmed,
-                                onChange:e=>this.setState({reset_identity_confirmed:e.target.checked})}),
-                                ' I verified that this is the correct account owner and will share the password privately.'),
-                            h('p',{className:'hint'},'Existing password cannot be recovered. Password resets are audited. Do not share credentials in screenshots, chat or public email.'),
-                            formButton('Reset Selected User Password','ADMIN_PASSWORD_RESET'))));
+                const s=this.state,all=s.orgUsers||[];
+                const writable=!s.superAdminViewOnly&&!s.workspaceLoading&&['SUPER_ADMIN','DIVISION'].includes(role);
+                const query=String(s.managementUserSearch||'').trim().toLowerCase(),filter=s.managementRoleFilter||'ALL';
+                const visible=all.filter(u=>(filter==='ALL'||u.role===filter)&&
+                    (!query||[u.full_name,u.email,u.role].join(' ').toLowerCase().includes(query)));
+                const dialog=s.managementAccountDialog;
+                const target=dialog?.kind==='reset'?all.find(u=>String(u.id)===dialog.targetId):null;
+                const canReset=u=>writable&&role==='SUPER_ADMIN'&&Number(u.active)===1&&
+                    ['DIVISION','SCHOOL'].includes(u.role)&&String(u.id)!==String(s.user.id);
+                const canGrant=u=>writable&&role==='SUPER_ADMIN'&&Number(u.active)===1&&['DIVISION','SCHOOL'].includes(u.role);
+                const openRoles=u=>this.setState({organizationSection:'roles',roleUserId:String(u.id),roleSchoolId:'',
+                    roleDetail:null,rolePermission:'',roleError:'',roleNotice:''},()=>{if(!this.state.roleCatalog)this.loadRoleCatalog();});
+                panel.push(surface(
+                    h('div',{className:'section-head'},h('div',null,h('h3',null,'User Accounts & Access'),
+                        h('p',{className:'body-muted'},'Manage existing scoped Division and School accounts.')),
+                        h('div',{className:'inline-actions'},h('button',{type:'button',className:'outline',disabled:s.busy,onClick:this.loadHierarchy},'Refresh'),
+                            writable&&divisions.length?h('button',{type:'button',className:'primary',disabled:s.busy,
+                                onClick:()=>this.openManagementAccountDialog('create')},'Add User'):null)),
+                    h('p',{className:'org-summary'},all.length+' account(s) · '+all.filter(u=>Number(u.active)===1).length+' active'),
+                    h('div',{className:'form-grid'},
+                        h('label',{className:'field'},h('span',null,'Search name or login email'),h('input',{type:'search',value:s.managementUserSearch||'',onChange:this.set('managementUserSearch')})),
+                        h('label',{className:'field'},h('span',null,'Account type'),h('select',{value:filter,onChange:this.set('managementRoleFilter')},
+                            ...[['ALL','All accounts'],['DIVISION','Division Administrator'],['SCHOOL','School']].map(([value,label])=>h('option',{key:value,value},label))))),
+                    h('div',{className:'table-scroll'},h('table',{className:'master-table'},
+                        h('thead',null,h('tr',null,...['Name','Login email','Account type','Status','Actions'].map(label=>h('th',{key:label,scope:'col'},label)))),
+                        h('tbody',null,...visible.map(u=>h('tr',{key:u.id},h('td',null,u.full_name),h('td',null,u.email),
+                            h('td',null,u.role),h('td',null,Number(u.active)===1?'Active':'Disabled'),
+                            h('td',null,h('div',{className:'inline-actions'},
+                                canReset(u)?h('button',{type:'button',className:'outline',disabled:s.busy,
+                                    'aria-label':'Reset password for '+u.full_name,onClick:()=>this.openManagementAccountDialog('reset',u)},'Reset Password'):null,
+                                canGrant(u)?h('button',{type:'button',className:'outline',disabled:s.busy,
+                                    'aria-label':'Review role functions for '+u.full_name,onClick:()=>openRoles(u)},'Role Functions'):null,
+                                !canReset(u)&&!canGrant(u)?h('span',{className:'muted'},'—'):null)))),
+                            !visible.length?h('tr',null,h('td',{colSpan:5},'No matching accounts.')):null)))));
+                if(dialog&&dialog.org===String(s.organization_id)&&dialog.actor===String(s.user.id)&&
+                    !s.superAdminViewOnly&&(dialog.kind==='create'||(target&&canReset(target)))){
+                    const accountType=role==='SUPER_ADMIN'&&s.managementAccountType==='DIVISION'?'DIVISION':'SCHOOL';
+                    const prefix=accountType==='DIVISION'?'new_division_user':'new_school_user';
+                    const title=dialog.kind==='reset'?'Reset User Password':'Add User';
+                    const input=(key,label,type='text',extra={})=>h('label',{className:'field'},h('span',null,label),
+                        h('input',{type,required:true,value:s[key]||'',onChange:this.set(key),...extra}));
+                    const selection=(key,label,choices)=>h('label',{className:'field'},h('span',null,label),
+                        h('select',{required:true,value:s[key]||'',onChange:e=>this.setState({[key]:e.target.value,...(key==='selected_division_id'?{new_user_school_id:''}:{})})},
+                            h('option',{value:''},'Choose'),...choices.map(x=>h('option',{key:x.id,value:String(x.id)},x.name))));
+                    panel.push(h('dialog',{key:dialog.kind,className:'ipdams-management-account-dialog',
+                        'aria-labelledby':'management-account-dialog-title',
+                        style:{width:'min(720px, calc(100vw - 24px))',maxHeight:'calc(100vh - 24px)',overflowY:'auto',border:'1px solid #b6d5d9',borderRadius:'12px',padding:'18px',background:'#fff',color:'#15364c',boxShadow:'0 12px 48px #15364c40'},
+                        ref:node=>{if(node&&!node.open)node.showModal();},
+                        onCancel:e=>{e.preventDefault();this.closeManagementAccountDialog();}},
+                        h('div',{className:'section-head'},h('h3',{id:'management-account-dialog-title'},title),
+                            h('button',{type:'button',className:'outline',disabled:s.busy,onClick:()=>this.closeManagementAccountDialog()},'Close')),
+                        s.error?h('p',{className:'error',role:'alert'},s.error):null,
+                        dialog.kind==='create'?h('form',{autoComplete:'off',onSubmit:async e=>{if(await this.makeOrganizationUser(e,accountType))this.closeManagementAccountDialog(true);}},
+                            h('fieldset',{disabled:s.busy,style:{border:0,padding:0,minWidth:0}},
+                                h('label',{className:'field'},h('span',null,'Account type *'),
+                                    h('select',{value:accountType,onChange:e=>this.setState({managementAccountType:e.target.value,new_division_user_password:'',new_school_user_password:'',error:''})},
+                                        h('option',{value:'SCHOOL'},'School account'),role==='SUPER_ADMIN'?h('option',{value:'DIVISION'},'Division Administrator'):null)),
+                                h('div',{className:'form-grid'},
+                                    selection('selected_division_id','Division Office *',divisionOptions),
+                                    accountType==='SCHOOL'?selection('new_user_school_id','School *',schoolOptions):null,
+                                    input(prefix+'_name','Full name *','text',{maxLength:150,autoComplete:'off'}),
+                                    input(prefix+'_email','Login email *','email',{maxLength:190,autoComplete:'off'}),
+                                    input(prefix+'_password','Initial password (12+ characters) *','password',{minLength:12,maxLength:256,autoComplete:'new-password'}))),
+                            h('p',{className:'hint'},'Share initial credentials privately. Only the selected role and authorized organization will be assigned.'),
+                            formButton('Create account',accountType==='DIVISION'?'DIVISION_USER':'SCHOOL_USER')):
+                            h('form',{autoComplete:'off',onSubmit:async e=>{if(await this.resetOrganizationUserPassword(e))this.closeManagementAccountDialog(true);}},
+                                h('p',null,h('strong',null,target.full_name),' · '+target.email+' ('+target.role+')'),
+                                h('p',{className:'hint'},'Only the displayed account will be reset. Existing permissions are unchanged.'),
+                                h('fieldset',{disabled:s.busy,style:{border:0,padding:0,minWidth:0}},
+                                    h('div',{className:'form-grid'},
+                                        input('reset_admin_password','Your current Super Administrator password *','password',{autoComplete:'current-password'}),
+                                        input('reset_new_password','New password for user (16+ characters) *','password',{minLength:16,maxLength:256,autoComplete:'new-password'}),
+                                        input('reset_confirm_password','Confirm new password *','password',{minLength:16,maxLength:256,autoComplete:'new-password'})),
+                                    h('label',{className:'field'},h('input',{type:'checkbox',required:true,checked:s.reset_identity_confirmed,
+                                        onChange:e=>this.setState({reset_identity_confirmed:e.target.checked})}),
+                                        ' I verified that this is the correct account owner and will share the password privately.'),
+                                    h('p',{className:'hint'},'Existing passwords cannot be recovered. Password resets are audited.')),
+                                formButton('Reset Selected User Password','ADMIN_PASSWORD_RESET'))));
                 }
-
             } else if(section === 'roles' && role==='SUPER_ADMIN') {
                 const c=this.state.roleCatalog;
                 const d=this.state.roleDetail;
