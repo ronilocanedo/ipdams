@@ -87,6 +87,7 @@ function tuRead(PDO $db,array $actor,int $org): array {
             'document_date'=>$row['document_date'],'fund_id'=>(int)$row['fund_id'],
             'fund_name'=>$row['fund_name'],'fund_code'=>$row['source_code'],'fiscal_year'=>$row['fiscal_year'],
             'atc_code'=>$row['atc_code'],'amount'=>moneyString($amount),'state'=>$confirmed?'CONFIRMED_CREDIT':'PENDING',
+            'source_state'=>$row['completion_state'],'review_required'=>!in_array($row['completion_state'],['PENDING','CONFIRMED_CREDIT'],true),
             'confirmed_amount'=>moneyString($confirmed?$amount:0),'utilized_amount'=>moneyString($used),
             'remaining_amount'=>moneyString($confirmed?$amount-$used:0),
             'confirmation_evidence'=>$row['confirmation_evidence'],'confirmation_date'=>$row['confirmation_date'],

@@ -13,6 +13,7 @@ require_once __DIR__.'/PrUacsInheritance.php';
 require_once __DIR__.'/ReimbursementFinalization.php';
 require_once __DIR__.'/FundCashFundingPreview.php';
 require_once __DIR__.'/FundCashFinalization.php';
+require_once __DIR__.'/RetainedTaxBalance.php';
 require_once __DIR__.'/TaxTransferRules.php';
 require_once __DIR__.'/FinancialReview.php';
 require_once __DIR__.'/FinancialAllocation.php';
@@ -776,6 +777,79 @@ final class Domain {
             'awaiting_bank_link'=>moneyString(moneyCents($events['unlinked'])),
             'future_bank_credit'=>moneyString(moneyCents($events['not_yet_effective']))];
     }
+    /** Read projection only; ordinary availability remains the posting gate. */
+    private function retainedBalanceView(int $org,array $fund,array $totals,?array $liability):array {
+        $ordinary=RetainedTaxBalance::signed((string)$totals['available_allocation']);
+        $gross=moneyCents((string)$totals['finalized_dv_gross']);
+        if(!$liability || moneyCents((string)$liability['withholding_recorded'])===0)
+            return RetainedTaxBalance::summarize($ordinary,$gross,0,0,0);
+        $stage='School and Division identity';$reviewDv=null;
+        try {
+            $fundId=(int)$fund['id'];
+            $office=one($this->db,"SELECT id,parent_division_id FROM organizations WHERE id=? AND kind='SCHOOL' AND active=1",[$org]);
+            demand($office!==null && (int)$office['parent_division_id']>0,'Retained funding requires an active school and Division',409);
+            $division=(int)$office['parent_division_id'];
+            demand(one($this->db,"SELECT id FROM organizations WHERE id=? AND kind='DIVISION' AND active=1",[$division])!==null,'Division unavailable',409);
+            $stage='Original withholding events and Division authority';
+            $recorded=$this->confirmedRetainedAuthority($org,$fundId);
+            $eligible=$recorded['recorded_eligible_cents'];$confirmed=$recorded['confirmed_cents'];
+            demand($eligible===moneyCents((string)$liability['withholding_recorded']) && $confirmed===moneyCents((string)$liability['retention_confirmed']),'Retained component totals disagree',409);
+            $stage='Withholding component status and amounts';
+            $rows=q($this->db,"SELECT w.id,w.dv_id,w.fund_id,w.amount,w.atc_code,
+                (SELECT e.state FROM tax_disposition_events e WHERE e.component_id=w.id ORDER BY e.id DESC LIMIT 1) latest_state,
+                (SELECT e.amount FROM tax_disposition_events e WHERE e.component_id=w.id ORDER BY e.id DESC LIMIT 1) latest_amount,
+                (SELECT COUNT(*) FROM tax_disposition_events e WHERE e.component_id=w.id AND e.state='PENDING' AND e.amount=w.amount) matching_pending
+                FROM withholding_components w JOIN disbursement_vouchers d ON d.id=w.dv_id
+                WHERE d.organization_id=? AND d.fund_id=? AND d.status='FINALIZED' AND w.disposition='SCHOOL_UTILIZATION' LIMIT 501",[$org,$fundId])->fetchAll();
+            demand(count($rows)<=500,'Retained source capacity exceeded',409);
+            $sources=[];$sum=0;$confirmedSum=0;
+            foreach($rows as $r){$reviewDv='DV record #'.(int)$r['dv_id'];$id=(int)$r['id'];$amount=moneyCents((string)$r['amount']);
+                demand(!isset($sources[$id]) && (int)$r['fund_id']===$fundId && $amount>0 && in_array($r['latest_state'],['PENDING','CONFIRMED_CREDIT'],true) && moneyCents((string)$r['latest_amount'])===$amount && (int)$r['matching_pending']===1,'Retained component has conflicting status, amount or fund',409);
+                $sources[$id]=['dv_id'=>(int)$r['dv_id'],'cents'=>$amount,'atc_code'=>(string)$r['atc_code'],'confirmed'=>$r['latest_state']==='CONFIRMED_CREDIT'];$sum+=$amount;
+                if($r['latest_state']==='CONFIRMED_CREDIT')$confirmedSum+=$amount;
+            }
+            $reviewDv=null;
+            demand($sum===$eligible&&$confirmedSum===$confirmed,'Retained source totals changed',409);
+            $stage='Finalized DV and funding history';
+            $vouchers=q($this->db,"SELECT d.id,d.fund_id,d.gross,d.net,d.document_date,d.display_number,
+                (SELECT v.snapshot_json FROM document_versions v WHERE v.organization_id=d.organization_id AND v.doc_type='DV' AND v.entity_id=d.id ORDER BY v.version_no,v.id LIMIT 1) snapshot_json,
+                (SELECT COUNT(*) FROM audit_events a WHERE a.organization_id=d.organization_id AND a.entity_type='DV' AND a.entity_id=d.id AND a.event_type='FINALIZED') audit_count,
+                (SELECT a.details FROM audit_events a WHERE a.organization_id=d.organization_id AND a.entity_type='DV' AND a.entity_id=d.id AND a.event_type='FINALIZED' ORDER BY a.id LIMIT 1) audit_json
+                FROM disbursement_vouchers d LEFT JOIN school_tax_transfers t ON t.dv_id=d.id
+                WHERE d.organization_id=? AND d.fund_id=? AND d.status='FINALIZED' AND t.id IS NULL ORDER BY d.id LIMIT 5001",[$org,$fundId])->fetchAll();
+            demand(count($vouchers)<=5000,'DV funding history exceeds review capacity',409);
+            $used=0;$grossSum=0;$seen=[];$policies=[];$classes=[];$sourceDvs=array_fill_keys(array_column($sources,'dv_id'),true);
+            foreach($vouchers as $v){$id=(int)$v['id'];
+                $stage='Finalized DV and funding history';$reviewDv='DV '.(trim((string)($v['display_number']??''))!==''?(string)$v['display_number']:'record #'.$id);
+                demand(!isset($seen[$id]) && (int)$v['audit_count']<=1,'Duplicate finalized DV or audit',409);$seen[$id]=true;
+                $grossSum+=moneyCents((string)$v['gross']);
+                $snapshot=$v['snapshot_json']===null?[]:json_decode((string)$v['snapshot_json'],true,64,JSON_THROW_ON_ERROR);
+                $audit=$v['audit_json']===null?[]:json_decode((string)$v['audit_json'],true,64,JSON_THROW_ON_ERROR);
+                demand(is_array($snapshot)&&is_array($audit),'Invalid retained funding records',409);
+                $basis=$snapshot['funding_basis']??null;
+                if(RetainedTaxBalance::requiresPolicy($basis)||isset($sourceDvs[$id])){
+                    $stage='Historical school classification and Division policy';
+                    $p=$snapshot['withholding_policy']??[];$pid=(int)($p['version_id']??0);$cid=(int)($p['school_class_version_id']??0);
+                    demand(($p['mode']??'')==='DIVISION_SETTLES_UTILIZABLE'&&$pid>0&&$cid>0,'Original school retention authority missing',409);
+                    if(!isset($policies[$pid]))$policies[$pid]=one($this->db,'SELECT config_json,effective_from FROM configuration_versions WHERE id=? AND organization_id=? AND config_key=?',[$pid,$division,self::fundPolicyKey((string)$fund['source_code'],'NON_IUS')]);
+                    if(!isset($classes[$cid]))$classes[$cid]=one($this->db,'SELECT config_json,effective_from FROM configuration_versions WHERE id=? AND organization_id=? AND config_key=?',[$cid,$org,self::SCHOOL_IMPLEMENTATION_KEY]);
+                    $policy=$policies[$pid];$class=$classes[$cid];
+                    $pd=$policy?json_decode((string)$policy['config_json'],true,64,JSON_THROW_ON_ERROR):[];
+                    $cd=$class?json_decode((string)$class['config_json'],true,64,JSON_THROW_ON_ERROR):[];
+                    demand($policy&&$class&&$policy['effective_from']<=$v['document_date']&&$class['effective_from']<=$v['document_date']&&
+                        ($pd['school_class']??'')==='NON_IUS'&&($pd['source_code']??'')===(string)$fund['source_code']&&
+                        ($pd['policy']??'')==='DIVISION_SETTLES_UTILIZABLE'&&trim((string)($pd['authority']??''))!==''&&($cd['classification']??'')==='NON_IUS','Historical school or Division policy is not verified',409);
+                }
+                $stage='Saved funding snapshot and finalization audit';
+                $used+=RetainedTaxBalance::applied($v,$snapshot,$audit,$sources);
+            }
+            $reviewDv=null;$stage='Fund-level reconciliation';
+            demand($grossSum===$gross&&count(array_diff_key($sourceDvs,$seen))===0,'Fund gross or source coverage changed',409);
+            return RetainedTaxBalance::summarize($ordinary,$gross,$eligible,$confirmed,$used);
+        } catch(DomainError|JsonException|TypeError $e) {
+            return RetainedTaxBalance::unavailable($ordinary,RetainedTaxBalance::reviewReason($e,$stage,$reviewDv));
+        }
+    }
     /** Read-only NON-IU policy workpaper for existing school-retained withholding.
      * This is NOT a remittance, Division bank receipt, tax clearance, additional
      * allotment or automatic offset to the ordinary allocation difference.
@@ -1162,11 +1236,12 @@ final class Domain {
         if($name==='fund_transaction_audit'){
             demand(($this->user['role']??'')!=='VIEWER',
                 'Fund transaction details are unavailable to issued-document-only reviewers',403);
-            $ids=q($this->db,'SELECT id FROM funds WHERE organization_id=? ORDER BY id LIMIT 101',[$org])->fetchAll();
+            $ids=q($this->db,'SELECT id,source_code FROM funds WHERE organization_id=? ORDER BY id LIMIT 101',[$org])->fetchAll();
             demand(count($ids)<=100,'Fund directory exceeds report capacity; finance review required',409);
-            $authority=[];
+            $authority=[];$liabilities=$this->schoolDivisionTaxAccountability($org);
             foreach($ids as $fundRow){
                 $id=(int)$fundRow['id'];$authority[$id]=$this->fundAvailabilityTotals($org,$id);
+                $authority[$id]+=$this->retainedBalanceView($org,$fundRow,$authority[$id],$liabilities[$id]??null);
             }
             require_once __DIR__.'/FundTransactionAudit.php';
             return FundTransactionAudit::read($this->db,$org,$p,$authority);
@@ -1394,6 +1469,7 @@ final class Domain {
             foreach($rows as &$row){
                 $row += $this->fundAvailabilityTotals($org,(int)$row['id']);
                 $row['division_tax_accountability']=$liabilities[(int)$row['id']]??null;
+                $row += $this->retainedBalanceView($org,$row,$row,$row['division_tax_accountability']);
             }unset($row);
         }
         if($name==='rfq' && $rows){

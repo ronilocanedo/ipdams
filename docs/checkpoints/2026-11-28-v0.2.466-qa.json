@@ -1,0 +1,412 @@
+{
+  "version": "0.2.466",
+  "predecessor": "0.2.465",
+  "predecessor_installer_sha256": "d1c0cd637632484438ac794e7ce03869891d414d368b4169c1f0246116a9dcab",
+  "predecessor_payload_files_verified": 8,
+  "modified_files": {
+    "app/Domain.php": "3ea06d733c528acae318fbe56f54c5446e44178a948949c91191f3b59d69e772",
+    "app/RetainedTaxBalance.php": "72d3f1f2af15b105eb6a7ee346ca55e4a8e0edcffb3aa995026fbab7745679c5",
+    "public/assets/app.js": "9a32f92ca5679ec13a6479bb81d33e1344c33ebb0634148489b8dfbd83910c8e",
+    "public/app.html": "e15c373492c089ef6552cebdc3663c87333e0a5898fb93ebc982015ed45d874c"
+  },
+  "php_assertions": [
+    {
+      "name": "First DV retains tax but has no tax-funded gross",
+      "status": "PASS"
+    },
+    {
+      "name": "Prior retained tax applies only to gross shortfall",
+      "status": "PASS"
+    },
+    {
+      "name": "Own and prior retained tax used in final DV",
+      "status": "PASS"
+    },
+    {
+      "name": "Fully covered ordinary deficit is zero",
+      "status": "PASS"
+    },
+    {
+      "name": "Original negative ordinary difference retained",
+      "status": "PASS"
+    },
+    {
+      "name": "Gross unchanged, adjusted utilization reconciles",
+      "status": "PASS"
+    },
+    {
+      "name": "All verified retained applied",
+      "status": "PASS"
+    },
+    {
+      "name": "Unapplied is zero",
+      "status": "PASS"
+    },
+    {
+      "name": "Genuine residual deficit not hidden",
+      "status": "PASS"
+    },
+    {
+      "name": "Later credit cannot inflate spendable balance",
+      "status": "PASS"
+    },
+    {
+      "name": "Offset capped to current deficit",
+      "status": "PASS"
+    },
+    {
+      "name": "Confirmation alone cannot cover deficit",
+      "status": "PASS"
+    },
+    {
+      "name": "Documented pending funding separated from confirmation",
+      "status": "PASS"
+    },
+    {
+      "name": "Ordinary fund unaffected",
+      "status": "PASS"
+    },
+    {
+      "name": "Remittance fund cannot receive offset",
+      "status": "PASS"
+    },
+    {
+      "name": "Applied exceeds eligible source",
+      "status": "PASS"
+    },
+    {
+      "name": "Applied exceeds gross",
+      "status": "PASS"
+    },
+    {
+      "name": "Confirmed exceeds source",
+      "status": "PASS"
+    },
+    {
+      "name": "Unknown evidence withheld not fabricated zero",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing matching audit blocks adjustment",
+      "status": "PASS"
+    },
+    {
+      "name": "Live gross mismatch",
+      "status": "PASS"
+    },
+    {
+      "name": "Cross fund snapshot mismatch",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing earlier tax source",
+      "status": "PASS"
+    },
+    {
+      "name": "Wrong current DV source",
+      "status": "PASS"
+    },
+    {
+      "name": "Same-DV source overused",
+      "status": "PASS"
+    },
+    {
+      "name": "Wrong ATC",
+      "status": "PASS"
+    },
+    {
+      "name": "Duplicate prior source evidence",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual Domain projection using mocked query results",
+      "status": "PASS"
+    },
+    {
+      "name": "Domain denies offset on reversed",
+      "status": "PASS"
+    },
+    {
+      "name": "Domain denies offset on wrong_fund",
+      "status": "PASS"
+    },
+    {
+      "name": "Domain denies offset on wrong_policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Duplicate finalization audit withheld",
+      "status": "PASS"
+    },
+    {
+      "name": "Component liability discrepancy withheld",
+      "status": "PASS"
+    },
+    {
+      "name": "Gross coverage mismatch withheld",
+      "status": "PASS"
+    },
+    {
+      "name": "No extra query for ordinary funds",
+      "status": "PASS"
+    },
+    {
+      "name": "Direct recorded remittance supported",
+      "status": "PASS"
+    },
+    {
+      "name": "Direct remittance not mislabeled Division receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "Division receipt not represented as BIR settlement",
+      "status": "PASS"
+    },
+    {
+      "name": "Assigned check not remitted",
+      "status": "PASS"
+    },
+    {
+      "name": "Released check awaits receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "Mismatching amount no completed remittance",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing reference no completed remittance",
+      "status": "PASS"
+    },
+    {
+      "name": "Reversed tax not completed",
+      "status": "PASS"
+    },
+    {
+      "name": "Retention is not a remittance",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual report filtered remittance totals",
+      "status": "PASS"
+    },
+    {
+      "name": "Completed remittances only",
+      "status": "PASS"
+    },
+    {
+      "name": "Uncompleted remittances only",
+      "status": "PASS"
+    },
+    {
+      "name": "Retained report excludes remittances",
+      "status": "PASS"
+    },
+    {
+      "name": "Foreign fund filter rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Foreign school filter rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Invalid disposition rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Invalid completion rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Viewer not granted detailed report",
+      "status": "PASS"
+    },
+    {
+      "name": "All queries exercised were SELECT",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing audit identifies printed DV and validation failure",
+      "status": "PASS"
+    },
+    {
+      "name": "Duplicate audit identifies source record",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical policy review identifies stage",
+      "status": "PASS"
+    },
+    {
+      "name": "Verified source unchanged after diagnostic patch",
+      "status": "PASS"
+    },
+    {
+      "name": "Unexpected error text never exposed",
+      "status": "PASS"
+    },
+    {
+      "name": "Malformed JSON reports safe reason",
+      "status": "PASS"
+    },
+    {
+      "name": "Type error reports safe reason",
+      "status": "PASS"
+    }
+  ],
+  "chromium_assertions": [
+    {
+      "name": "Overview adjusted column visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Original deficit not visible in main table",
+      "status": "PASS"
+    },
+    {
+      "name": "Original deficit available on expanding audit",
+      "status": "PASS"
+    },
+    {
+      "name": "School withholding sub-tabs exist",
+      "status": "PASS"
+    },
+    {
+      "name": "Applied funding metric visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Diagnostic reason rendered for affected fund",
+      "status": "PASS"
+    },
+    {
+      "name": "Unverified amounts remain review required",
+      "status": "PASS"
+    },
+    {
+      "name": "Diagnostic shortcut opens fund source workspace",
+      "status": "PASS"
+    },
+    {
+      "name": "Diagnostic also visible in overview",
+      "status": "PASS"
+    },
+    {
+      "name": "Legacy confirmed balance removed",
+      "status": "PASS"
+    },
+    {
+      "name": "Source and confirmation displayed separately",
+      "status": "PASS"
+    },
+    {
+      "name": "Retained fund row shows applied amount",
+      "status": "PASS"
+    },
+    {
+      "name": "Fund filter excludes other DV and notice",
+      "status": "PASS"
+    },
+    {
+      "name": "Fund filter restores source records",
+      "status": "PASS"
+    },
+    {
+      "name": "Shared report endpoint scoped by org and fund",
+      "status": "PASS"
+    },
+    {
+      "name": "Remittance tab excludes duplicate retained cards",
+      "status": "PASS"
+    },
+    {
+      "name": "Detailed report remains available",
+      "status": "PASS"
+    },
+    {
+      "name": "Existing remittance workflow shortcut",
+      "status": "PASS"
+    },
+    {
+      "name": "Mobile iframe within viewport",
+      "status": "PASS"
+    },
+    {
+      "name": "Mobile retained content within viewport",
+      "status": "PASS"
+    },
+    {
+      "name": "Workspace switch resets fund/tab selection",
+      "status": "PASS"
+    },
+    {
+      "name": "Stale source data not rendered",
+      "status": "PASS"
+    },
+    {
+      "name": "Unloaded balances not shown as zeros",
+      "status": "PASS"
+    },
+    {
+      "name": "Read-only retains no confirm action",
+      "status": "PASS"
+    },
+    {
+      "name": "Writable eligible source preserves confirm control",
+      "status": "PASS"
+    },
+    {
+      "name": "Viewer denied detailed withholding UI",
+      "status": "PASS"
+    },
+    {
+      "name": "No JS page errors in rendered components",
+      "status": "PASS"
+    },
+    {
+      "name": "PHP remittance report has treatment filter",
+      "status": "PASS"
+    },
+    {
+      "name": "PHP remittance report has completion filter",
+      "status": "PASS"
+    },
+    {
+      "name": "PHP report lists completed and awaiting source records",
+      "status": "PASS"
+    },
+    {
+      "name": "PHP report excludes retained source rows",
+      "status": "PASS"
+    },
+    {
+      "name": "CSV preserves disposition and fund",
+      "status": "PASS"
+    },
+    {
+      "name": "Canonical report includes separate current reconciliation",
+      "status": "PASS"
+    },
+    {
+      "name": "Canonical report distinguishes current funding from period",
+      "status": "PASS"
+    },
+    {
+      "name": "Report mobile document has no horizontal page overflow",
+      "status": "PASS"
+    }
+  ],
+  "syntax_checks": [
+    "app/Domain.php",
+    "app/RetainedTaxBalance.php",
+    "public/assets/app.js"
+  ],
+  "zip_integrity": "PASS",
+  "installer_sha256": "56d2676eede5b54137fa3e8119277893dd29b3b9d810a3304178094bbcd372bf",
+  "limits": [
+    "Mocked PDO only, no live database or authenticated integration",
+    "Installer rollback not executed",
+    "Actual reason for production review still unknown"
+  ]
+}

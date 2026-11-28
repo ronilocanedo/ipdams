@@ -1,18 +1,18 @@
 # IPDAMS — Integrated Procurement, Disbursement and Asset Management System
 
-## Current stable baseline - 27 November 2026 (Asia/Manila)
+## Current stable baseline - 28 November 2026 (Asia/Manila)
 
-- **IPDAMS v0.2.464** installed on Hostinger (owner-confirmed; GitHub promotion explicitly approved). Actual APP by fund source and reporting-year date range, grouped by saved UACS accounting title, paid DVs only, consolidated travel and training amounts.
-- **`main` is the stable source baseline.** [Source manifest](docs/checkpoints/2026-11-27-v0.2.464-source-manifest.json): 282 source files; two modified and four added since v0.2.460. No new migrations. Four separate historical targeted synthetic QA scopes: 56, 79, 97 and 42 passes, not additive. [Latest QA](docs/checkpoints/2026-11-27-v0.2.464-qa.json).
-- Actual APP uses current verified release evidence and saved DV dates, not historical as-of payment cutoff. Same item/unit/price consolidated across months; different prices separate. Travel/training consolidated by saved title; no invented quantities. Preserve review of unresolved/non-budget debits and exclude withholding transfers. Original APP comparison and approved report signatories not implemented.
-- Earlier integrated finance, textbook access and unified Reports safeguards remain intact. Historical allocation requires evidence; fund-level projection is not certified bank balance or spending authority. Actual MariaDB/HTTP integration, live hashes, actual report reconciliation, multipage/physical printing and installer rollback remain independently unverified. No production testing or automatic deployment.
+- **IPDAMS v0.2.468** installed and working on Hostinger (owner-confirmed; GitHub promotion explicitly approved). Retained withholding reconciliation, shared withholding reporting and compatibility with original confirmed-retention DV funding format.
+- **`main` is the stable source baseline.** [Source manifest](docs/checkpoints/2026-11-28-v0.2.468-source-manifest.json): 283 source files; seven modified and one added since v0.2.464. No new migrations. Four separate historical targeted synthetic suites: 85, 96, 99 and 139 passes, not additive. [Latest QA](docs/checkpoints/2026-11-28-v0.2.468-qa.json).
+- Read-only adjustment uses verified historical policy and matching DV funding snapshot/audit, valid original components and bank-cash evidence; no extra allotment, bank deposit, tax clearance or spending authority. Offset capped to current ordinary deficit; genuine deficits or incomplete evidence remain visible. School-utilized and remittance views reuse existing reports and remittance workflows. Division-wide and individual-download calculations unchanged.
+- Preserve prior paid-only Actual APP rules, integrated finance, textbook access and report safeguards. Actual live hashes, full production reconciliation, MariaDB/HTTP integration and installer rollback remain independently unverified. No production testing or automatic deployment.
 
 Coordination and source repository for DepEd school and Division procurement, disbursement, inventory, property accountability, reporting and audit workflows.
 
-## Latest completed milestone - Actual APP reporting
+## Latest completed milestone - Retained withholding reconciliation
 
-- v0.2.461 through v0.2.464 owner-confirmed installed. Four release manifests and QA records preserved under `docs/checkpoints/2026-11-27-v0.2.*`. No automatic postings or historical record changes on installation.
-- Next proposed development version: v0.2.465. Review actual source and any reported issues before further changes.
+- v0.2.465 through v0.2.468 installed; final v0.2.468 owner-confirmed working. Four release manifests and QA records preserved under `docs/checkpoints/2026-11-28-v0.2.*`. No financial postings or historical record changes on installation.
+- Next proposed development version: v0.2.469. Review actual source and any reported issues before further changes.
 
 ## Standard development and release policy
 

@@ -1,0 +1,591 @@
+{
+  "version": "0.2.468",
+  "requires": "0.2.467",
+  "predecessor_installer_sha256": "48939fe5e2db0f4771ad684ea603b8d754e6d2c539fe93d0b4e02b5fe421033b",
+  "installer_sha256": "09bb4f8be3f4e0fbcb6dbfbf7abb8377ab9a88be824564807dbd69a7ecb2f2ee",
+  "installer_bytes": 160136,
+  "changed_files": {
+    "app/Domain.php": "66ffaf29db42dfe7fd3ee067303bf7960c7ae068b2477580fea5afe9968805c7",
+    "app/RetainedTaxBalance.php": "6aacfe86bb1951dffb369d36aeae0b0973798ce6d418b0ab7a2d8cbc0cd611f8"
+  },
+  "source_manifest_reconciliation": {
+    "source_count": 283,
+    "predecessor_mismatches": [],
+    "candidate_mismatches": []
+  },
+  "php_assertions": [
+    {
+      "name": "First DV retains tax but has no tax-funded gross",
+      "status": "PASS"
+    },
+    {
+      "name": "Prior retained tax applies only to gross shortfall",
+      "status": "PASS"
+    },
+    {
+      "name": "Own and prior retained tax used in final DV",
+      "status": "PASS"
+    },
+    {
+      "name": "Fully covered ordinary deficit is zero",
+      "status": "PASS"
+    },
+    {
+      "name": "Original negative ordinary difference retained",
+      "status": "PASS"
+    },
+    {
+      "name": "Gross unchanged, adjusted utilization reconciles",
+      "status": "PASS"
+    },
+    {
+      "name": "All verified retained applied",
+      "status": "PASS"
+    },
+    {
+      "name": "Unapplied is zero",
+      "status": "PASS"
+    },
+    {
+      "name": "Genuine residual deficit not hidden",
+      "status": "PASS"
+    },
+    {
+      "name": "Later credit cannot inflate spendable balance",
+      "status": "PASS"
+    },
+    {
+      "name": "Offset capped to current deficit",
+      "status": "PASS"
+    },
+    {
+      "name": "Confirmation alone cannot cover deficit",
+      "status": "PASS"
+    },
+    {
+      "name": "Documented pending funding separated from confirmation",
+      "status": "PASS"
+    },
+    {
+      "name": "Ordinary fund unaffected",
+      "status": "PASS"
+    },
+    {
+      "name": "Remittance fund cannot receive offset",
+      "status": "PASS"
+    },
+    {
+      "name": "Applied exceeds eligible source",
+      "status": "PASS"
+    },
+    {
+      "name": "Applied exceeds gross",
+      "status": "PASS"
+    },
+    {
+      "name": "Confirmed exceeds source",
+      "status": "PASS"
+    },
+    {
+      "name": "Unknown evidence withheld not fabricated zero",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing matching audit blocks adjustment",
+      "status": "PASS"
+    },
+    {
+      "name": "Live gross mismatch",
+      "status": "PASS"
+    },
+    {
+      "name": "Cross fund snapshot mismatch",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing earlier tax source",
+      "status": "PASS"
+    },
+    {
+      "name": "Wrong current DV source",
+      "status": "PASS"
+    },
+    {
+      "name": "Same-DV source overused",
+      "status": "PASS"
+    },
+    {
+      "name": "Wrong ATC",
+      "status": "PASS"
+    },
+    {
+      "name": "Duplicate prior source evidence",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual Domain projection using mocked query results",
+      "status": "PASS"
+    },
+    {
+      "name": "Domain denies offset on reversed",
+      "status": "PASS"
+    },
+    {
+      "name": "Domain denies offset on wrong_fund",
+      "status": "PASS"
+    },
+    {
+      "name": "Domain denies offset on wrong_policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Duplicate finalization audit withheld",
+      "status": "PASS"
+    },
+    {
+      "name": "Component liability discrepancy withheld",
+      "status": "PASS"
+    },
+    {
+      "name": "Gross coverage mismatch withheld",
+      "status": "PASS"
+    },
+    {
+      "name": "No extra query for ordinary funds",
+      "status": "PASS"
+    },
+    {
+      "name": "Direct recorded remittance supported",
+      "status": "PASS"
+    },
+    {
+      "name": "Direct remittance not mislabeled Division receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "Division receipt not represented as BIR settlement",
+      "status": "PASS"
+    },
+    {
+      "name": "Assigned check not remitted",
+      "status": "PASS"
+    },
+    {
+      "name": "Released check awaits receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "Mismatching amount no completed remittance",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing reference no completed remittance",
+      "status": "PASS"
+    },
+    {
+      "name": "Reversed tax not completed",
+      "status": "PASS"
+    },
+    {
+      "name": "Retention is not a remittance",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual report filtered remittance totals",
+      "status": "PASS"
+    },
+    {
+      "name": "Completed remittances only",
+      "status": "PASS"
+    },
+    {
+      "name": "Uncompleted remittances only",
+      "status": "PASS"
+    },
+    {
+      "name": "Retained report excludes remittances",
+      "status": "PASS"
+    },
+    {
+      "name": "Foreign fund filter rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Foreign school filter rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Invalid disposition rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Invalid completion rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Viewer not granted detailed report",
+      "status": "PASS"
+    },
+    {
+      "name": "All queries exercised were SELECT",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing audit identifies printed DV and validation failure",
+      "status": "PASS"
+    },
+    {
+      "name": "Duplicate audit identifies source record",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical policy review identifies stage",
+      "status": "PASS"
+    },
+    {
+      "name": "Verified source unchanged after diagnostic patch",
+      "status": "PASS"
+    },
+    {
+      "name": "Unexpected error text never exposed",
+      "status": "PASS"
+    },
+    {
+      "name": "Malformed JSON reports safe reason",
+      "status": "PASS"
+    },
+    {
+      "name": "Type error reports safe reason",
+      "status": "PASS"
+    },
+    {
+      "name": "Matching historical label and complete funding proof accepted",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical retained use requires policy even for DV without its own tax",
+      "status": "PASS"
+    },
+    {
+      "name": "Ordinary no-use funding requires no historical policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical current-DV and prior source proof supported",
+      "status": "PASS"
+    },
+    {
+      "name": "Previously pending original source can be recognized",
+      "status": "PASS"
+    },
+    {
+      "name": "Nonqualifying mode with positive retained amount: SOURCE_TAX_LIABILITY_TRANSFER_NO_NEW_ALLOTMENT",
+      "status": "PASS"
+    },
+    {
+      "name": "Nonqualifying mode with positive retained amount: GROSS_AUTHORIZED_ALLOCATION",
+      "status": "PASS"
+    },
+    {
+      "name": "Nonqualifying mode with positive retained amount: EXISTING_GROSS_ALLOCATION",
+      "status": "PASS"
+    },
+    {
+      "name": "Nonqualifying mode with positive retained amount: NON_IUS_BANK_CASH_CANDIDATE",
+      "status": "PASS"
+    },
+    {
+      "name": "Nonqualifying mode with positive retained amount: ",
+      "status": "PASS"
+    },
+    {
+      "name": "Nonqualifying mode with positive retained amount: null",
+      "status": "PASS"
+    },
+    {
+      "name": "Nonqualifying mode with positive retained amount: invalid mode",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: ordinary_used_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: retained_previously_consumed_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: recorded_eligible_prior_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: recorded_eligible_remaining_prior_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: current_dv_eligible_withheld_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: verified_fund_bank_cash_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: bank_minimum_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: prior_pending_source_ids",
+      "status": "PASS"
+    },
+    {
+      "name": "Missing historical evidence: same_dv_withholding_components",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: retained_gross_used_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: ordinary_used_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: retained_previously_consumed_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: recorded_eligible_prior_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: recorded_eligible_remaining_prior_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: current_dv_eligible_withheld_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: verified_fund_bank_cash_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: bank_minimum_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: officer_verified_actual_bank_cash",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: division_policy_version_id",
+      "status": "PASS"
+    },
+    {
+      "name": "Inconsistent historical evidence: confirmed_source_component_ids",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical discriminator does not bypass audit matching",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual Domain projection reconciles historical no-tax expense and current purchases",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical no-tax DV without policy still withheld",
+      "status": "PASS"
+    },
+    {
+      "name": "Incomplete legacy proof still produces actionable diagnostic",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual Domain preserves genuine deficit with verified historical proof",
+      "status": "PASS"
+    },
+    {
+      "name": "All new Domain queries SELECT-only",
+      "status": "PASS"
+    },
+    {
+      "name": "Exact thirteen-field historical contract reconciles without new split fields",
+      "status": "PASS"
+    },
+    {
+      "name": "Exact historical contract always requires saved policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical zero-use DV still validates",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical zero-use requires policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Prior consumption reduces available historical confirmed capacity",
+      "status": "PASS"
+    },
+    {
+      "name": "Consistent optional newer fields accepted",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing required field: ordinary_used_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing required field: retained_gross_used_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing required field: retained_previously_consumed_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing required field: retained_remaining_before_this_dv_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing required field: net_check_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing required field: verified_fund_bank_cash_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing required field: bank_minimum_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing required field: confirmed_source_component_ids",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: ordinary_used_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: retained_gross_used_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: retained_previously_consumed_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: retained_remaining_before_this_dv_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: net_check_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: verified_fund_bank_cash_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: bank_minimum_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: confirmed_source_component_ids",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: officer_verified_actual_bank_cash",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: division_policy_version_id",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: previous_retained_applied_this_dv_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: same_dv_withheld_used_cents",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: prior_pending_source_ids",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical invalid or contradictory field: same_dv_withholding_components",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical missing source rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical pending source cannot fund confirmed-only mode",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical same-DV source rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical overuse of remaining retention rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical snapshot/audit disagreement rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "Actual Domain mixed-generation projection reconciles all retained use to zero",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical Domain rejects wrong_fund",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical Domain rejects reversed",
+      "status": "PASS"
+    },
+    {
+      "name": "Historical Domain rejects wrong_policy",
+      "status": "PASS"
+    },
+    {
+      "name": "Mixed history preserves genuine deficit",
+      "status": "PASS"
+    },
+    {
+      "name": "Specific old-format diagnostic when source balances disagree",
+      "status": "PASS"
+    },
+    {
+      "name": "Read-only Domain projection remains SELECT only",
+      "status": "PASS"
+    }
+  ],
+  "pass": 139,
+  "fail": 0,
+  "prior_assertions_rerun": 99,
+  "new_assertions": 40,
+  "syntax": {
+    "app/Domain.php": "No syntax errors detected in /tmp/ip468/app/Domain.php",
+    "app/RetainedTaxBalance.php": "No syntax errors detected in /tmp/ip468/app/RetainedTaxBalance.php"
+  },
+  "installer_allowlist": "ALLOWLIST PASS",
+  "zip_integrity": "PASS",
+  "migration_count": 0,
+  "test_scope": "Synthetic pure PHP and mocked PDO tests of actual Domain reporting projection; all SQL exercised SELECT only. Historical test fixture reproduces provided field names but uses synthetic identifiers and amounts.",
+  "limitations": [
+    "Actual historical amounts, confirmed-source IDs and other saved evidence have not been inspected. Actual live reconciliation is conditional on validation.",
+    "No actual MariaDB, authenticated browser end-to-end, installer execution or rollback testing.",
+    "No changes to UI, posting, authorization, ledger or production records; no GitHub commit."
+  ]
+}

@@ -95,7 +95,10 @@ final class FundTransactionAudit {
                 'tax_for_bir'=>'0.00','tax_policy_unverified'=>'0.00','retained_tax_confirmed'=>'0.00','retained_tax_applied'=>'0.00',
                 'retained_tax_reconciled'=>'0.00','retained_tax_unused'=>'0.00',
                 'retained_tax_pending'=>'0.00','retained_tax_self_applied_pending'=>'0.00',
-                'division_check_transfer_verified'=>false];
+                'division_check_transfer_verified'=>false,
+                'adjusted_remaining_allocation'=>$a['adjusted_remaining_allocation']??null,
+                'retained_deficit_offset'=>$a['retained_deficit_offset']??null,
+                'retained_balance_status'=>$a['retained_balance_status']??null];
         }
         demand($selected===0 || isset($byFund[$selected]),'Selected fund unavailable',404);
         $ensure=static function(int $id)use($byFund):void {demand(isset($byFund[$id]),'Cross-fund audit source requires review',409);};

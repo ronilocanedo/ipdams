@@ -1674,6 +1674,7 @@ class App extends React.Component {
                 this.setState({taxConfirmFor:0,taxConfirmBudget:false,taxConfirmCash:false,
                     taxUtilizationNotice:'Withholding confirmation saved. This did not increase the fund allocation.'});
                 await this.loadTaxUtilization();
+                await this.refresh();
                 this.loadActionCenter();
             }catch(e){this.setState({taxUtilizationError:e.message});}
             finally{this.setState({taxUtilizationBusy:false});}
@@ -1846,17 +1847,17 @@ class App extends React.Component {
             this.setState({success:'School withholding notice acknowledged for Division follow-up. BIR settlement is still a separate obligation.'});
             await this.loadActionCenter();
         };
-        this.retainedTaxHandoffPanel = () => {
+        this.retainedTaxHandoffPanel = (fundId='') => {
             const h=React.createElement,s=this.state;
             const data=s.taxHandoffOrg===String(s.organization_id)?s.taxHandoffData:null;
             const money=v=>'₱'+Number(v||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
             const school=(s.orgs||[]).find(o=>String(o.id)===String(s.organization_id))?.kind==='SCHOOL';
-            const rows=school?(data?.rows||[]):[];
+            const rows=school?(data?.rows||[]).filter(r=>!fundId||String(r.fund_id)===String(fundId)):[];
             return h('section',{className:'surface',role:'region','aria-label':'Per-DV withholding notice to Division'},
                 h('div',{className:'section-head'},h('div',null,h('h3',null,'Division tax accountability — one notice per DV'),
                     h('p',{className:'hint'},'New finalized Non-IU DVs notify the Division automatically. The original withholding amounts and VAT/WTX codes remain available for audit; check release updates the existing notice status.')),
                     h('button',{type:'button',className:'outline',disabled:s.taxHandoffLoading||s.taxHandoffBusy,onClick:()=>this.loadTaxHandoff()},'Refresh notices')),
-                h('p',{className:'hint'},'Division-settled school-utilization withholding only. Notification is not a cash transfer, BIR payment, or allocation credit. The ordinary funding difference remains visible until authorized accounting reconciliation. Other remittances use their separate workflow.'),
+                h('p',{className:'hint'},'Division-settled school-utilization withholding only. Notification is not a cash transfer, BIR payment, or allocation credit. Retained funding is reconciled separately in the fund balance; notification does not establish BIR settlement. Other remittances use their existing Disbursements workflow.'),
                 s.taxHandoffLoading?h('p',{role:'status'},'Loading finalized DV withholding…'):null,
                 s.taxHandoffError?h('p',{className:'error',role:'alert'},s.taxHandoffError):null,
                 data?.office_kind==='DIVISION'?h('p',{className:'hint'},'Incoming school notices are shown in Action Center → School Tax Notices.'):null,
@@ -1870,61 +1871,68 @@ class App extends React.Component {
                         h('button',{type:'button',className:'outline',disabled:s.taxHandoffBusy||s.user?.role!=='SCHOOL',
                             onClick:()=>this.notifyDivisionOfTax(r.dv_id)},'Notify Division (older DV only)')))));
         };
-        this.taxUtilizationPanel = () => {
+        this.taxUtilizationPanel = (fundId='') => {
             const h=React.createElement,s=this.state,d=String(s.taxUtilizationOrg)===String(s.organization_id)?s.taxUtilization:null;
-            const amt=v=>'₱'+(Number(v)||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+            const amt=v=>v==null?'Review required':'₱'+Number(v).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
             const editable=['SCHOOL','SUPER_ADMIN'].includes(s.user?.role) && !(s.user?.role==='SUPER_ADMIN' && s.superAdminViewOnly);
-            const rows=d?.rows||[],summary=d?.summary||{},targets=d?.targets||[];
+            const rows=(d?.rows||[]).filter(r=>!fundId||String(r.fund_id)===String(fundId));
+            const fundRows=(s.lists.funds||[]).filter(f=>(!fundId||String(f.id)===String(fundId))&&Number(f.division_tax_accountability?.withholding_recorded||0)>0);
+            const sourceFresh=!s.workspaceLoading&&!(s.workspaceFailures||[]).includes('funds')&&String(this.lastWorkspaceOrg)===String(s.organization_id);
+            const total=(key)=>sourceFresh&&fundRows.every(f=>f[key]!=null)?fundRows.reduce((a,f)=>a+Math.round(Number(f[key])*100),0)/100:null;
+            const recorded=(key)=>sourceFresh?fundRows.reduce((a,f)=>a+Math.round(Number(f.division_tax_accountability?.[key]||0)*100),0)/100:null;
+            const history=(d?.usage||[]).filter(u=>rows.some(r=>Number(r.component_id)===Number(u.source_component_id)));
             const entry=(title,field)=>h('label',{className:'tax-use-field'},h('span',null,title),field);
             return h('div',{className:'tax-use-stack'},
                 h('section',{className:'surface'},
                     h('div',{className:'section-head'},h('div',null,h('h3',null,'Withheld tax utilization'),
                         h('p',{className:'body-muted'},'Non-IU school · fund-specific Division treatment · original DV dispositions')), 
                         h('button',{type:'button',className:'outline',disabled:s.taxUtilizationBusy||s.taxUtilizationLoading,
-                            onClick:()=>this.loadTaxUtilization()},'Refresh')),
+                            onClick:()=>{this.loadTaxUtilization();this.refresh();}},'Refresh')),
                     h('p',{className:'hint'},'Withholding is recorded automatically from finalized DVs. No separate manual utilization match is needed; actual tax-backed expenditure is traced in Sources of Funds → View transactions. Confirmation is an audit step, not a deposit or new allotment.'),
                     s.taxUtilizationLoading?h('p',{role:'status'},'Loading withholding components…'):null,
                     s.taxUtilizationError?h('p',{className:'error',role:'alert'},s.taxUtilizationError):null,
                     s.taxUtilizationNotice?h('p',{className:'success'},s.taxUtilizationNotice):null,
                     d?.school_class!=='NON_IUS' && d?h('p',{className:'hint'},d.school_class==='IUS'?'This is an IUS school. Use the direct BIR or other configured remittance process, not Non-IU utilization.':'Complete the school IUS/Non-IUS classification before using this register.'):null,
-                    d?.school_class==='NON_IUS'?h('div',{className:'tax-use-summary'},
-                        ...[['Withheld',summary.withheld],['Pending review',summary.pending],['Confirmed',summary.confirmed],['Legacy reconciliations',summary.utilized],['Confirmed balance (legacy register)',summary.remaining]].map(([k,v])=>
-                            h('div',{className:'tax-use-metric',key:k},h('small',null,k),h('strong',null,amt(v))))):null),
+                    h('div',{className:'tax-use-summary'},
+                        ...[['Withheld for school utilization',recorded('withholding_recorded')],['Pending confirmation',recorded('awaiting_confirmation')],['Confirmed retention',recorded('retention_confirmed')],['Applied to finalized DV funding',total('retained_funding_applied')],['Eligible retention not applied',total('retained_unapplied')]].map(([k,v])=>
+                            h('div',{className:'tax-use-metric',key:k},h('small',null,k),h('strong',null,amt(v))))),
+                    h('p',{className:'body-muted'},'Current totals by fund and fiscal year. Applied funding is verified from saved DV snapshots and audits; unapplied retention is not bank cash or new spending authority. Confirmation is independent of use.'),
+                    ...(sourceFresh?fundRows.filter(f=>f.retained_balance_issue).map(f=>h('div',{key:'retained-review-'+f.id,className:'surface',role:'alert'},h('strong',null,f.name+' · FY '+f.fiscal_year+' — '+(f.retained_balance_status==='UNRESOLVED_DEFICIT'?'Unresolved deficit':'Source review required')),h('p',{className:'warning'},f.retained_balance_issue),h('p',{className:'body-muted'},'Do not re-confirm tax, add a credit or recreate a DV. View the existing fund transaction history and send the review reason to your administrator.'),h('button',{type:'button',className:'outline',onClick:()=>this.setState({fundSection:'funds'})},'Go to Sources & Balances'))):[]),
+                    sourceFresh&&fundRows.length?this.table('Retained funding by fund',['name','fiscal_year','retained_eligible','retained_funding_applied','retained_unapplied','adjusted_remaining_allocation'],fundRows):null),
                 d?.school_class==='NON_IUS'?h('section',{className:'surface'},
                     h('h3',null,'Withholding by finalized DV'),
                     !rows.length?h('p',{className:'hint'},'No finalized Non-IU DVs have a saved SCHOOL_UTILIZATION withholding disposition in this workspace. New Division settings do not rewrite older vouchers.'):null,
                     ...Array.from(rows.reduce((map,x)=>{
                         const id=String(x.dv_id);
-                        if(!map.has(id))map.set(id,{...x,components:[],total:0,reconciled:0,remaining:0,pending:0});
+                        if(!map.has(id))map.set(id,{...x,components:[],total:0,reconciled:0,remaining:0,pending:0,review:0});
                         const g=map.get(id);
                         g.components.push(x);
                         g.total+=Number(x.amount)||0;
                         g.reconciled+=Number(x.utilized_amount)||0;
                         g.remaining+=Number(x.remaining_amount)||0;
-                        if(x.state==='PENDING')g.pending++;
+                        if(x.review_required)g.review++;else if(x.state==='PENDING')g.pending++;
                         return map;
                     },new Map()).values()).map(g=>h('article',{className:'tax-use-record',key:'dv-withholding-'+g.dv_id},
                         h('div',{className:'tax-use-record-top'},
                             h('div',null,h('strong',null,'DV '+(g.dv_number||g.dv_id)+' · '+g.fund_name),
                                 h('div',{className:'body-muted'},'FY '+g.fiscal_year+' · '+g.document_date)),
                             h('div',{className:'tax-use-amount'},h('strong',null,amt(g.total)),
-                                h('small',null,g.pending?g.pending+' pending tax component(s)':'Confirmed · '+g.components.length+' tax component(s)'))),
-                        h('div',{className:'tax-use-row-stats'},h('span',null,'Reconciled: '+amt(g.reconciled)),
-                            h('span',null,'Confirmed remaining: '+amt(g.remaining))),
+                                h('small',null,g.review?g.review+' component(s) require source review':g.pending?g.pending+' pending tax component(s)':'Confirmed · '+g.components.length+' tax component(s)'))),
+                        h('div',{className:'tax-use-row-stats'},h('span',null,'Original tax components; actual use is tracked by fund, not inferred per component.')),
                         h('details',{className:'tax-use-breakdown'},
                             h('summary',{style:{cursor:'pointer',padding:'8px 0'}},'View VAT / WTX breakdown ('+g.components.length+')'),
                             ...g.components.map(x=>h('div',{key:'atc-'+x.component_id,style:{borderTop:'1px solid #e1e8ed',padding:'8px 0'}},
                                 h('div',{className:'tax-use-record-top'},
                                     h('strong',null,x.atc_code+' · '+amt(x.amount)),
-                                    h('small',{className:'body-muted'},x.state==='CONFIRMED_CREDIT'?'Confirmed':'Pending confirmation')),
-                                h('div',{className:'body-muted'},'Reconciled '+amt(x.utilized_amount)+' · Remaining '+amt(x.remaining_amount)),
+                                    h('small',{className:'body-muted'},x.review_required?'Source review required':x.state==='CONFIRMED_CREDIT'?'Confirmed':'Pending confirmation')),
+                                x.utilized_amount&&Number(x.utilized_amount)>0?h('div',{className:'body-muted'},'Legacy manual match: '+amt(x.utilized_amount)):null,
                                 x.confirmation_authority?h('small',{className:'body-muted'},'Confirmation authority: '+x.confirmation_authority):null,
-                                editable && x.state==='PENDING'?h('div',{className:'tax-use-actions'},
+                                editable && !x.review_required && x.state==='PENDING'?h('div',{className:'tax-use-actions'},
                                     h('button',{type:'button',className:'outline',disabled:s.taxUtilizationBusy,
                                         onClick:()=>this.setState({taxConfirmFor:Number(x.component_id),taxUseFor:0,taxConfirmBudget:false,taxConfirmCash:false,taxUtilizationError:''})},'Confirm eligible withholding')):null)))))):null,
-                d?.usage?.length?h('section',{className:'surface'},h('h3',null,'Utilization history · Division reporting'),
+                history.length?h('section',{className:'surface'},h('h3',null,'Legacy manual utilization matches · audit only'),
                     h('p',{className:'hint'},'Historical manually matched utilization is kept for audit only. New use is automatically reflected in Fund Transaction History, without a separate entry.'),
-                    ...d.usage.map((u,i)=>h('div',{className:'tax-use-history',key:i},
+                    ...history.map((u,i)=>h('div',{className:'tax-use-history',key:i},
                         h('strong',null,amt(u.amount)+' · withholding #'+u.source_component_id+' → DV #'+u.target_dv_id),
                         h('small',null,(u.recorded_on||'')+' · '+u.evidence_reference+' · '+u.authority_reference)))):null);
         };
@@ -4335,7 +4343,7 @@ h('div',{className:'employee-claim-actions'},
             const selected=funds.find(f=>String(f.fund_id)===String(s.fundAuditFund));
             const money=n=>'₱'+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
             const stat=(name,val,note='')=>h('div',{className:'fa352-stat',key:name},
-                h('small',null,name),h('strong',null,money(val)),note?h('small',null,note):null);
+                h('small',null,name),h('strong',null,val==null?'Review required':money(val)),note?h('small',null,note):null);
             return h('section',{className:'surface fa352-panel',id:'fund-audit-register','aria-label':'Fund expenditure and withholding audit'},
                 h('div',{className:'section-head'},h('div',null,h('h3',null,'Fund utilization & transaction history'),
                     h('p',{className:'hint'},'Gross finalized expenses, net check book commitments and withholding are separate amounts. This is a read-only register.')),
@@ -4358,7 +4366,9 @@ h('div',{className:'employee-claim-actions'},
                         h('button',{className:'outline',type:'button',onClick:()=>this.loadFundTransactionAudit({fundId:'',page:1})},'Close details')),
                     h('div',{className:'fa352-stats'},
                         stat('Verified fund downloads',selected.fund_downloaded,'Division confirmed receipt → same source fund → one bank-linked allotment; not a second deposit'),
-                        stat('Ordinary allocation remaining',selected.ordinary_remaining),
+                        stat('Adjusted allocation remaining',selected.adjusted_remaining_allocation,'Presentation only, not bank cash or new authority'),
+                        stat('Retained funding offset',selected.retained_deficit_offset),
+                        stat('Ordinary allocation difference (audit)',selected.ordinary_remaining),
                         stat('Gross expense finalized',selected.gross_finalized),
                         stat('Net check book committed',selected.net_checks_committed,'Includes issued and outstanding checks'),
                         stat('Checks currently cleared',selected.net_checks_cleared,'Not a second debit'),
@@ -6218,7 +6228,7 @@ h('div',{className:'employee-claim-actions'},
                             React.createElement("p", null,
                                 "\u20B1",
                                 v.pending_tax ?? '0.00',
-                                " remains non-spendable until authorized confirmation."))),
+                                " awaits confirmation; recorded authority and actual bank cash are checked separately."))),
                     React.createElement("div", { className: "alert-row" },
                         React.createElement("span", { className: "alert-dot blue" }),
                         React.createElement("div", null,
@@ -7239,10 +7249,26 @@ h('div',{className:'employee-claim-actions'},
                         fund_allocation_open:false})},'← Overview'):null);
             if(finance&&financeSection==='withheld'){
                 const divisionHere=this.state.orgs.some(o=>String(o.id)===String(this.state.organization_id)&&o.kind==='DIVISION');
-                return h('div',{className:'section-stack'},
-                    this.header('Withholding taxes','Recorded tax, Division monitoring and reporting.'),financeTabs,
-                    divisionHere?this.divisionWithholdingPanel():this.taxUtilizationPanel(),
-                    divisionHere?null:this.retainedTaxHandoffPanel());
+                if(divisionHere)return h('div',{className:'section-stack'},this.header('Withholding taxes','Division monitoring and reporting.'),financeTabs,this.divisionWithholdingPanel());
+                const s=this.state,org=String(s.organization_id),actor=String(s.user?.id||'');
+                if(s.user?.role==='VIEWER')return h('div',{className:'section-stack'},this.header('Withholding taxes','Withholding reports are restricted to finance roles.'),financeTabs,h('p',{className:'hint'},'Use an authorized school or Division finance account.'));
+                if(s.user?.role==='DIVISION')return h('div',{className:'section-stack'},this.header('Withholding taxes','School retained tax information'),financeTabs,h('p',{className:'hint'},'For remittance reporting, select your Division workspace and use the existing Division withholding register.'),this.taxUtilizationPanel());
+                const scoped=s.schoolTaxScope===org+':'+actor;
+                const tab=scoped&&s.schoolTaxTab==='remit'?'remit':'utilized';
+                const funds=s.lists.funds||[];
+                const chosen=scoped?funds.find(f=>String(f.id)===String(s.schoolTaxFund||'')):null;
+                const fund=chosen?String(chosen.id):'';
+                const year=String(chosen?.fiscal_year||localToday().slice(0,4));
+                const select=(values)=>this.setState({schoolTaxScope:org+':'+actor,schoolTaxTab:tab,schoolTaxFund:fund,...values});
+                const url='api/withholding-reports.php?'+new URLSearchParams({organization_id:org,embedded:'1',disposition:tab==='remit'?'REMIT':'SCHOOL_UTILIZATION',...(fund?{fund_id:fund}:{}),from:year+'-01-01',through:year+'-12-31'}).toString();
+                return h('div',{className:'section-stack'},this.header('Withholding taxes','School utilization and remittance reporting from the original DVs.'),financeTabs,
+                    h('section',{className:'surface tax465-nav'},h('div',{className:'master-tabs',role:'group','aria-label':'Withholding treatment'},
+                        ...[['utilized','School-utilized taxes'],['remit','Taxes for remittance']].map(([v,label])=>h('button',{key:v,type:'button','aria-pressed':tab===v,className:'master-tab '+(tab===v?'selected':''),onClick:()=>select({schoolTaxTab:v})},label))),
+                        h('label',{className:'tax-use-field'},h('span',null,'Fund source / fiscal year'),h('select',{value:fund,onChange:e=>select({schoolTaxFund:e.target.value})},h('option',{value:''},'All funds'),...funds.map(f=>h('option',{key:f.id,value:String(f.id)},f.name+' · FY '+f.fiscal_year)))),
+                        h('div',{className:'inline-actions'},h('a',{className:'outline',target:'_blank',rel:'noopener noreferrer',href:url.replace('embedded=1&','')},'Open detailed withholding report'),
+                            h('button',{type:'button',className:'outline',onClick:()=>this.setState({tab:'Disbursements',dvSection:'transfers',taxTransferOpen:true})},'Open remittance workflow'))),
+                    tab==='utilized'?this.taxUtilizationPanel(fund):h('section',{className:'surface tax465-report'},h('h3',null,'Remittance register'),h('p',{className:'hint'},'Same report used by Disbursements. Filter by dates, fund and remittance completion. A recorded Division receipt is not proof of BIR settlement.'),h('iframe',{key:org+'-'+actor+'-'+fund+'-'+year,title:'Withholding tax remittance report',src:url,referrerPolicy:'same-origin'})),
+                    tab==='utilized'?this.retainedTaxHandoffPanel(fund):null);
             }
             if(finance&&financeSection==='mooe')return h('div',{className:'section-stack'},
                 this.header('Fund downloads','Division releases and one-step recipient confirmation.'),financeTabs,this.mooeMonitorPanel());
@@ -7254,24 +7280,25 @@ h('div',{className:'employee-claim-actions'},
                         ['banks','Manage bank accounts'],['downloads','Bank credit journal'],
                         ['allocations','Obligation records']].map(([k,label])=>h('button',{key:k,type:'button',className:'outline',
                             onClick:()=>this.setState({fundSection:k})},label)))),
-                h('p',{className:'hint'},'Ordinary allocation may be negative when authorized retained withholding finances gross expenses. This is not bank cash; inspect the selected-fund bank book under Sources & Balances.'),
-                this.table('School funds',['name','fiscal_year','authorized_allocation','outstanding_obligations','finalized_dv_gross','available_allocation'],this.state.lists.funds||[]),
+                h('p',{className:'hint'},'Adjusted allocation recognizes only verified retained funding applied against the current ordinary deficit. It is not bank cash or new spending authority.'),
+                this.table('School funds',['name','fiscal_year','authorized_allocation','outstanding_obligations','finalized_dv_gross','retained_deficit_offset','adjusted_utilization','adjusted_remaining_allocation'],(this.state.lists.funds||[]).map(f=>({...f,adjusted_remaining_allocation:f.adjusted_remaining_allocation??'Review required'}))),
+                ...(this.state.lists.funds||[]).filter(f=>f.retained_balance_issue).map(f=>h('div',{key:'retained-review-'+f.id,className:'surface',role:'alert'},h('strong',null,f.name+' · FY '+f.fiscal_year+' — '+(f.retained_balance_status==='UNRESOLVED_DEFICIT'?'Unresolved deficit':'Source review required')),h('p',{className:'warning'},f.retained_balance_issue),h('p',{className:'body-muted'},'No additional credit or tax confirmation is required to review existing evidence.'))),
                 (()=>{const fundRows=(this.state.lists.funds||[]).filter(f=>Number(f.division_tax_accountability?.withholding_recorded||0)>0);
                     if(!fundRows.length)return null;
-                    const fmt=n=>'₱'+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+                    const fmt=n=>n==null?'Review required':'₱'+Number(n).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
                     return h('section',{className:'surface',role:'region','aria-label':'Division BIR settlement accountability'},
                         h('h3',null,'Retained withholding · Division BIR accountability'),
                         h('p',{className:'hint'},'Source: original finalized supplier-DV withholding components marked SCHOOL_UTILIZATION. The Division handles BIR settlement under its recorded policy. School confirmation only attests retained-withholding eligibility; it does not prove a Division receipt or BIR remittance.'),
                         h('div',{className:'table-scroll'},h('table',{className:'data-table'},
-                            h('thead',null,h('tr',null,...['School fund','Original withholding','School-confirmed retention','Awaiting school confirmation','Ordinary allocation difference'].map(x=>h('th',{key:x},x)))),
+                            h('thead',null,h('tr',null,...['School fund','Original withholding','Confirmed retention','Awaiting confirmation','Applied to DV funding','Eligible unapplied','Adjusted balance'].map(x=>h('th',{key:x},x)))),
                             h('tbody',null,...fundRows.map(f=>{const a=f.division_tax_accountability;
                                 return h('tr',{key:f.id},h('td',null,f.name+' · FY '+f.fiscal_year),
                                     h('td',null,fmt(a.withholding_recorded)),h('td',null,fmt(a.retention_confirmed)),
-                                    h('td',null,fmt(a.awaiting_confirmation)),h('td',null,fmt(f.available_allocation)));
+                                    h('td',null,fmt(a.awaiting_confirmation)),h('td',null,fmt(f.retained_funding_applied)),h('td',null,fmt(f.retained_unapplied)),h('td',null,fmt(f.adjusted_remaining_allocation)));
                             })))),
-                        h('p',{className:'hint'},'ACTION: Reconcile the original ATC/DV tax evidence with Division Accounting. Cash used by the school cannot be transferred a second time. Any Division BIR payment, repayment, or authorized offset requires actual documentary evidence and separate approved accounting. The ordinary difference remains visible and is not automatically cleared.'));
+                        h('p',{className:'hint'},'ACTION: Reconcile the original ATC/DV tax evidence with Division Accounting. Cash used by the school cannot be transferred a second time. Any Division BIR payment, repayment, or authorized offset requires actual documentary evidence and separate approved accounting. Original ordinary differences remain in the audit details; no bank credit or remittance is created.'));
                 })(),
-                h('p',{className:'hint'},'Ordinary allocation difference = authorized bank-linked credits and adjustments − finalized gross expenses − obligations. It can be negative under Division-approved retained-withholding use; PR funding is selected by school fund record, but check payment is separately limited by that fund’s available bank cash.'),
+                h('details',{className:'surface'},h('summary',null,'Original ordinary allocation differences · audit'),this.table('Unadjusted balances',['name','fiscal_year','ordinary_allocation_difference'],this.state.lists.funds||[]),h('p',{className:'hint'},'Original authorized allocation minus finalized gross and obligations. Retained funding offsets only a verified current deficit; check payment remains limited by actual fund-specific bank cash.')),
                 h('p',{className:'body-muted'},'For new D.O. credits and bank accounts, use the tabs above. Checks and future statement reconciliation remain under Cash & Bank.'));
             const rows=section==='suppliers'?this.state.lists.suppliers||[]:section==='items'?this.state.lists.all_items||[]:section==='funds'?this.state.lists.funds||[]:section==='banks'?this.state.lists.banks||[]:section==='units'?this.state.lists.units||[]:this.state.lists.atcs||[];
             const filtered=rows.filter(r=>{
@@ -7543,15 +7570,15 @@ h('div',{className:'employee-claim-actions'},
                         h('button',{type:'submit',className:'primary',disabled:this.state.busy||!this.state.fundPolicies},'Save Division fund source'),
                         h('button',{type:'button',className:'outline',onClick:()=>{if(window.confirm('Discard unsaved Division source changes?')){this.fundSourceReviewPending=null;this.setState({sourceDialog:false});}}},'Cancel')))):null):null,
             ):null;
-            const cols=section==='suppliers' ?['name','proprietor_name','tax_id','zip_code','business_classification','vat_status','tax_profiles','active']:section==='items'?['name','catalog_scope','category','division_class','item_uacs','property_registry','unit','active']:section==='funds'?['name','source_code','fiscal_year','authorized_allocation','outstanding_obligations','finalized_dv_gross','available_allocation','awaiting_bank_link']:section==='banks'?['bank_name','account_label','masked_account']:section==='units'?['code','name']:['code','description','supply_type','active'];
+            const cols=section==='suppliers' ?['name','proprietor_name','tax_id','zip_code','business_classification','vat_status','tax_profiles','active']:section==='items'?['name','catalog_scope','category','division_class','item_uacs','property_registry','unit','active']:section==='funds'?['name','source_code','fiscal_year','authorized_allocation','outstanding_obligations','finalized_dv_gross','retained_deficit_offset','adjusted_remaining_allocation','awaiting_bank_link']:section==='banks'?['bank_name','account_label','masked_account']:section==='units'?['code','name']:['code','description','supply_type','active'];
             const canRenameBank=section==='banks' && ['SUPER_ADMIN','SCHOOL','DIVISION'].includes(this.state.user?.role);
             const hasActions=(canEdit&&['suppliers','items','atcs'].includes(section))||canRenameBank;
             const workspace=this.state.orgs.find(o=>String(o.id)===String(this.state.organization_id));
             const itemOwns=r=>r.owner_organization_id!==null&&r.owner_organization_id!==undefined
                 ?String(r.owner_organization_id)===String(this.state.organization_id)
                 :isAdmin&&workspace?.kind==='DIVISION';
-            const heads=cols.map(col=>h('th',{key:col},col==='available_allocation'&&section==='funds'?
-                'Ordinary difference (not bank cash)':col.replace(/_/g,' ')));if(hasActions)heads.push(h('th',{key:'action'},'Actions'));
+            const heads=cols.map(col=>h('th',{key:col},col==='adjusted_remaining_allocation'&&section==='funds'?
+                'Adjusted balance (not bank cash)':col.replace(/_/g,' ')));if(hasActions)heads.push(h('th',{key:'action'},'Actions'));
             const body=filtered.map(r=>h('tr',{key:r.id||r.code},...cols.map(col=>h('td',{key:col},
                 section==='suppliers' && col==='business_classification' ? (r.business_classification==='COMMERCIAL'?'Corporate':r.business_classification==='INDIVIDUAL'?'Individual':'Not yet verified')
                 : section==='suppliers' && col==='tax_profiles' ? (supplierProfileTypes.filter(type=>this.supplierProfileActive(r,type)).map(type=>this.profileLabel(type)).join(' · ')||'Not configured')
@@ -7775,7 +7802,7 @@ h('div',{className:'employee-claim-actions'},
                 this.setState({masterEditorOpen:open,...(!open?{sup_edit_id:'',item_edit_id:''}:{}),...(fresh?{sup_name:'',sup_tax_id:'',sup_address:'',sup_zip:'',sup_atcs:[],sup_profiles:[],sup_legacy_atcs:[],sup_commercial:'UNSPECIFIED',sup_vat_status:'UNKNOWN',item_name:'',item_category:'SUPPLY',item_subcategory:'',item_school_class:'',item_unit_id:''}:{}),...(open?{error:'',success:''}:{})});
             }},this.state.masterEditorOpen?'− Hide entry form':'+ Add '+(section==='suppliers'?'supplier':section==='items'?'catalog item':section==='funds'?'fund source':section==='banks'?'bank account':'unit'))):null,fundPolicyPanel,this.state.masterEditorOpen&&section==='banks'?h('div',{className:'ipr-overlay',role:'presentation'},h('div',{className:'ipr-dialog',role:'dialog','aria-modal':'true','aria-label':'Register bank account'},editor,h('button',{type:'button',className:'outline',onClick:()=>{if(window.confirm('Discard unsaved bank details?'))this.setState({masterEditorOpen:false});}},'Cancel'))):this.state.masterEditorOpen?editor:null,finance&&financeSection==='funds'?this.fundAuditPanel():null,
                 finance&&financeSection==='funds'?h('p',{className:'hint'},
-                    'The School Sources of Funds table shows an ordinary-allocation difference (not cash). A negative value may reflect gross expense financed by eligible retained withholding. See Fund book cash above for the actual projected funds remaining.'):null,
+                    'The School Sources of Funds table shows adjusted allocation, not cash. See View transactions for original ordinary differences, retained funding evidence and book cash. A dash indicates unavailable evidence; genuine deficits remain visible.'):null,
                 (!finance||['funds','banks'].includes(financeSection))?listing:null,itemUacsPanel,itemUacsModal,uacsCorrectionModal,bulkUacsModal,
                 section==='items'?this.registryLinkModal():null,downloadManager,fundAllocationEditor,rateList);
         };
